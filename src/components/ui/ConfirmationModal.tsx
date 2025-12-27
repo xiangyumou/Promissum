@@ -56,7 +56,7 @@ export default function ConfirmationModal({
                         {icons[variant]}
                     </div>
                     <div className="flex-1 pt-0.5">
-                        <p className="text-zinc-400 text-sm leading-relaxed">
+                        <p className="text-muted-foreground text-sm leading-relaxed">
                             {description}
                         </p>
                     </div>
