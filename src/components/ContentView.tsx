@@ -1,102 +1,41 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Dashboard from './Dashboard';
-
-interface ItemDetail {
-    id: string;
-    type: 'text' | 'image';
-    original_name: string | null;
-    decrypt_at: number;
-    created_at: number;
-    layer_count: number;
-    unlocked: boolean;
-    content: string | null;
-}
+import { useItem, useDeleteItem, useExtendItem } from '@/lib/queries';
+import { useCountdown } from '@/lib/use-countdown';
 
 interface ContentViewProps {
     selectedId: string | null;
     onDelete: (id: string) => void;
-    onItemUpdated?: () => void;
     onMenuClick: () => void;
 }
 
-export default function ContentView({ selectedId, onDelete, onItemUpdated, onMenuClick }: ContentViewProps) {
-    const [item, setItem] = useState<ItemDetail | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [countdown, setCountdown] = useState<string>('');
-    const [isDeleting, setIsDeleting] = useState(false);
+export default function ContentView({ selectedId, onDelete, onMenuClick }: ContentViewProps) {
     const [extendingMinutes, setExtendingMinutes] = useState<number | null>(null);
 
-    useEffect(() => {
-        if (!selectedId) {
-            setItem(null);
-            return;
-        }
+    // Fetch item with automatic refetching
+    const { data: item, isLoading: loading } = useItem(selectedId);
 
-        const fetchItem = async () => {
-            setLoading(true);
-            try {
-                const response = await fetch(`/api/items/${selectedId}`);
-                const data = await response.json();
-                setItem(data);
-            } catch (error) {
-                console.error('Error fetching item:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    // Delete mutation
+    const deleteMutation = useDeleteItem();
 
-        fetchItem();
-    }, [selectedId]);
+    // Extend mutation
+    const extendMutation = useExtendItem(selectedId || '');
 
     // Countdown timer
-    useEffect(() => {
-        if (!item || item.unlocked) {
-            setCountdown('');
-            return;
-        }
-
-        const updateCountdown = () => {
-            const now = Date.now();
-            const diff = item.decrypt_at - now;
-
-            if (diff <= 0) {
-                // Time's up, refetch to get decrypted content
-                fetch(`/api/items/${item.id}`)
-                    .then(res => res.json())
-                    .then(data => setItem(data));
-                return;
-            }
-
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-            setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-        };
-
-        updateCountdown();
-        const interval = setInterval(updateCountdown, 1000);
-
-        return () => clearInterval(interval);
-    }, [item]);
+    const countdown = useCountdown(item?.decrypt_at || null, item?.unlocked || false);
 
     const handleDelete = async () => {
-        if (!item || isDeleting) return;
+        if (!item || deleteMutation.isPending) return;
 
         if (!confirm('Are you sure you want to delete this item?')) return;
 
-        setIsDeleting(true);
         try {
-            await fetch(`/api/items/${item.id}`, { method: 'DELETE' });
+            await deleteMutation.mutateAsync(item.id);
             onDelete(item.id);
-            setItem(null);
         } catch (error) {
             console.error('Error deleting item:', error);
-        } finally {
-            setIsDeleting(false);
         }
     };
 
@@ -105,52 +44,54 @@ export default function ContentView({ selectedId, onDelete, onItemUpdated, onMen
 
         setExtendingMinutes(minutes);
         try {
-            const response = await fetch(`/api/items/${item.id}/extend`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ minutes })
-            });
-
-            if (response.status === 409) {
-                // Concurrent modification - refresh data and notify user
-                const itemResponse = await fetch(`/api/items/${item.id}`);
-                const updatedItem = await itemResponse.json();
-                setItem(updatedItem);
-                onItemUpdated?.();
-                alert('操作冲突，数据已刷新，请重试');
-                return;
-            }
-
-            if (response.ok) {
-                // Refetch the item to get updated state (unlocked -> locked)
-                const itemResponse = await fetch(`/api/items/${item.id}`);
-                const updatedItem = await itemResponse.json();
-                setItem(updatedItem);
-                onItemUpdated?.();
-            }
+            await extendMutation.mutateAsync(minutes);
         } catch (error) {
             console.error('Error extending lock:', error);
+            if (error instanceof Error && error.message.includes('conflict')) {
+                alert('操作冲突，数据已刷新，请重试');
+            }
         } finally {
             setExtendingMinutes(null);
         }
     };
 
+    // Mobile menu button component
+    const MobileMenuButton = () => (
+        <button
+            className="mobile-menu-btn"
+            onClick={onMenuClick}
+            aria-label="Open menu"
+        >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+    );
+
+    // Extend buttons component
+    const ExtendButtons = () => (
+        <div className="extend-buttons" style={{ marginTop: item?.unlocked ? '24px' : undefined }}>
+            <span className="extend-label">Extend:</span>
+            {[1, 10, 60, 360, 1440].map((mins) => (
+                <button
+                    key={mins}
+                    className="extend-btn"
+                    onClick={() => handleExtend(mins)}
+                    disabled={extendingMinutes !== null}
+                >
+                    {extendingMinutes === mins ? '...' : `+${mins >= 60 ? `${mins / 60}h` : `${mins}m`}`}
+                </button>
+            ))}
+        </div>
+    );
+
     if (!selectedId) {
         return (
             <div className="content-view" style={{ display: 'block' }}>
-                {/* Mobile menu button for empty state */}
                 <div className="content-header" style={{ borderBottom: 'none' }}>
-                    <button
-                        className="mobile-menu-btn"
-                        onClick={onMenuClick}
-                        aria-label="Open menu"
-                    >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <line x1="3" y1="6" x2="21" y2="6"></line>
-                            <line x1="3" y1="12" x2="21" y2="12"></line>
-                            <line x1="3" y1="18" x2="21" y2="18"></line>
-                        </svg>
-                    </button>
+                    <MobileMenuButton />
                 </div>
                 <Dashboard />
             </div>
@@ -160,19 +101,8 @@ export default function ContentView({ selectedId, onDelete, onItemUpdated, onMen
     if (loading) {
         return (
             <div className="content-view loading">
-                {/* Mobile menu button for loading state */}
                 <div className="content-header" style={{ borderBottom: 'none' }}>
-                    <button
-                        className="mobile-menu-btn"
-                        onClick={onMenuClick}
-                        aria-label="Open menu"
-                    >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <line x1="3" y1="6" x2="21" y2="6"></line>
-                            <line x1="3" y1="12" x2="21" y2="12"></line>
-                            <line x1="3" y1="18" x2="21" y2="18"></line>
-                        </svg>
-                    </button>
+                    <MobileMenuButton />
                 </div>
                 <div className="spinner"></div>
             </div>
@@ -182,19 +112,8 @@ export default function ContentView({ selectedId, onDelete, onItemUpdated, onMen
     if (!item) {
         return (
             <div className="content-view error">
-                {/* Mobile menu button for error state */}
                 <div className="content-header" style={{ borderBottom: 'none' }}>
-                    <button
-                        className="mobile-menu-btn"
-                        onClick={onMenuClick}
-                        aria-label="Open menu"
-                    >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <line x1="3" y1="6" x2="21" y2="6"></line>
-                            <line x1="3" y1="12" x2="21" y2="12"></line>
-                            <line x1="3" y1="18" x2="21" y2="18"></line>
-                        </svg>
-                    </button>
+                    <MobileMenuButton />
                 </div>
                 <p>Item not found</p>
             </div>
@@ -204,18 +123,7 @@ export default function ContentView({ selectedId, onDelete, onItemUpdated, onMen
     return (
         <div className="content-view">
             <div className="content-header">
-                {/* Mobile menu button */}
-                <button
-                    className="mobile-menu-btn"
-                    onClick={onMenuClick}
-                    aria-label="Open menu"
-                >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                        <line x1="3" y1="12" x2="21" y2="12"></line>
-                        <line x1="3" y1="18" x2="21" y2="18"></line>
-                    </svg>
-                </button>
+                <MobileMenuButton />
 
                 <div className="content-title">
                     <span className="content-icon">{item.type === 'text' ? '📝' : '🖼️'}</span>
@@ -227,12 +135,11 @@ export default function ContentView({ selectedId, onDelete, onItemUpdated, onMen
                 <button
                     className="delete-button"
                     onClick={handleDelete}
-                    disabled={isDeleting}
+                    disabled={deleteMutation.isPending}
                 >
-                    {isDeleting ? 'Deleting...' : '🗑️ Delete'}
+                    {deleteMutation.isPending ? 'Deleting...' : '🗑️ Delete'}
                 </button>
             </div>
-
 
             <div className="content-body">
                 {item.unlocked ? (
@@ -246,92 +153,14 @@ export default function ContentView({ selectedId, onDelete, onItemUpdated, onMen
                                 className="image-content"
                             />
                         )}
-
-                        {/* Extend buttons for unlocked content */}
-                        <div className="extend-buttons" style={{ marginTop: '24px' }}>
-                            <span className="extend-label">Extend:</span>
-                            <button
-                                className="extend-btn"
-                                onClick={() => handleExtend(1)}
-                                disabled={extendingMinutes !== null}
-                            >
-                                {extendingMinutes === 1 ? '...' : '+1m'}
-                            </button>
-                            <button
-                                className="extend-btn"
-                                onClick={() => handleExtend(10)}
-                                disabled={extendingMinutes !== null}
-                            >
-                                {extendingMinutes === 10 ? '...' : '+10m'}
-                            </button>
-                            <button
-                                className="extend-btn"
-                                onClick={() => handleExtend(60)}
-                                disabled={extendingMinutes !== null}
-                            >
-                                {extendingMinutes === 60 ? '...' : '+1h'}
-                            </button>
-                            <button
-                                className="extend-btn"
-                                onClick={() => handleExtend(360)}
-                                disabled={extendingMinutes !== null}
-                            >
-                                {extendingMinutes === 360 ? '...' : '+6h'}
-                            </button>
-                            <button
-                                className="extend-btn"
-                                onClick={() => handleExtend(1440)}
-                                disabled={extendingMinutes !== null}
-                            >
-                                {extendingMinutes === 1440 ? '...' : '+1d'}
-                            </button>
-                        </div>
+                        <ExtendButtons />
                     </div>
                 ) : (
                     <div className="locked-content">
                         <div className="lock-icon">🔒</div>
                         <h2>Content Locked</h2>
                         <div className="countdown">{countdown}</div>
-
-                        {/* Extend buttons for locked content */}
-                        <div className="extend-buttons">
-                            <span className="extend-label">Extend:</span>
-                            <button
-                                className="extend-btn"
-                                onClick={() => handleExtend(1)}
-                                disabled={extendingMinutes !== null}
-                            >
-                                {extendingMinutes === 1 ? '...' : '+1m'}
-                            </button>
-                            <button
-                                className="extend-btn"
-                                onClick={() => handleExtend(10)}
-                                disabled={extendingMinutes !== null}
-                            >
-                                {extendingMinutes === 10 ? '...' : '+10m'}
-                            </button>
-                            <button
-                                className="extend-btn"
-                                onClick={() => handleExtend(60)}
-                                disabled={extendingMinutes !== null}
-                            >
-                                {extendingMinutes === 60 ? '...' : '+1h'}
-                            </button>
-                            <button
-                                className="extend-btn"
-                                onClick={() => handleExtend(360)}
-                                disabled={extendingMinutes !== null}
-                            >
-                                {extendingMinutes === 360 ? '...' : '+6h'}
-                            </button>
-                            <button
-                                className="extend-btn"
-                                onClick={() => handleExtend(1440)}
-                                disabled={extendingMinutes !== null}
-                            >
-                                {extendingMinutes === 1440 ? '...' : '+1d'}
-                            </button>
-                        </div>
+                        <ExtendButtons />
                     </div>
                 )}
             </div>
