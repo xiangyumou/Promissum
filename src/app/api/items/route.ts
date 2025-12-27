@@ -6,12 +6,29 @@ import { v4 as uuidv4 } from 'uuid';
 export async function GET() {
     try {
         // Call remote API service
-        const items = await apiClient.getItems({
+        const apiResponse = await apiClient.getItems({
             sort: 'created_desc', // Match original behavior: newest first
         });
 
+        console.log('API Response:', JSON.stringify(apiResponse, null, 2));
+
+        // Handle response - API might return { items: [...] } or just [...]
+        let itemsArray: any[];
+        if (Array.isArray(apiResponse)) {
+            itemsArray = apiResponse;
+        } else if (apiResponse && typeof apiResponse === 'object' && 'items' in apiResponse) {
+            itemsArray = (apiResponse as any).items;
+        } else {
+            console.error('Unexpected API response format:', apiResponse);
+            return NextResponse.json({
+                items: [],
+                lastDuration: 720,
+                error: 'Unexpected API response format'
+            });
+        }
+
         // Map API response to match original format expected by frontend
-        const mappedItems = items.map(item => ({
+        const mappedItems = itemsArray.map(item => ({
             id: item.id,
             type: item.type,
             original_name: null, // API doesn't return this in list view
@@ -29,6 +46,8 @@ export async function GET() {
     } catch (error) {
         console.error('Error fetching items from API:', error);
         return NextResponse.json({
+            items: [], // Return empty array on error to prevent crashes
+            lastDuration: 720,
             error: 'Failed to fetch items',
             details: error instanceof Error ? error.message : 'Unknown error'
         }, { status: 500 });
