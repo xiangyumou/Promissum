@@ -325,21 +325,24 @@ export default function SettingsPage() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {[
-                                    { key: '--primary', label: 'Primary Color' },
-                                    { key: '--bg', label: 'Background' },
-                                    { key: '--surface-1', label: 'Surface 1' },
-                                    { key: '--surface-2', label: 'Surface 2' },
-                                    { key: '--text', label: 'Text' },
-                                    { key: '--accent', label: 'Accent' },
-                                    { key: '--warning', label: 'Warning Status' },
-                                    { key: '--success', label: 'Success Status' },
+                                    { key: '--primary', label: t('primaryColor') },
+                                    { key: '--bg', label: t('backgroundColor') },
+                                    { key: '--surface-1', label: t('surface1') },
+                                    { key: '--surface-2', label: t('surface2') },
+                                    { key: '--text', label: t('textColor') },
+                                    { key: '--accent', label: t('accentColor') },
+                                    { key: '--warning', label: t('warningStatus') },
+                                    { key: '--success', label: t('successStatus') },
                                 ].map((variable) => {
                                     // Helper to ensure valid color for input
                                     // If empty or invalid, color input shows black.
                                     const val = themeConfig[variable.key] || computedStyles[variable.key] || '#000000';
                                     return (
                                         <div key={variable.key} className="flex items-center justify-between p-3 rounded-lg border border-border bg-background/50">
-                                            <span className="text-sm font-medium font-mono text-muted-foreground">{variable.key}</span>
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-medium text-foreground">{variable.label}</span>
+                                                <span className="text-[10px] font-mono text-muted-foreground opacity-50">{variable.key}</span>
+                                            </div>
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="color"
