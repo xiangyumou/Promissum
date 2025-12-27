@@ -36,6 +36,8 @@
     },
     "AddModal": {
         "title": "创建加密项目",
+        "itemTitle": "标题（可选）",
+        "titlePlaceholder": "为项目起个标题...",
         "enterContent": "在此输入您的秘密内容...",
         "uploadImage": "点击上传图片",
         "uploadHint": "支持 PNG, JPG, GIF (最大 5MB)",
