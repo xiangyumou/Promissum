@@ -1,11 +1,14 @@
 'use client';
 
 import { ItemDetail } from '@/lib/types';
-import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Trash2, Maximize2, X, Plus, Menu } from 'lucide-react';
+import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Trash2, Maximize2, Plus, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
+import Lightbox from 'yet-another-react-lightbox';
+import Zoom from 'yet-another-react-lightbox/plugins/zoom';
+import 'yet-another-react-lightbox/styles.css';
 
 import { useSettings } from '@/lib/stores/settings-store';
 import { PanelLeftOpen } from 'lucide-react';
@@ -27,19 +30,8 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     const tCommon = useTranslations('Common');
     const { sidebarOpen, setSidebarOpen } = useSettings();
 
-    // Image zoom modal state (must be at top level before any conditional returns)
-    const [isZoomed, setIsZoomed] = useState(false);
-
-    // Close modal on ESC key
-    useEffect(() => {
-        const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && isZoomed) {
-                setIsZoomed(false);
-            }
-        };
-        window.addEventListener('keydown', handleEscape);
-        return () => window.removeEventListener('keydown', handleEscape);
-    }, [isZoomed]);
+    // Image lightbox state
+    const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
     // No item selected state -> Show welcome message
     if (!selectedId) {
@@ -177,7 +169,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                                         />
                                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-sm">
                                             <button
-                                                onClick={() => setIsZoomed(true)}
+                                                onClick={() => setIsLightboxOpen(true)}
                                                 className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-transform hover:scale-110 backdrop-blur-md border border-white/10"
                                                 title={t('viewOriginal')}
                                             >
@@ -188,35 +180,22 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                                 </div>
                             )}
 
-                            {/* Image Zoom Modal */}
-                            <AnimatePresence>
-                                {isZoomed && imageSrc && (
-                                    <motion.div
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
-                                        onClick={() => setIsZoomed(false)}
-                                    >
-                                        <button
-                                            onClick={() => setIsZoomed(false)}
-                                            className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all hover:scale-110 backdrop-blur-md border border-white/10 z-10"
-                                            title="Close"
-                                        >
-                                            <X size={24} />
-                                        </button>
-                                        <motion.img
-                                            initial={{ scale: 0.9 }}
-                                            animate={{ scale: 1 }}
-                                            exit={{ scale: 0.9 }}
-                                            src={imageSrc}
-                                            alt="Zoomed content"
-                                            className="max-w-full max-h-full object-contain"
-                                            onClick={(e) => e.stopPropagation()}
-                                        />
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                            {/* Professional Image Lightbox */}
+                            <Lightbox
+                                open={isLightboxOpen}
+                                close={() => setIsLightboxOpen(false)}
+                                slides={[{ src: imageSrc }]}
+                                plugins={[Zoom]}
+                                zoom={{
+                                    maxZoomPixelRatio: 3,
+                                    scrollToZoom: true,
+                                }}
+                                carousel={{ finite: true }}
+                                render={{
+                                    buttonPrev: () => null,
+                                    buttonNext: () => null,
+                                }}
+                            />
                         </div>
                     </div>
                 ) : (
