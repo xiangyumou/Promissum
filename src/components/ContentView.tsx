@@ -42,7 +42,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     // Loading state
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center h-full space-y-4">
+            <div className="flex flex-col items-center justify-center h-full w-full flex-1 space-y-4">
                 <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
                 <p className="text-muted-foreground animate-pulse">{t('decrypting')}</p>
             </div>
@@ -64,8 +64,9 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     const isUnlocked = Date.now() >= item.decrypt_at;
 
     // Derive image source if type is image and item is unlocked
+    // The API route already adds the data URL prefix if needed
     const imageSrc = item.type === 'image' && item.content
-        ? `data:image/png;base64,${item.content}`
+        ? (item.content.startsWith('data:') ? item.content : `data:image/png;base64,${item.content}`)
         : '';
 
     return (
