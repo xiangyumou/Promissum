@@ -31,6 +31,7 @@
     "Sidebar": {
         "noItems": "No items yet",
         "search": "Search...",
+        "searchPlaceholder": "Search...",
         "all": "All",
         "locked": "Locked",
         "unlocked": "Unlocked"

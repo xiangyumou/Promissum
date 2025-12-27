@@ -31,6 +31,7 @@
     "Sidebar": {
         "noItems": "暂无项目",
         "search": "搜索...",
+        "searchPlaceholder": "搜索...",
         "all": "全部",
         "locked": "锁定中",
         "unlocked": "已解锁"
