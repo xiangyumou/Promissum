@@ -78,7 +78,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Type Distribution Chart */}
                 <div className="glass-card p-6 rounded-2xl border border-border">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Content Type Distribution</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-4">{t('contentTypeDistribution')}</h3>
                     <ResponsiveContainer width="100%" height={200}>
                         <PieChart>
                             <Pie
@@ -109,7 +109,7 @@ export default function Dashboard() {
 
                 {/* Status Distribution Chart */}
                 <div className="glass-card p-6 rounded-2xl border border-border">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">Lock Status Distribution</h3>
+                    <h3 className="text-lg font-semibold text-foreground mb-4">{t('lockStatusDistribution')}</h3>
                     <ResponsiveContainer width="100%" height={200}>
                         <PieChart>
                             <Pie

@@ -95,7 +95,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                                 {item.metadata?.title ||
                                     (item.type === 'text' ? tCommon('textNote') : (item.original_name || tCommon('image')))}
                             </h2>
-                            <div className="flex items-center gap-2 mt-1 text-sm">\n                                <span className={cn(
+                            <div className="flex items-center gap-2 mt-1 text-sm">                                <span className={cn(
                                 "flex items-center gap-1.5 px-2 py-0.5 rounded-md font-medium text-xs border",
                                 isUnlocked
                                     ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
