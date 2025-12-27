@@ -89,6 +89,10 @@ export function useItems(filters?: FilterParams) {
  * Hook: Fetch item detail by ID
  */
 export function useItem(id: string | null) {
+    const { cacheTTLMinutes } = useSettings();
+    const cacheTime = cacheTTLMinutes * 60 * 1000;
+
+
     return useQuery({
         queryKey: queryKeys.items.detail(id!),
         queryFn: async () => {
@@ -99,6 +103,8 @@ export function useItem(id: string | null) {
             return response.json() as Promise<ItemDetail>;
         },
         enabled: !!id, // Only fetch if id exists
+        staleTime: cacheTime,
+        gcTime: cacheTime,
         // Don't retry specifically on 404s
         retry: (failureCount, error) => {
             if (error instanceof ApiError && error.status === 404) {
@@ -130,8 +136,6 @@ export function useItem(id: string | null) {
                 return 5000;
             }
 
-            // Otherwise poll slower (60s) to save resources
-            // The local countdown timer handles the visual updates
             return 60000;
         }
     });
