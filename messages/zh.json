@@ -77,6 +77,16 @@
         "offline": "API 离线",
         "disconnected": "未连接"
     },
+    "Settings": {
+        "title": "设置",
+        "defaultBehavior": "默认行为",
+        "defaultDuration": "默认锁定时长",
+        "defaultDurationDesc": "创建新项目时的默认时长",
+        "minutes": "分钟",
+        "saveChanges": "保存更改",
+        "resetDefaults": "恢复默认",
+        "changesSaved": "设置已保存"
+    },
     "Error": {
         "title": "出了点问题",
         "description": "发生了意外错误，请重试。",
