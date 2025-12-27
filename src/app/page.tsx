@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import Sidebar from '@/components/Sidebar';
 import AddModal from '@/components/AddModal';
 import ContentView from '@/components/ContentView';
@@ -21,22 +22,26 @@ export default function Home() {
   const createItem = useCreateItem();
 
   const handleAddSubmit = async (formData: FormData) => {
-    try {
-      const result = await createItem.mutateAsync(formData);
+    toast.promise(
+      createItem.mutateAsync(formData),
+      {
+        loading: 'Creating item...',
+        success: (result) => {
+          if (result.success) {
+            // Select the newly created item
+            setSelectedId(result.item.id);
 
-      if (result.success) {
-        // Select the newly created item
-        setSelectedId(result.item.id);
-
-        // Update last duration
-        const newDuration = parseInt(formData.get('durationMinutes') as string);
-        if (!isNaN(newDuration)) {
-          setLastDuration(newDuration);
-        }
+            // Update last duration
+            const newDuration = parseInt(formData.get('durationMinutes') as string);
+            if (!isNaN(newDuration)) {
+              setLastDuration(newDuration);
+            }
+          }
+          return 'Item created successfully!';
+        },
+        error: 'Failed to create item',
       }
-    } catch (error) {
-      console.error('Error creating item:', error);
-    }
+    );
   };
 
   const handleDelete = (id: string) => {
