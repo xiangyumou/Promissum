@@ -31,9 +31,11 @@ import ThemeToggle from '@/components/ThemeToggle';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Dashboard from '@/components/Dashboard'; // Moved here as per previous refactor
 import { queryClient } from '@/lib/query-client';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 export default function SettingsPage() {
     const t = useTranslations('Settings');
+    const tCommon = useTranslations('Common');
 
     // Destructure all settings
     const {
@@ -89,6 +91,10 @@ export default function SettingsPage() {
     // Clear Data State
     const [isClearing, setIsClearing] = useState(false);
 
+    // Confirmation Dialog States
+    const [showResetConfirm, setShowResetConfirm] = useState(false);
+    const [showClearConfirm, setShowClearConfirm] = useState(false);
+
     // Handlers
     const handleSave = () => {
         // Validate and save duration
@@ -105,37 +111,50 @@ export default function SettingsPage() {
     };
 
     const handleReset = () => {
-        if (confirm('Are you sure you want to reset all settings to default?')) {
-            resetToDefaults();
-            // Update local state to match new defaults (need to use timeout or just hardcode known defaults if store doesn't update immediately in flush sync)
-            // But resetToDefaults updates store, component re-renders. 
-            // We need to sync local state:
-            setTimeout(() => {
-                setDurationInput('60');
-                setPanicUrlInput('https://google.com');
-                setPanicShortcutInput('alt+p');
-                setApiStatus('idle');
-            }, 0);
-            toast.success(t('changesSaved'));
-        }
+        setShowResetConfirm(true);
     };
 
-    const handleClearCache = () => {
-        queryClient.removeQueries();
-        toast.success(t('cacheCleared'));
+    const confirmReset = () => {
+        resetToDefaults();
+        // Sync local state
+        setTimeout(() => {
+            setDurationInput('60');
+            setPanicUrlInput('https://google.com');
+            setPanicShortcutInput('alt+p');
+            setApiStatus('idle');
+        }, 0);
+        toast.success(t('changesSaved'));
     };
 
     const handleClearData = () => {
-        if (confirm(t('clearDataConfirm'))) {
-            setIsClearing(true);
-            try {
-                localStorage.clear();
-                window.location.reload();
-            } catch (error) {
-                console.error('Failed to clear data', error);
-                setIsClearing(false);
-            }
+        setShowClearConfirm(true);
+    };
+
+    const confirmClearData = async () => {
+        setIsClearing(true);
+        try {
+            await Promise.all([
+                queryClient.cancelQueries(),
+                queryClient.invalidateQueries(),
+                queryClient.removeQueries()
+            ]);
+
+            localStorage.clear();
+            sessionStorage.clear();
+
+            // Hard reload to reset everything
+            window.location.reload();
+        } catch (error) {
+            console.error('Failed to clear data', error);
+            toast.error(tCommon('error'));
+            setIsClearing(false);
         }
+    };
+
+    // Helper for clearing cache (kept simple as it's less destructive)
+    const handleClearCache = () => {
+        queryClient.removeQueries();
+        toast.success(t('cacheCleared'));
     };
 
     const handleCheckConnection = async () => {
@@ -568,6 +587,26 @@ export default function SettingsPage() {
                 <section className="space-y-4 pt-8 border-t border-border">
                     <Dashboard />
                 </section>
+
+                <ConfirmDialog
+                    isOpen={showResetConfirm}
+                    title={t('resetDefaults')}
+                    description="Are you sure you want to reset all settings to default?"
+                    confirmLabel={t('resetDefaults')}
+                    variant="warning"
+                    onConfirm={confirmReset}
+                    onCancel={() => setShowResetConfirm(false)}
+                />
+
+                <ConfirmDialog
+                    isOpen={showClearConfirm}
+                    title={t('clearAllData')}
+                    description={t('clearDataConfirm')}
+                    confirmLabel={t('clearAllData')}
+                    variant="danger"
+                    onConfirm={confirmClearData}
+                    onCancel={() => setShowClearConfirm(false)}
+                />
             </div>
         </div>
     );

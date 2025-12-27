@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl';
 
 import { useSettings } from '@/lib/stores/settings-store';
 import { PanelLeftOpen } from 'lucide-react';
+import ConfirmDialog from './ConfirmDialog';
 
 interface ContentViewProps {
     selectedId: string | null;
@@ -294,6 +295,8 @@ function ExtendButton({ onExtend }: { onExtend: (minutes: number) => void }) {
     const tCommon = useTranslations('Common');
     const { confirmExtend } = useSettings();
 
+    const [confirmMinutes, setConfirmMinutes] = useState<number | null>(null);
+
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -304,16 +307,21 @@ function ExtendButton({ onExtend }: { onExtend: (minutes: number) => void }) {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const handleExtend = (minutes: number) => {
+    const handleExtendClick = (minutes: number) => {
         if (confirmExtend) {
-            // Simple native confirm for now, as implementing a custom modal is more complex
-            // and this is an advanced setting usually for safety.
-            if (!window.confirm(t('confirmExtend', { minutes }))) {
-                return;
-            }
+            setConfirmMinutes(minutes);
+            setIsOpen(false);
+        } else {
+            onExtend(minutes);
+            setIsOpen(false);
         }
-        onExtend(minutes);
-        setIsOpen(false);
+    };
+
+    const handleConfirm = () => {
+        if (confirmMinutes) {
+            onExtend(confirmMinutes);
+            setConfirmMinutes(null);
+        }
     };
 
     return (
@@ -348,7 +356,7 @@ function ExtendButton({ onExtend }: { onExtend: (minutes: number) => void }) {
                         ].map((opt) => (
                             <button
                                 key={opt.val}
-                                onClick={() => handleExtend(opt.val)}
+                                onClick={() => handleExtendClick(opt.val)}
                                 className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-accent rounded-lg transition-colors flex items-center justify-between group"
                             >
                                 <span>{opt.label}</span>
@@ -358,6 +366,16 @@ function ExtendButton({ onExtend }: { onExtend: (minutes: number) => void }) {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            <ConfirmDialog
+                isOpen={!!confirmMinutes}
+                title={t('confirmExtend', { minutes: confirmMinutes || 0 })}
+                description={t('confirmExtendDesc', { minutes: confirmMinutes || 0 }) || t('confirmExtend', { minutes: confirmMinutes || 0 })}
+                confirmLabel={tCommon('confirm')}
+                variant="warning"
+                onConfirm={handleConfirm}
+                onCancel={() => setConfirmMinutes(null)}
+            />
         </div>
     );
 }

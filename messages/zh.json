@@ -43,7 +43,8 @@
         "clearStatus": "清除状态筛选",
         "resetFilters": "重置所有筛选",
         "applyFilters": "应用筛选",
-        "settings": "设置"
+        "settings": "设置",
+        "collapseSidebar": "折叠侧边栏"
     },
     "AddModal": {
         "title": "创建加密项目",

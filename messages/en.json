@@ -43,7 +43,8 @@
         "clearStatus": "Clear status filter",
         "resetFilters": "Reset all filters",
         "applyFilters": "Apply Filters",
-        "settings": "Settings"
+        "settings": "Settings",
+        "collapseSidebar": "Collapse Sidebar"
     },
     "AddModal": {
         "title": "Create Encrypted Item",

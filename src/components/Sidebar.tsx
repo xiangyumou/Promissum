@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { ItemListView } from '@/lib/types';
 import { FilterParams } from '@/lib/api-client';
 import FilterPanel from './FilterPanel';
@@ -67,11 +68,19 @@ export default function Sidebar({
         open: { opacity: 1, pointerEvents: "auto" as const }
     };
 
+    // Media query to detect desktop
+    const isDesktop = useMediaQuery("(min-width: 768px)");
+
+    // Determine animation state
+    const animateState = isDesktop
+        ? (sidebarOpen ? "desktopOpen" : "desktopClosed")
+        : (isOpen ? "mobileOpen" : "mobileClosed");
+
     return (
         <>
             {/* Mobile Overlay */}
             <AnimatePresence>
-                {isOpen && (
+                {isOpen && !isDesktop && (
                     <motion.div
                         className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm"
                         initial="closed"
@@ -87,51 +96,13 @@ export default function Sidebar({
             <motion.div
                 className={cn(
                     "fixed md:relative h-full z-50 md:z-auto bg-background/80 backdrop-blur-xl border-r border-border overflow-hidden flex flex-col",
-                    "shadow-2xl md:shadow-none"
+                    "hover:shadow-xl transition-shadow duration-300 shadow-2xl md:shadow-none"
                 )}
+                suppressHydrationWarning
                 initial={false}
-                animate={
-                    // Mobile: isOpen prop controls
-                    // Desktop: sidebarOpen store controls
-                    // We need a way to distinguish. 
-                    // CSS media queries don't work well with JS logic in specific 'animate' prop unless we use window size hook.
-                    // Instead, we can use CSS classes for layout, but framer motion needs explicit values for width if we animate it.
-                    // Simplified approach: always render, use class to hide on desktop if needed, but we want animation.
-                    // Let's assume 'md' breakpoint is 768px.
-                    // We can't easily detect 'md' in JS without a hook.
-                    // For now, let's use a composite logic or rely on the parent to mount/unmount or pass the state.
-                    // actually, we can just use the 'md:hidden' utility pattern if we weren't animating width.
-                    // Since we want to animate width on desktop:
-                    isOpen ? "mobileOpen" : "mobileClosed"
-                }
-                // Override for desktop in style/className or use a hook?
-                // Using a hook is cleaner.
-                style={{
-                    // Reset transform for desktop if we are not using variants there? 
-                    // No, we want variants. 
-                    // The issue is distinguishing mobile vs desktop state in one 'animate' prop.
-                    // Workaround: Sidebar is fixed on mobile, relative on desktop.
-                    // On desktop, if closed, we want width 0.
-                }}
+                animate={animateState}
                 variants={sidebarVariants}
-            // To handle the desktop/mobile split without a hook, typically we'd use two components or a hook.
-            // Let's stick to the existing structure but fix the variants.
-            // For this edit, I will introduce a small helper or just assume we are on desktop if not mobile? No that's risky.
-            // Best bet: use `className` interactions.
             >
-                {/* This implementation is tricky without `useMediaQuery`. 
-                   I'll leave the animation simpler: 
-                   On mobile: strictly controlled by `isOpen`. 
-                   On desktop: controlled by `sidebarOpen`.
-                   I will inject a style block or use Tailwind to override the `animate` behavior? No.
-               */}
-                {/* 
-                   CORRECTION: I will implement `useMediaQuery` logic inline or just conditionally render logic.
-                   For now, let's assume standard behavior.
-                   Actually, let's just make it simpler:
-                   If I change `animate` to handle both, I need to know screen size.
-                   Alternatively, I can make the sidebar "always open" in DOM on desktop but width 0 if closed.
-               */}
                 <SidebarContent
                     items={items}
                     selectedId={selectedId}
@@ -147,6 +118,32 @@ export default function Sidebar({
             </motion.div>
         </>
     );
+}
+
+// Simple useMediaQuery hook
+function useMediaQuery(query: string) {
+    const [matches, setMatches] = React.useState(() => {
+        // Safe check for window to support SSR
+        if (typeof window !== 'undefined') {
+            return window.matchMedia(query).matches;
+        }
+        return true; // Default to DESKTOP (true) to prevent layout shift/blank gap on desktop
+    });
+
+    React.useEffect(() => {
+        const media = window.matchMedia(query);
+        const listener = () => setMatches(media.matches);
+
+        // Update immediately in effect in case hydration differed
+        if (media.matches !== matches) {
+            setMatches(media.matches);
+        }
+
+        media.addEventListener("change", listener);
+        return () => media.removeEventListener("change", listener);
+    }, [matches, query]);
+
+    return matches;
 }
 
 interface SidebarContentProps {
