@@ -15,7 +15,6 @@ export default function ExportButton() {
     const locale = useLocale();
     const [isExporting, setIsExporting] = useState(false);
     const hasMounted = useHasMounted();
-    const hasMounted = useHasMounted();
 
     if (!hasMounted) return null;
 
