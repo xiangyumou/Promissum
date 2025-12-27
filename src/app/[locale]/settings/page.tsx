@@ -750,8 +750,6 @@ export default function SettingsPage() {
                             />
                         </div>
 
-                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
                         {/* API Token */}
                         <div className="space-y-3">
                             <div className="space-y-1">
