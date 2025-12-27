@@ -3,6 +3,7 @@
 import { useStats } from '@/lib/queries';
 import { Box, Lock, Unlock, FileText, Image as ImageIcon, Clock, Activity, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSettings } from '@/lib/stores/settings-store';
 import { useTranslations } from 'next-intl';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
@@ -10,6 +11,7 @@ export default function Dashboard() {
     const { data: stats, isLoading, error } = useStats();
     const t = useTranslations('Dashboard');
     const tCommon = useTranslations('Common');
+    const { privacyMode } = useSettings();
 
     if (isLoading) {
         return (
@@ -38,7 +40,10 @@ export default function Dashboard() {
     ];
 
     return (
-        <div className="p-8 w-full space-y-8 animate-in fade-in duration-500">
+        <div className={cn(
+            "p-8 w-full space-y-8 animate-in fade-in duration-500 transition-all duration-300",
+            privacyMode && "blur-md hover:blur-0"
+        )}>
             <div className="flex items-center gap-3 mb-8">
                 <div className="p-2 bg-primary/10 rounded-lg">
                     <Activity className="text-primary" size={24} />

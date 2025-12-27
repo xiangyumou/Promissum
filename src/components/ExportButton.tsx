@@ -5,6 +5,7 @@ import { useItems } from '@/lib/queries';
 import { useTranslations } from 'next-intl';
 import { Download, FileJson, FileText } from 'lucide-react';
 import { saveAs } from 'file-saver';
+import { ItemListView } from '@/lib/types';
 
 export default function ExportButton() {
     const { data: items = [] } = useItems({ status: 'unlocked' });
@@ -14,7 +15,7 @@ export default function ExportButton() {
     const exportAsJSON = () => {
         setIsExporting(true);
         try {
-            const exportData = items.map(item => ({
+            const exportData = (items as ItemListView[]).map((item: ItemListView) => ({
                 id: item.id,
                 type: item.type,
                 title: item.metadata?.title || `${item.type} item`,
@@ -40,7 +41,7 @@ export default function ExportButton() {
             markdown += `Total Unlocked Items: ${items.length}\n\n`;
             markdown += `---\n\n`;
 
-            items.forEach((item, index) => {
+            (items as ItemListView[]).forEach((item: ItemListView, index: number) => {
                 const title = item.metadata?.title || `${item.type} Item ${index + 1}`;
                 markdown += `## ${title}\n\n`;
                 markdown += `- **Type**: ${item.type}\n`;

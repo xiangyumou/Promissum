@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from './ui/Skeleton';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
+import { useSettings } from '@/lib/stores/settings-store';
 
 interface SidebarProps {
     items: ItemListView[];
@@ -175,6 +176,7 @@ function ItemCard({ item, isSelected, onClick }: ItemCardProps) {
     const isUnlocked = Date.now() >= item.decrypt_at;
     const timeRemaining = getTimeRemaining(item.decrypt_at);
     const tCommon = useTranslations('Common');
+    const { privacyMode } = useSettings();
 
     return (
         <motion.div
@@ -195,15 +197,17 @@ function ItemCard({ item, isSelected, onClick }: ItemCardProps) {
                 "flex items-center justify-center w-9 h-9 rounded-lg shadow-sm text-sm transition-transform group-hover:scale-105",
                 item.type === 'text'
                     ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
-                    : "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                    : "bg-purple-500/10 text-purple-400 border border-purple-500/20",
+                privacyMode && !isSelected && "blur-sm grayscale opacity-50 group-hover:blur-0 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
             )}>
                 {item.type === 'text' ? <FileText size={16} /> : <ImageIcon size={16} />}
             </div>
 
             <div className="flex-1 min-w-0">
                 <div className={cn(
-                    "text-sm font-medium truncate transition-colors",
-                    isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+                    "text-sm font-medium truncate transition-all duration-300",
+                    isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground",
+                    privacyMode && !isSelected && "blur-sm group-hover:blur-0"
                 )}>
                     {item.metadata?.title ||
                         (item.type === 'text' ? tCommon('textNote') : (item.original_name || tCommon('image')))}
