@@ -16,43 +16,64 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
         onFilterChange({ ...filters, type });
     };
 
+    const hasActiveFilters = filters.status !== 'all' || !!filters.type;
+
     return (
         <div className="filter-bar">
-            <div className="filter-group">
-                <label htmlFor="status-filter" className="filter-label">
-                    状态
-                </label>
-                <select
-                    id="status-filter"
-                    className="filter-select"
-                    value={filters.status || 'all'}
-                    onChange={(e) => handleStatusChange(e.target.value as FilterParams['status'])}
-                >
-                    <option value="all">全部</option>
-                    <option value="locked">🔒 锁定中</option>
-                    <option value="unlocked">✅ 已解锁</option>
-                </select>
+            {/* Status Filter - using toggle button pattern from AddModal */}
+            <div className="filter-section">
+                <div className="filter-section-label">状态</div>
+                <div className="type-toggle">
+                    <button
+                        className={`toggle-btn ${filters.status === 'all' ? 'active' : ''}`}
+                        onClick={() => handleStatusChange('all')}
+                    >
+                        全部
+                    </button>
+                    <button
+                        className={`toggle-btn ${filters.status === 'locked' ? 'active' : ''}`}
+                        onClick={() => handleStatusChange('locked')}
+                    >
+                        🔒 锁定
+                    </button>
+                    <button
+                        className={`toggle-btn ${filters.status === 'unlocked' ? 'active' : ''}`}
+                        onClick={() => handleStatusChange('unlocked')}
+                    >
+                        ✅ 解锁
+                    </button>
+                </div>
             </div>
 
-            <div className="filter-group">
-                <label htmlFor="type-filter" className="filter-label">
-                    类型
-                </label>
-                <select
-                    id="type-filter"
-                    className="filter-select"
-                    value={filters.type || ''}
-                    onChange={(e) => handleTypeChange(e.target.value as FilterParams['type'] || undefined)}
-                >
-                    <option value="">全部类型</option>
-                    <option value="text">📝 文本</option>
-                    <option value="image">🖼️ 图片</option>
-                </select>
+            {/* Type Filter - using toggle button pattern from AddModal */}
+            <div className="filter-section">
+                <div className="filter-section-label">类型</div>
+                <div className="type-toggle">
+                    <button
+                        className={`toggle-btn ${!filters.type ? 'active' : ''}`}
+                        onClick={() => handleTypeChange(undefined)}
+                    >
+                        全部
+                    </button>
+                    <button
+                        className={`toggle-btn ${filters.type === 'text' ? 'active' : ''}`}
+                        onClick={() => handleTypeChange('text')}
+                    >
+                        📝 文本
+                    </button>
+                    <button
+                        className={`toggle-btn ${filters.type === 'image' ? 'active' : ''}`}
+                        onClick={() => handleTypeChange('image')}
+                    >
+                        🖼️ 图片
+                    </button>
+                </div>
             </div>
 
-            {(filters.status !== 'all' || filters.type) && (
+            {/* Reset Button */}
+            {hasActiveFilters && (
                 <button
-                    className="filter-reset"
+                    className="reset-btn"
                     onClick={() => onFilterChange({ status: 'all' })}
                     title="重置筛选"
                 >
