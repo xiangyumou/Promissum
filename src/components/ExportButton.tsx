@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useItems } from '@/lib/queries';
 import { useTranslations } from 'next-intl';
 import { Download, FileJson, FileText } from 'lucide-react';
@@ -11,6 +11,13 @@ export default function ExportButton() {
     const { data: items = [] } = useItems({ status: 'unlocked' });
     const t = useTranslations('Settings');
     const [isExporting, setIsExporting] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) return null;
 
     const exportAsJSON = () => {
         setIsExporting(true);

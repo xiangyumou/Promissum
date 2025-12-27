@@ -100,9 +100,17 @@ export default function SettingsPage() {
     // Cache Statistics State
     const [cacheStats, setCacheStats] = useState({ queryCount: 0, sizeKB: 0 });
     const [isPersisted, setIsPersisted] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+
+    // Initial Mounting
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // Calculate cache statistics and monitor persistence
     useEffect(() => {
+        if (!isMounted) return;
+
         const updateCacheStats = () => {
             const cache = queryClient.getQueryCache();
             const queries = cache.getAll();
@@ -126,7 +134,14 @@ export default function SettingsPage() {
 
             // Convert bytes to KB
             const sizeKB = Math.round(totalSize / 1024);
-            setCacheStats({ queryCount, sizeKB });
+
+            // Only update if values actually changed to prevent loops
+            setCacheStats(prev => {
+                if (prev.queryCount === queryCount && prev.sizeKB === sizeKB) {
+                    return prev;
+                }
+                return { queryCount, sizeKB };
+            });
 
             // Simple check for persistence in localStorage
             if (typeof window !== 'undefined') {
@@ -151,7 +166,7 @@ export default function SettingsPage() {
             unsubscribe();
             clearInterval(interval);
         };
-    }, []);
+    }, [isMounted]);
 
     // Computed Styles Logic
     const [computedStyles, setComputedStyles] = useState<Record<string, string>>({});
@@ -756,7 +771,7 @@ export default function SettingsPage() {
                     </h2>
 
                     <div className="space-y-4">
-                        <ExportButton />
+                        {isMounted && <ExportButton />}
 
                         <div className="glass-card rounded-xl p-6 border border-red-500/20 bg-red-500/5">
                             <div className="flex items-center justify-between">

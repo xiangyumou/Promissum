@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useStats } from '@/lib/queries';
 import { Box, Lock, Unlock, FileText, Image as ImageIcon, Clock, Activity, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -29,15 +30,15 @@ export default function Dashboard() {
         );
     }
 
-    const typeChartData = [
+    const typeChartData = useMemo(() => [
         { name: t('textNotes'), value: stats.byType.text, color: 'var(--warning)' },
         { name: t('images'), value: stats.byType.image, color: 'var(--primary)' },
-    ];
+    ], [stats.byType.text, stats.byType.image, t]);
 
-    const statusChartData = [
+    const statusChartData = useMemo(() => [
         { name: t('encrypted'), value: stats.lockedItems, color: 'var(--warning)' },
         { name: t('unlocked'), value: stats.unlockedItems, color: 'var(--success)' },
-    ];
+    ], [stats.lockedItems, stats.unlockedItems, t]);
 
     return (
         <div className={cn(
