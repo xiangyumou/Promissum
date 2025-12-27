@@ -234,8 +234,14 @@ function DeleteButton({ id, onDelete }: { id: string, onDelete: (id: string) => 
     const [isConfirming, setIsConfirming] = useState(false);
     const timeoutRef = useRef<NodeJS.Timeout>(null);
     const tCommon = useTranslations('Common');
+    const { confirmDelete } = useSettings();
 
     const handleClick = () => {
+        if (!confirmDelete) {
+            onDelete(id);
+            return;
+        }
+
         if (isConfirming) {
             onDelete(id);
             setIsConfirming(false);
@@ -245,6 +251,7 @@ function DeleteButton({ id, onDelete }: { id: string, onDelete: (id: string) => 
             timeoutRef.current = setTimeout(() => setIsConfirming(false), 3000);
         }
     };
+
 
     useEffect(() => {
         return () => {
@@ -285,6 +292,7 @@ function ExtendButton({ onExtend }: { onExtend: (minutes: number) => void }) {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const t = useTranslations('ContentView');
     const tCommon = useTranslations('Common');
+    const { confirmExtend } = useSettings();
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -297,6 +305,13 @@ function ExtendButton({ onExtend }: { onExtend: (minutes: number) => void }) {
     }, []);
 
     const handleExtend = (minutes: number) => {
+        if (confirmExtend) {
+            // Simple native confirm for now, as implementing a custom modal is more complex
+            // and this is an advanced setting usually for safety.
+            if (!window.confirm(t('confirmExtend', { minutes }))) {
+                return;
+            }
+        }
         onExtend(minutes);
         setIsOpen(false);
     };

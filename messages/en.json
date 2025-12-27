@@ -88,6 +88,7 @@
         "itemExtended": "Extended by {time}",
         "conflictError": "Conflict detected, data refreshed. Please try again.",
         "extendError": "Failed to extend lock",
+        "confirmExtend": "Are you sure you want to extend the lock by {minutes} minutes?",
         "selectItem": "Select an item from the sidebar to view its contents"
     },
     "Theme": {

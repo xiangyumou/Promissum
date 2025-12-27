@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { FilterParams } from '../types';
 
 /**
  * Settings State Interface
@@ -19,7 +20,7 @@ interface SettingsState {
     confirmDelete: boolean;
     confirmExtend: boolean;
     autoRefreshInterval: number; // seconds
-    defaultSort: string;
+    defaultSort: FilterParams['sort'];
 
     // Caching
     cacheTTLMinutes: number;
@@ -41,7 +42,7 @@ interface SettingsState {
     setConfirmDelete: (enabled: boolean) => void;
     setConfirmExtend: (enabled: boolean) => void;
     setAutoRefreshInterval: (seconds: number) => void;
-    setDefaultSort: (sort: string) => void;
+    setDefaultSort: (sort: FilterParams['sort']) => void;
 
     setCacheTTLMinutes: (minutes: number) => void;
 
@@ -54,7 +55,7 @@ interface SettingsState {
 /**
  * Default Settings Values
  */
-const DEFAULT_SETTINGS = {
+const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMode' | 'setPanicUrl' | 'setDateTimeFormat' | 'setCompactMode' | 'setSidebarOpen' | 'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' | 'setDefaultSort' | 'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' | 'setPanicShortcut' | 'resetToDefaults'> = {
     defaultDurationMinutes: 60,
     privacyMode: false,
     panicUrl: 'https://google.com',
@@ -67,7 +68,7 @@ const DEFAULT_SETTINGS = {
     confirmDelete: true,
     confirmExtend: true,
     autoRefreshInterval: 60,
-    defaultSort: 'created_at:desc',
+    defaultSort: 'created_desc',
 
     cacheTTLMinutes: 5,
 
@@ -83,7 +84,7 @@ export const useSettings = create<SettingsState>()(
     persist(
         (set) => ({
             // Default values
-            ...DEFAULT_SETTINGS,
+            ...(DEFAULT_SETTINGS as any), // Cast to avoid complex type matching implementation details
 
             // Actions
             setDefaultDuration: (minutes) => set({ defaultDurationMinutes: minutes }),

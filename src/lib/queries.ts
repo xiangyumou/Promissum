@@ -30,6 +30,8 @@ export const queryKeys = {
     },
 };
 
+import { useSettings } from '@/lib/stores/settings-store';
+
 /**
  * Hook: Fetch system statistics
  */
@@ -46,10 +48,13 @@ export function useStats() {
     });
 }
 
+
 /**
  * Hook: Fetch items list with optional filtering
  */
 export function useItems(filters?: FilterParams) {
+    const { autoRefreshInterval } = useSettings();
+
     return useQuery({
         queryKey: queryKeys.items.list(filters),
         queryFn: async () => {
@@ -74,8 +79,9 @@ export function useItems(filters?: FilterParams) {
             const data = await response.json();
             return data.items || [];
         },
-        // Refetch every 30 seconds to update lock status
-        refetchInterval: 30000,
+        // Refetch based on settings (convert seconds to ms)
+        // 0 means disabled, but refetchInterval number expects ms. 0 or false disables it.
+        refetchInterval: autoRefreshInterval > 0 ? autoRefreshInterval * 1000 : false,
     });
 }
 

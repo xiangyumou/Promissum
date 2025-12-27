@@ -88,6 +88,7 @@
         "itemExtended": "已延长 {time}",
         "conflictError": "检测到冲突，数据已刷新。请重试。",
         "extendError": "延长锁定失败",
+        "confirmExtend": "您确定要将锁定延长 {minutes} 分钟吗？",
         "selectItem": "从侧边栏选择一个项目以查看其内容"
     },
     "Theme": {
