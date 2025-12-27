@@ -7,8 +7,15 @@
 - 🔐 **真正的强制时间锁**：基于密码学，无法提前解密
 - 🌐 **远程加密服务**：调用独立的加密 API 服务
 - 🔄 **多层加密**：支持延长锁定时间
-- 📱 **响应式设计**：完美适配桌面和移动设备
-- 🎨 **现代化 UI**：简洁美观的用户界面
+- 📱 **全平台响应式**：完美适配桌面和移动设备
+- 🎨 **现代化 UI**：
+  - 支持浅色/深色/系统跟随模式
+  - 可自定义主题色
+  - 优雅的毛玻璃效果与动画交互
+- 🌍 **国际化支持**：完整的中英文界面 (i18n)
+- 📊 **仪表盘统计**：可视化展示加密数据统计
+- 🛡️ **隐私保护**：隐私模式模糊敏感内容
+- 💾 **本地持久化**：自定义缓存策略与数据持久化
 
 ## 🏗️ 架构说明
 
@@ -29,6 +36,7 @@
 - 后端 API Routes 作为代理层
 - Token 安全存储在服务端
 - 加密逻辑由远程服务处理
+- 状态管理采用 Zustand + React Query
 
 ## 🚀 快速开始
 
@@ -68,15 +76,23 @@ npm start
 ## 📚 技术栈
 
 - **前端框架**：Next.js 16 + React 19
-- **样式**：Tailwind CSS 4
 - **语言**：TypeScript 5
-- **远程服务**：Chaster 加密 API（独立部署）
+- **样式**：Tailwind CSS 4
+- **状态管理**：Zustand 5
+- **数据获取**：React Query 5 (TanStack Query)
+- **UI 组件**：Radix UI (Dialog, Slot), Framer Motion
+- **工具库**：
+  - `date-fns`: 日期格式化
+  - `zod`: 数据验证
+  - `react-use`: 常用 Hooks
+  - `next-intl`: 国际化
+  - `yet-another-react-lightbox`: 图片预览
 
 ## 📖 文档
 
 - [产品需求文档 (PRD)](docs/PRD.md) - 完整的产品规格说明
 - [API 参考文档](docs/API_REFERENCE.md) - 远程加密服务 API 说明
-- [架构迁移指南](docs/MIGRATION_GUIDE.md) - 从本地到远程服务的迁移说明
+- [架构迁移指南](docs/MIGRATION_GUIDE.md) - 数据库迁移说明
 
 ## 🔒 安全性
 
@@ -94,14 +110,16 @@ npm start
 - ✅ 延长锁定功能（多层加密）
 - ✅ 响应式移动端适配
 - ✅ 远程 API 服务集成
-- ✅ 图片 Base64 转换处理
+- ✅ 仪表盘统计视图
+- ✅ 完整设置页面 (偏好/主题/安全)
+- ✅ 深色模式与主题自定义
+- ✅ 国际化 (中/英)
+- ✅ 数据导出功能
 
 ### 规划中
-- 🔮 管理后台（统计、Token 管理）
-- 🔮 深色模式支持
 - 🔮 批量操作功能
-- 🔮 导出功能
 - 🔮 通知提醒系统
+- 🔮 多用户账号系统
 
 ## 🔧 开发说明
 
@@ -110,29 +128,24 @@ npm start
 ```
 ├── src/
 │   ├── app/
+│   │   ├── [locale]/     # 国际化路由页面
 │   │   ├── api/          # API Routes (代理层)
-│   │   ├── page.tsx      # 主页面
 │   │   └── globals.css   # 全局样式
 │   ├── components/       # UI 组件
+│   │   ├── ui/           # 基础 UI 组件 (Button, Input等)
 │   │   ├── AddModal.tsx  # 创建项目弹窗
 │   │   ├── Sidebar.tsx   # 侧边栏
-│   │   └── ContentView.tsx # 内容详情
-│   └── lib/
-│       ├── api-client.ts # API 客户端封装
-│       └── env.ts        # 环境变量配置
+│   │   └── ...
+│   ├── lib/
+│   │   ├── stores/       # Zustand 状态存储
+│   │   ├── api-client.ts # API 客户端封装
+│   │   └── queries.ts    # React Query 查询
+│   ├── hooks/            # 自定义 Hooks
+│   ├── i18n/             # 国际化配置
+│   └── messages/         # 翻译文件 (en.json, zh.json)
 ├── docs/                 # 项目文档
 └── public/               # 静态资源
 ```
-
-### API Routes 说明
-
-所有 API Routes 充当代理层，将请求转发到远程加密服务：
-
-- `GET /api/items` - 获取项目列表
-- `POST /api/items` - 创建新项目
-- `GET /api/items/[id]` - 获取项目详情
-- `POST /api/items/[id]/extend` - 延长锁定
-- `DELETE /api/items/[id]` - 删除项目
 
 ## 📄 许可证
 
@@ -140,5 +153,5 @@ MIT License
 
 ---
 
-**更新时间**：2025-12-27  
-**版本**：v0.2.0 (Remote API Client)
+**更新时间**：2025-12-28
+**版本**：v0.3.0 (Feature Complete)
