@@ -1,6 +1,8 @@
 'use client';
 
-import { ItemListView } from '@/lib/db';
+import { ItemListView } from '@/lib/types';
+import { FilterParams } from '@/lib/api-client';
+import FilterBar from './FilterBar';
 
 interface SidebarProps {
     items: ItemListView[];
@@ -9,9 +11,11 @@ interface SidebarProps {
     onAddClick: () => void;
     isOpen: boolean;
     onClose: () => void;
+    filters: FilterParams;
+    onFilterChange: (filters: FilterParams) => void;
 }
 
-export default function Sidebar({ items, selectedId, onSelectItem, onAddClick, isOpen, onClose }: SidebarProps) {
+export default function Sidebar({ items, selectedId, onSelectItem, onAddClick, isOpen, onClose, filters, onFilterChange }: SidebarProps) {
     return (
         <>
             {/* Mobile overlay */}
@@ -33,6 +37,9 @@ export default function Sidebar({ items, selectedId, onSelectItem, onAddClick, i
                     </svg>
                     Add New
                 </button>
+
+                {/* Filter Bar */}
+                <FilterBar filters={filters} onFilterChange={onFilterChange} />
 
                 <div className="items-list">
                     {items.length === 0 ? (
