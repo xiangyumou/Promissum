@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Dashboard from './Dashboard';
 
 interface ItemDetail {
     id: string;
@@ -136,7 +137,7 @@ export default function ContentView({ selectedId, onDelete, onItemUpdated, onMen
 
     if (!selectedId) {
         return (
-            <div className="content-view empty">
+            <div className="content-view" style={{ display: 'block' }}>
                 {/* Mobile menu button for empty state */}
                 <div className="content-header" style={{ borderBottom: 'none' }}>
                     <button
@@ -151,11 +152,7 @@ export default function ContentView({ selectedId, onDelete, onItemUpdated, onMen
                         </svg>
                     </button>
                 </div>
-                <div className="empty-content">
-                    <div className="empty-icon">🔐</div>
-                    <h2>Select an item to view</h2>
-                    <p>or click &quot;+ Add New&quot; to create one</p>
-                </div>
+                <Dashboard />
             </div>
         );
     }
