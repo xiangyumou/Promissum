@@ -1,7 +1,6 @@
 'use client';
 
 import { ItemDetail } from '@/lib/types';
-import Dashboard from './Dashboard';
 import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Trash2, Maximize2, X, Plus, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
@@ -21,11 +20,11 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     const t = useTranslations('ContentView');
     const tCommon = useTranslations('Common');
 
-    // No item selected state -> Show Dashboard
+    // No item selected state -> Show welcome message
     if (!selectedId) {
         return (
             <div className="h-full overflow-y-auto bg-background custom-scrollbar relative flex-1 w-full">
-                {/* Mobile Menu Button for Dashboard */}
+                {/* Mobile Menu Button */}
                 <div className="md:hidden absolute top-4 left-4 z-50">
                     <button
                         onClick={onMenuClick}
@@ -34,7 +33,17 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                         <Menu size={20} />
                     </button>
                 </div>
-                <Dashboard />
+                <div className="flex items-center justify-center h-full p-6">
+                    <div className="text-center space-y-4 max-w-md">
+                        <div className="p-4 bg-primary/10 rounded-full w-20 h-20 mx-auto flex items-center justify-center">
+                            <FileText size={40} className="text-primary" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-foreground">{tCommon('dashboard')}</h2>
+                        <p className="text-muted-foreground">
+                            Select an item from the sidebar to view its contents
+                        </p>
+                    </div>
+                </div>
             </div>
         );
     }

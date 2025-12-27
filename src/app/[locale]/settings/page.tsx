@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import ExportButton from '@/components/ExportButton';
 import ThemeToggle from '@/components/ThemeToggle';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import Dashboard from '@/components/Dashboard';
 
 export default function SettingsPage() {
     const t = useTranslations('Settings');
@@ -122,6 +123,11 @@ export default function SettingsPage() {
                         {t('resetDefaults')}
                     </button>
                 </div>
+
+                {/* Dashboard Section */}
+                <section className="space-y-4 pt-8 border-t border-border">
+                    <Dashboard />
+                </section>
             </div>
         </div>
     );
