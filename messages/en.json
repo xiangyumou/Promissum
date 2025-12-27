@@ -36,6 +36,8 @@
     },
     "AddModal": {
         "title": "Create Encrypted Item",
+        "itemTitle": "Title (Optional)",
+        "titlePlaceholder": "Give your item a title...",
         "enterContent": "Enter your secret content here...",
         "uploadImage": "Click to upload image",
         "uploadHint": "PNG, JPG, GIF up to 5MB",

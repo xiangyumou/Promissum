@@ -38,6 +38,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
     const tCommon = useTranslations('Common');
 
     const [type, setType] = useState<'text' | 'image'>('text');
+    const [title, setTitle] = useState(''); // Item title (optional)
     const [text, setText] = useState('');
     const [file, setFile] = useState<File | null>(null);
     const [timeMode, setTimeMode] = useState<TimeMode>('duration');
@@ -155,6 +156,11 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                 formData.append('durationMinutes', calculatedDuration.toString());
             }
 
+            // Add metadata with title if provided
+            if (title.trim()) {
+                formData.append('metadata', JSON.stringify({ title: title.trim() }));
+            }
+
             if (type === 'text') {
                 formData.append('content', text);
             } else if (file) {
@@ -164,6 +170,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
             await onSubmit(formData);
 
             // Reset form
+            setTitle('');
             setText('');
             setFile(null);
             setAccumulatedDuration(0);
@@ -217,6 +224,21 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                         <ImageIcon size={16} />
                         {tCommon('image')}
                     </button>
+                </div>
+
+                {/* Title Input (Optional) */}
+                <div>
+                    <label className="block text-xs font-medium text-muted-foreground mb-2">
+                        {t('itemTitle')}
+                    </label>
+                    <input
+                        type="text"
+                        className="w-full px-4 py-2.5 bg-muted/30 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all text-foreground placeholder-muted-foreground"
+                        placeholder={t('titlePlaceholder')}
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        maxLength={100}
+                    />
                 </div>
 
                 {/* Content Input */}
