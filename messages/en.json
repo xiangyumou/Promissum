@@ -176,7 +176,9 @@
         "cacheStats": "Cache Statistics",
         "totalQueries": "Cached Queries",
         "cacheSize": "Cache Size",
-        "queries": "queries"
+        "queries": "queries",
+        "persistenceActive": "Persistence Active",
+        "persistenceInactive": "Memory Only"
     },
     "Error": {
         "title": "Something went wrong",

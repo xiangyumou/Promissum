@@ -5,6 +5,8 @@
  */
 
 import { QueryClient } from '@tanstack/react-query';
+import { persistQueryClient } from '@tanstack/react-query-persist-client';
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 
 export const queryClient = new QueryClient({
     defaultOptions: {
@@ -13,7 +15,7 @@ export const queryClient = new QueryClient({
             staleTime: 1000 * 60 * 5, // 5 minutes
 
             // Cache time: how long unused data stays in cache
-            gcTime: 1000 * 60 * 10, // 10 minutes (was cacheTime in v4)
+            gcTime: 1000 * 60 * 60 * 24, // Keep for 24 hours to support persistence
 
             // Retry failed requests
             retry: 1,
@@ -33,3 +35,16 @@ export const queryClient = new QueryClient({
         },
     },
 });
+
+// Configure persistence
+if (typeof window !== 'undefined') {
+    const persister = createSyncStoragePersister({
+        storage: window.localStorage,
+    });
+
+    persistQueryClient({
+        queryClient,
+        persister,
+        maxAge: 1000 * 60 * 60 * 24, // 24 hours
+    });
+}

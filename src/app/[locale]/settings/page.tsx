@@ -99,12 +99,15 @@ export default function SettingsPage() {
 
     // Cache Statistics State
     const [cacheStats, setCacheStats] = useState({ queryCount: 0, sizeKB: 0 });
+    const [isPersisted, setIsPersisted] = useState(false);
 
-    // Calculate cache statistics
+    // Calculate cache statistics and monitor persistence
     useEffect(() => {
         const updateCacheStats = () => {
             const cache = queryClient.getQueryCache();
             const queries = cache.getAll();
+
+            // Count all queries that have some state
             const queryCount = queries.length;
 
             // Estimate cache size by serializing query data
@@ -124,12 +127,30 @@ export default function SettingsPage() {
             // Convert bytes to KB
             const sizeKB = Math.round(totalSize / 1024);
             setCacheStats({ queryCount, sizeKB });
+
+            // Simple check for persistence in localStorage
+            if (typeof window !== 'undefined') {
+                const persistedData = localStorage.getItem('REACT_QUERY_OFFLINE_CACHE');
+                setIsPersisted(!!persistedData);
+            }
         };
 
+        // Initial update
         updateCacheStats();
-        // Update stats periodically
-        const interval = setInterval(updateCacheStats, 2000);
-        return () => clearInterval(interval);
+
+        // Subscribe to cache changes for real-time updates without polling
+        const unsubscribe = queryClient.getQueryCache().subscribe(() => {
+            updateCacheStats();
+        });
+
+        // Still keep a slow interval just in case of external storage changes 
+        // or edge cases not caught by subscription
+        const interval = setInterval(updateCacheStats, 10000);
+
+        return () => {
+            unsubscribe();
+            clearInterval(interval);
+        };
     }, []);
 
     // Computed Styles Logic
@@ -546,27 +567,38 @@ export default function SettingsPage() {
                         <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
                         {/* Cache Statistics */}
-                        <div className="space-y-3">
-                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <Database size={16} />
-                                {t('cacheStats')}
-                            </label>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                    <Database size={16} />
+                                    {t('cacheStats')}
+                                </label>
+                                <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
+                                    ${isPersisted ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-muted text-muted-foreground border border-border'}`}>
+                                    <div className={`w-1.5 h-1.5 rounded-full ${isPersisted ? 'bg-green-500' : 'bg-muted-foreground'}`} />
+                                    {isPersisted ? t('persistenceActive') : t('persistenceInactive')}
+                                </div>
+                            </div>
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="p-3 rounded-lg border border-border bg-background/50">
+                                <div className="p-3 rounded-lg border border-border bg-background/50 hover:border-primary/30 transition-colors">
                                     <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">{t('totalQueries')}</span>
-                                        <span className="text-lg font-semibold text-foreground mt-1">
-                                            {cacheStats.queryCount} {t('queries')}
+                                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">{t('totalQueries')}</span>
+                                        <span className="text-xl font-mono text-foreground mt-1">
+                                            {cacheStats.queryCount}
+                                            <span className="text-xs font-sans text-muted-foreground ml-1.5">{t('queries')}</span>
                                         </span>
                                     </div>
                                 </div>
-                                <div className="p-3 rounded-lg border border-border bg-background/50">
+                                <div className="p-3 rounded-lg border border-border bg-background/50 hover:border-primary/30 transition-colors">
                                     <div className="flex flex-col">
-                                        <span className="text-xs text-muted-foreground">{t('cacheSize')}</span>
-                                        <span className="text-lg font-semibold text-foreground mt-1">
+                                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">{t('cacheSize')}</span>
+                                        <span className="text-xl font-mono text-foreground mt-1">
                                             {cacheStats.sizeKB < 1024
-                                                ? `${cacheStats.sizeKB} KB`
-                                                : `${(cacheStats.sizeKB / 1024).toFixed(2)} MB`}
+                                                ? cacheStats.sizeKB
+                                                : (cacheStats.sizeKB / 1024).toFixed(1)}
+                                            <span className="text-xs font-sans text-muted-foreground ml-1.5">
+                                                {cacheStats.sizeKB < 1024 ? 'KB' : 'MB'}
+                                            </span>
                                         </span>
                                     </div>
                                 </div>

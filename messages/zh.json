@@ -176,7 +176,9 @@
         "cacheStats": "缓存统计",
         "totalQueries": "缓存查询",
         "cacheSize": "缓存大小",
-        "queries": "条"
+        "queries": "条",
+        "persistenceActive": "持久化已激活",
+        "persistenceInactive": "仅内存缓存"
     },
     "Error": {
         "title": "出了点问题",
