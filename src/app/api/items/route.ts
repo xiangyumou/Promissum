@@ -43,6 +43,7 @@ export async function GET(request: NextRequest) {
             created_at: item.createdAt || Date.now(),
             layer_count: 1, // API doesn't expose layer count in list view
             user_id: 'local', // Not needed but kept for compatibility
+            metadata: item.metadata,
         }));
 
         // Return in original format
@@ -68,6 +69,7 @@ export async function POST(request: NextRequest) {
         const type = formData.get('type') as 'text' | 'image';
         const durationMinutes = formData.get('durationMinutes') ? parseInt(formData.get('durationMinutes') as string, 10) : null;
         const decryptAtTimestamp = formData.get('decryptAt') ? parseInt(formData.get('decryptAt') as string, 10) : null;
+        const metadataString = formData.get('metadata') as string;
 
         if (!type || (!durationMinutes && !decryptAtTimestamp)) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -97,12 +99,15 @@ export async function POST(request: NextRequest) {
         // Prepare API request payload
         const apiRequest: {
             type: 'text' | 'image';
+
             content: string;
             durationMinutes?: number;
             decryptAt?: number;
+            metadata?: any;
         } = {
             type,
             content,
+            metadata: metadataString ? JSON.parse(metadataString) : undefined,
         };
 
         if (decryptAtTimestamp) {
@@ -124,6 +129,7 @@ export async function POST(request: NextRequest) {
                 decrypt_at: apiResponse.decryptAt,
                 created_at: Date.now(),
                 layer_count: 1,
+                metadata: apiResponse.metadata,
             }
         });
     } catch (error) {

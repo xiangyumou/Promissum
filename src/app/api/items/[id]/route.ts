@@ -23,6 +23,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             layer_count: 1, // API doesn't expose this
             unlocked: apiResponse.unlocked,
             content: apiResponse.content,
+            metadata: apiResponse.metadata,
         };
 
         // For images, ensure proper data URL format
