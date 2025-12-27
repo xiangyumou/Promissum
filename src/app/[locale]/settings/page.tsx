@@ -2,7 +2,7 @@
 
 import { useSettings } from '@/lib/stores/settings-store';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
     Settings as SettingsIcon,
     Save,
@@ -76,7 +76,9 @@ export default function SettingsPage() {
         setApiToken,
 
         // Actions
-        resetToDefaults
+        resetToDefaults,
+        themeConfig,
+        setThemeConfig
     } = useSettings();
 
     // Local state for inputs to avoid jitter / validation before save
@@ -94,6 +96,49 @@ export default function SettingsPage() {
     // Confirmation Dialog States
     const [showResetConfirm, setShowResetConfirm] = useState(false);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+    // Computed Styles Logic
+    const [computedStyles, setComputedStyles] = useState<Record<string, string>>({});
+
+    // Helper to convert RGB to Hex
+    const rgbToHex = (val: string) => {
+        if (!val) return '';
+        val = val.trim();
+        if (val.startsWith('#')) return val;
+
+        const rgb = val.match(/\d+/g);
+        if (rgb && rgb.length >= 3) {
+            return "#" +
+                ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
+        }
+        return '';
+    };
+
+    useEffect(() => {
+        // Small delay to ensure theme is applied
+        const updateStyles = () => {
+            if (typeof window === 'undefined') return;
+            const style = getComputedStyle(document.documentElement);
+            const vars = [
+                '--primary', '--bg', '--surface-1', '--surface-2',
+                '--text', '--accent', '--warning', '--success'
+            ];
+            const newStyles: Record<string, string> = {};
+            vars.forEach(v => {
+                const val = style.getPropertyValue(v).trim();
+                newStyles[v] = rgbToHex(val) || val;
+            });
+            setComputedStyles(newStyles);
+        };
+
+        // Run immediately
+        updateStyles();
+
+        // Listen for theme changes using MutationObserver
+        const observer = new MutationObserver(updateStyles);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] });
+        return () => observer.disconnect();
+    }, [t]); // Re-run if translations change
 
     // Handlers
     const handleSave = () => {
@@ -256,6 +301,72 @@ export default function SettingsPage() {
                             >
                                 <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${compactMode ? 'translate-x-6' : 'translate-x-0'}`} />
                             </button>
+                        </div>
+
+                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+                        {/* Theme Customization */}
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-1">
+                                    <label className="text-sm font-medium text-foreground">
+                                        {t('themeCustomization')}
+                                    </label>
+                                    <p className="text-xs text-muted-foreground">{t('themeCustomizationDesc')}</p>
+                                </div>
+                                <button
+                                    onClick={() => setThemeConfig({})}
+                                    className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+                                >
+                                    <RotateCcw size={12} />
+                                    {t('resetTheme')}
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {[
+                                    { key: '--primary', label: 'Primary Color' },
+                                    { key: '--bg', label: 'Background' },
+                                    { key: '--surface-1', label: 'Surface 1' },
+                                    { key: '--surface-2', label: 'Surface 2' },
+                                    { key: '--text', label: 'Text' },
+                                    { key: '--accent', label: 'Accent' },
+                                    { key: '--warning', label: 'Warning Status' },
+                                    { key: '--success', label: 'Success Status' },
+                                ].map((variable) => {
+                                    // Helper to ensure valid color for input
+                                    // If empty or invalid, color input shows black.
+                                    const val = themeConfig[variable.key] || computedStyles[variable.key] || '#000000';
+                                    return (
+                                        <div key={variable.key} className="flex items-center justify-between p-3 rounded-lg border border-border bg-background/50">
+                                            <span className="text-sm font-medium font-mono text-muted-foreground">{variable.key}</span>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="color"
+                                                    value={val}
+                                                    onChange={(e) => {
+                                                        const newConfig = { ...themeConfig, [variable.key]: e.target.value };
+                                                        setThemeConfig(newConfig);
+                                                    }}
+                                                    className="w-8 h-8 rounded cursor-pointer border-0 p-0"
+                                                />
+                                                <input
+                                                    type="text"
+                                                    className="w-24 text-xs bg-transparent border-none text-right focus:outline-none font-mono"
+                                                    placeholder="Default"
+                                                    value={themeConfig[variable.key] || ''}
+                                                    onChange={(e) => {
+                                                        const newConfig = { ...themeConfig, [variable.key]: e.target.value };
+                                                        // Filter out empty
+                                                        if (!e.target.value) delete newConfig[variable.key];
+                                                        setThemeConfig(newConfig);
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </section>

@@ -7,6 +7,7 @@ import { queryClient } from '@/lib/query-client';
 import { ReactNode } from 'react';
 import { ThemeProvider, useTheme } from 'next-themes';
 import SecurityProvider from './SecurityProvider';
+import ThemeRegistry from './ThemeRegistry';
 
 function ToasterProvider() {
     const { theme } = useTheme();
@@ -26,6 +27,7 @@ export function Providers({ children }: { children: ReactNode }) {
     return (
         <QueryClientProvider client={queryClient}>
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+                <ThemeRegistry />
                 <SecurityProvider />
                 {children}
                 <ToasterProvider />

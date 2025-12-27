@@ -161,7 +161,10 @@
         "checkConnection": "检查连接",
         "connectionOk": "连接成功",
         "connectionFailed": "连接失败",
-        "off": "关闭"
+        "off": "关闭",
+        "themeCustomization": "配色管理",
+        "themeCustomizationDesc": "自定义系统颜色变量",
+        "resetTheme": "重置配色"
     },
     "Error": {
         "title": "出了点问题",
