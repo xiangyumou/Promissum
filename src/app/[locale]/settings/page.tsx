@@ -58,8 +58,6 @@ export default function SettingsPage() {
         setConfirmExtend,
         autoRefreshInterval,
         setAutoRefreshInterval,
-        defaultSort,
-        setDefaultSort,
 
         // Caching
         cacheTTLMinutes,
@@ -536,27 +534,6 @@ export default function SettingsPage() {
                                 <option value={30}>30s</option>
                                 <option value={60}>1m</option>
                                 <option value={300}>5m</option>
-                            </select>
-                        </div>
-
-                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
-                        {/* Default Sort */}
-                        <div className="flex items-center justify-between">
-                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <LayoutList size={16} />
-                                {t('defaultSort')}
-                            </label>
-                            <select
-                                value={defaultSort}
-                                // Cast to specific string literal type is handled by Typescript if value matches
-                                onChange={(e) => setDefaultSort(e.target.value as any)}
-                                className="premium-select"
-                            >
-                                <option value="created_desc">{t('sortCreatedDesc')}</option>
-                                <option value="created_asc">{t('sortCreatedAsc')}</option>
-                                <option value="decrypt_desc">{t('sortDecryptDesc')}</option>
-                                <option value="decrypt_asc">{t('sortDecryptAsc')}</option>
                             </select>
                         </div>
                     </div>

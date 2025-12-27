@@ -23,7 +23,6 @@ interface SettingsState {
     confirmDelete: boolean;
     confirmExtend: boolean;
     autoRefreshInterval: number; // seconds
-    defaultSort: FilterParams['sort'];
 
     // Caching
     cacheTTLMinutes: number;
@@ -48,7 +47,6 @@ interface SettingsState {
     setConfirmDelete: (enabled: boolean) => void;
     setConfirmExtend: (enabled: boolean) => void;
     setAutoRefreshInterval: (seconds: number) => void;
-    setDefaultSort: (sort: FilterParams['sort']) => void;
 
     setCacheTTLMinutes: (minutes: number) => void;
 
@@ -77,7 +75,6 @@ const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMo
     confirmDelete: true,
     confirmExtend: true,
     autoRefreshInterval: 60,
-    defaultSort: 'created_desc',
 
     cacheTTLMinutes: 5,
 
@@ -112,7 +109,6 @@ export const useSettings = create<SettingsState>()(
             setConfirmDelete: (enabled) => set({ confirmDelete: enabled }),
             setConfirmExtend: (enabled) => set({ confirmExtend: enabled }),
             setAutoRefreshInterval: (seconds) => set({ autoRefreshInterval: seconds }),
-            setDefaultSort: (sort) => set({ defaultSort: sort }),
 
             // Caching
             setCacheTTLMinutes: (minutes) => set({ cacheTTLMinutes: minutes }),

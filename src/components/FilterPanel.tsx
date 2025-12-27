@@ -26,6 +26,10 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
         onFilterChange({ ...filters, type });
     };
 
+    const handleSortChange = (sort: FilterParams['sort']) => {
+        onFilterChange({ ...filters, sort });
+    };
+
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchInput(value);
@@ -47,7 +51,7 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
 
     const resetAll = () => {
         setSearchInput('');
-        onFilterChange({ status: 'all' });
+        onFilterChange({ status: 'all', sort: filters.sort || 'created_desc' });
     };
 
     const hasActiveFilters = filters.status !== 'all' || !!filters.type || !!filters.search;
@@ -200,6 +204,23 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
                                         label={tCommon('image')}
                                     />
                                 </div>
+                            </div>
+
+                            {/* Sort Filter */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                    排序方式
+                                </label>
+                                <select
+                                    value={filters.sort || 'created_desc'}
+                                    onChange={(e) => handleSortChange(e.target.value as any)}
+                                    className="w-full px-3 py-2 text-sm bg-muted/30 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground transition-all"
+                                >
+                                    <option value="created_desc">创建时间 (新→旧)</option>
+                                    <option value="created_asc">创建时间 (旧→新)</option>
+                                    <option value="decrypt_desc">解锁时间 (晚→早)</option>
+                                    <option value="decrypt_asc">解锁时间 (早→晚)</option>
+                                </select>
                             </div>
 
                             {/* Reset All Button */}
