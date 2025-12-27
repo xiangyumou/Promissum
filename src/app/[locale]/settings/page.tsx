@@ -241,6 +241,10 @@ export default function SettingsPage() {
                         {t('resetDefaults')}
                     </button>
                 </div>
+                {/* Dashboard Section */}
+                <section className="space-y-4 pt-8 border-t border-border">
+                    <Dashboard />
+                </section>
             </div>
         </div>
     );
