@@ -231,7 +231,7 @@ export default function SettingsPage() {
                             <select
                                 value={dateTimeFormat}
                                 onChange={(e) => setDateTimeFormat(e.target.value)}
-                                className="px-3 py-1.5 bg-muted/30 border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                className="premium-select"
                             >
                                 <option value="yyyy-MM-dd HH:mm">YYYY-MM-DD HH:mm</option>
                                 <option value="dd/MM/yyyy HH:mm">DD/MM/YYYY HH:mm</option>
@@ -284,7 +284,7 @@ export default function SettingsPage() {
                                     min="1"
                                     value={durationInput}
                                     onChange={(e) => setDurationInput(e.target.value)}
-                                    className="w-24 px-3 py-1.5 bg-muted/30 border border-border rounded-lg text-foreground text-center focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                    className="premium-input w-24 text-center py-1.5"
                                 />
                                 <span className="text-sm text-muted-foreground">{t('minutes')}</span>
                             </div>
@@ -331,7 +331,7 @@ export default function SettingsPage() {
                             <select
                                 value={autoRefreshInterval}
                                 onChange={(e) => setAutoRefreshInterval(Number(e.target.value))}
-                                className="px-3 py-1.5 bg-muted/30 border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                className="premium-select"
                             >
                                 <option value={0}>{t('refreshOff')}</option>
                                 <option value={30}>30s</option>
@@ -352,7 +352,7 @@ export default function SettingsPage() {
                                 value={defaultSort}
                                 // Cast to specific string literal type is handled by Typescript if value matches
                                 onChange={(e) => setDefaultSort(e.target.value as any)}
-                                className="px-3 py-1.5 bg-muted/30 border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                className="premium-select"
                             >
                                 <option value="created_desc">{t('sortCreatedDesc')}</option>
                                 <option value="created_asc">{t('sortCreatedAsc')}</option>
@@ -382,7 +382,7 @@ export default function SettingsPage() {
                             <select
                                 value={cacheTTLMinutes}
                                 onChange={(e) => setCacheTTLMinutes(Number(e.target.value))}
-                                className="px-3 py-1.5 bg-muted/30 border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                className="premium-select"
                             >
                                 <option value={1}>1 min</option>
                                 <option value={5}>5 min</option>
@@ -442,7 +442,7 @@ export default function SettingsPage() {
                             <select
                                 value={autoPrivacyDelayMinutes}
                                 onChange={(e) => setAutoPrivacyDelayMinutes(Number(e.target.value))}
-                                className="px-3 py-1.5 bg-muted/30 border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                className="premium-select"
                             >
                                 <option value={0}>{t('off')}</option>
                                 <option value={1}>1 min</option>
@@ -466,7 +466,7 @@ export default function SettingsPage() {
                                 type="url"
                                 value={panicUrlInput}
                                 onChange={(e) => setPanicUrlInput(e.target.value)}
-                                className="w-full px-4 py-2 bg-muted/30 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                className="premium-input"
                                 placeholder="https://google.com"
                             />
                         </div>
@@ -484,7 +484,7 @@ export default function SettingsPage() {
                                 type="text"
                                 value={panicShortcutInput}
                                 onChange={(e) => setPanicShortcutInput(e.target.value)}
-                                className="w-full px-4 py-2 bg-muted/30 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                className="premium-input"
                                 placeholder="alt+p"
                             />
                         </div>
@@ -567,17 +567,17 @@ export default function SettingsPage() {
                 </section>
 
                 {/* Save and Reset Actions */}
-                <div className="flex items-center gap-3 pt-4 pb-12">
+                <div className="flex items-center gap-4 pt-4 pb-12">
                     <button
                         onClick={handleSave}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium transition-colors"
+                        className="premium-button px-8 py-3"
                     >
                         <Save size={18} />
                         {t('saveChanges')}
                     </button>
                     <button
                         onClick={handleReset}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-muted hover:bg-muted/80 text-foreground rounded-lg font-medium transition-colors"
+                        className="flex items-center gap-2 px-6 py-3 bg-muted/50 hover:bg-muted text-foreground rounded-xl font-medium transition-all border border-border hover:border-primary/30"
                     >
                         <RotateCcw size={18} />
                         {t('resetDefaults')}

@@ -266,7 +266,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                     </label>
                     <input
                         type="text"
-                        className="w-full px-4 py-2.5 bg-muted/30 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all text-foreground placeholder-muted-foreground"
+                        className="premium-input"
                         placeholder={t('titlePlaceholder')}
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
@@ -278,7 +278,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                 <div>
                     {type === 'text' ? (
                         <textarea
-                            className="w-full p-4 bg-muted/30 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all resize-none text-foreground placeholder-muted-foreground"
+                            className="premium-input resize-none"
                             placeholder={t('enterContent')}
                             value={text}
                             onChange={(e) => setText(e.target.value)}
@@ -472,7 +472,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
 
                 <button
                     type="submit"
-                    className="w-full py-4 px-4 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-500 text-white rounded-xl font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transform active:scale-[0.99]"
+                    className="premium-button w-full py-4 text-white rounded-xl"
                     disabled={isSubmitting || (type === 'text' ? !text.trim() : !file) || !unlockTimeInfo.isValid}
                 >
                     {isSubmitting ? (

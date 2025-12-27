@@ -223,7 +223,7 @@ function SidebarContent({
                 {/* Add Button - Premium Gradient */}
                 <button
                     className={cn(
-                        "w-full flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white rounded-xl shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] font-semibold tracking-wide",
+                        "premium-button w-full",
                         compactMode ? "px-3 py-2 text-xs" : "px-4 py-3 text-sm"
                     )}
                     onClick={onAddClick}
@@ -312,11 +312,11 @@ function ItemCard({ item, isSelected, onClick, compactMode = false }: ItemCardPr
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
             className={cn(
-                "flex items-center gap-3 rounded-xl cursor-pointer transition-all duration-200 group relative border",
+                "flex items-center gap-3 rounded-xl cursor-pointer transition-all duration-300 group relative border",
                 compactMode ? "px-2 py-2" : "px-3 py-3",
                 isSelected
-                    ? "bg-accent border-border shadow-sm"
-                    : "border-transparent hover:bg-accent/50 hover:border-border/50"
+                    ? "bg-accent border-primary/50 shadow-md shadow-primary/10"
+                    : "border-transparent hover:bg-accent/50 hover:border-border/50 hover:-translate-y-0.5"
             )}
             onClick={onClick}
         >
