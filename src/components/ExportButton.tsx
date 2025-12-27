@@ -1,23 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useItems } from '@/lib/queries';
 import { useTranslations } from 'next-intl';
 import { Download, FileJson, FileText } from 'lucide-react';
 import { saveAs } from 'file-saver';
 import { ItemListView } from '@/lib/types';
+import { useHasMounted } from '@/hooks/useHasMounted';
 
 export default function ExportButton() {
     const { data: items = [] } = useItems({ status: 'unlocked' });
     const t = useTranslations('Settings');
     const [isExporting, setIsExporting] = useState(false);
-    const [isMounted, setIsMounted] = useState(false);
+    const hasMounted = useHasMounted();
 
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
-
-    if (!isMounted) return null;
+    if (!hasMounted) return null;
 
     const exportAsJSON = () => {
         setIsExporting(true);

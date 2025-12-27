@@ -5,6 +5,7 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { SystemStats, FilterParams, ApiItemListView } from './api-client';
 import { ItemDetail } from './types';
 
@@ -36,8 +37,8 @@ import { useSettings } from '@/lib/stores/settings-store';
  * Hook: Fetch system statistics
  */
 export function useStats() {
-    const { cacheTTLMinutes } = useSettings();
-    const cacheTime = cacheTTLMinutes * 60 * 1000;
+    const cacheTTLMinutes = useSettings(state => state.cacheTTLMinutes);
+    const cacheTime = useMemo(() => cacheTTLMinutes * 60 * 1000, [cacheTTLMinutes]);
 
     return useQuery({
         queryKey: queryKeys.stats,
@@ -58,8 +59,9 @@ export function useStats() {
  * Hook: Fetch items list with optional filtering
  */
 export function useItems(filters?: FilterParams) {
-    const { autoRefreshInterval, cacheTTLMinutes } = useSettings();
-    const cacheTime = cacheTTLMinutes * 60 * 1000;
+    const autoRefreshInterval = useSettings(state => state.autoRefreshInterval);
+    const cacheTTLMinutes = useSettings(state => state.cacheTTLMinutes);
+    const cacheTime = useMemo(() => cacheTTLMinutes * 60 * 1000, [cacheTTLMinutes]);
 
     return useQuery({
         queryKey: queryKeys.items.list(filters),
@@ -97,8 +99,8 @@ export function useItems(filters?: FilterParams) {
  * Hook: Fetch item detail by ID
  */
 export function useItem(id: string | null) {
-    const { cacheTTLMinutes } = useSettings();
-    const cacheTime = cacheTTLMinutes * 60 * 1000;
+    const cacheTTLMinutes = useSettings(state => state.cacheTTLMinutes);
+    const cacheTime = useMemo(() => cacheTTLMinutes * 60 * 1000, [cacheTTLMinutes]);
 
 
     return useQuery({

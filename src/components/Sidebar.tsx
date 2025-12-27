@@ -11,6 +11,7 @@ import { Skeleton } from './ui/Skeleton';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { useSettings } from '@/lib/stores/settings-store';
+import { useHasMounted } from '@/hooks/useHasMounted';
 
 interface SidebarProps {
     items: ItemListView[];
@@ -38,11 +39,7 @@ export default function Sidebar({
     const t = useTranslations('Sidebar');
     const tCommon = useTranslations('Common');
     const { compactMode, sidebarOpen, setSidebarOpen } = useSettings();
-    const [isMounted, setIsMounted] = React.useState(false);
-
-    React.useEffect(() => {
-        setIsMounted(true);
-    }, []);
+    const hasMounted = useHasMounted();
 
     // Sidebar motion variants
     const sidebarVariants = {
@@ -111,7 +108,7 @@ export default function Sidebar({
                 variants={sidebarVariants}
             >
                 {/* Desktop Edge Toggle Button */}
-                {isMounted && isDesktop && (
+                {hasMounted && isDesktop && (
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
                         className={cn(
@@ -136,10 +133,10 @@ export default function Sidebar({
                 {/* Inner Content Wrapper for Opacity Animation - Guarded by isMounted */}
                 <motion.div
                     className="flex-1 flex flex-col overflow-hidden w-[var(--sidebar-width,320px)]"
-                    animate={(isMounted && (sidebarOpen || !isDesktop)) ? "open" : "closed"}
+                    animate={(hasMounted && (sidebarOpen || !isDesktop)) ? "open" : "closed"}
                     variants={contentVariants}
                 >
-                    {isMounted && (
+                    {hasMounted && (
                         <SidebarContent
                             items={items}
                             selectedId={selectedId}
@@ -306,14 +303,10 @@ interface ItemCardProps {
 }
 
 function ItemCard({ item, isSelected, onClick, compactMode = false }: ItemCardProps) {
-    const [isMounted, setIsMounted] = React.useState(false);
+    const hasMounted = useHasMounted();
 
-    React.useEffect(() => {
-        setIsMounted(true);
-    }, []);
-
-    const isUnlocked = isMounted ? Date.now() >= item.decrypt_at : false;
-    const timeRemaining = isMounted ? getTimeRemaining(item.decrypt_at) : '...';
+    const isUnlocked = hasMounted ? Date.now() >= item.decrypt_at : false;
+    const timeRemaining = hasMounted ? getTimeRemaining(item.decrypt_at) : '...';
     const tCommon = useTranslations('Common');
     const { privacyMode } = useSettings();
 

@@ -2,20 +2,22 @@
  * TanStack Query Client Configuration
  * 
  * Centralized configuration for React Query with optimized defaults
+ * Persistence is handled by cache-config module
  */
 
 import { QueryClient } from '@tanstack/react-query';
-import { persistQueryClient } from '@tanstack/react-query-persist-client';
-import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
+import { getCacheTTL } from './cache-config';
 
 export const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
             // Stale time: how long data is considered fresh
-            staleTime: 1000 * 60 * 5, // 5 minutes
+            // Individual queries can override this with user settings
+            staleTime: 1000 * 60 * 5, // 5 minutes default
 
             // Cache time: how long unused data stays in cache
-            gcTime: 1000 * 60 * 60 * 24, // Keep for 24 hours to support persistence
+            // Use dynamic TTL from cache config
+            gcTime: getCacheTTL(),
 
             // Retry failed requests
             retry: 1,
@@ -36,15 +38,5 @@ export const queryClient = new QueryClient({
     },
 });
 
-// Configure persistence
-if (typeof window !== 'undefined') {
-    const persister = createSyncStoragePersister({
-        storage: window.localStorage,
-    });
-
-    persistQueryClient({
-        queryClient,
-        persister,
-        maxAge: 1000 * 60 * 60 * 24, // 24 hours
-    });
-}
+// Note: Persistence is initialized in cache-config.ts
+// Call initializeQueryPersistence(queryClient) in app layout
