@@ -87,7 +87,8 @@
         "itemDeleted": "Item deleted successfully",
         "itemExtended": "Extended by {time}",
         "conflictError": "Conflict detected, data refreshed. Please try again.",
-        "extendError": "Failed to extend lock"
+        "extendError": "Failed to extend lock",
+        "selectItem": "Select an item from the sidebar to view its contents"
     },
     "Theme": {
         "light": "Light",

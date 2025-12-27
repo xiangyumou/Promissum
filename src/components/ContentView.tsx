@@ -40,7 +40,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                         </div>
                         <h2 className="text-2xl font-bold text-foreground">{tCommon('dashboard')}</h2>
                         <p className="text-muted-foreground">
-                            Select an item from the sidebar to view its contents
+                            {t('selectItem')}
                         </p>
                     </div>
                 </div>
