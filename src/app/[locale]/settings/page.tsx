@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { Settings as SettingsIcon, Save, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
+import ExportButton from '@/components/ExportButton';
 
 export default function SettingsPage() {
     const t = useTranslations('Settings');
