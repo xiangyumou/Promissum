@@ -86,43 +86,63 @@ const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMo
 
 /**
  * Settings Store
- * Persists user preferences to localStorage
+ * 
+ * Persists user preferences to localStorage.
+ * Uses a factory pattern to allow for test isolation.
  */
-export const useSettings = create<SettingsState>()(
-    persist(
-        (set) => ({
-            // Default values
-            ...(DEFAULT_SETTINGS as any), // Cast to avoid complex type matching implementation details
 
-            // Actions
-            setDefaultDuration: (minutes) => set({ defaultDurationMinutes: minutes }),
-            setPrivacyMode: (enabled) => set({ privacyMode: enabled }),
-            setPanicUrl: (url) => set({ panicUrl: url }),
-            setThemeConfig: (config) => set({ themeConfig: config }),
+import { StoreApi, UseBoundStore } from 'zustand';
 
-            // Interface
-            setDateTimeFormat: (format) => set({ dateTimeFormat: format }),
-            setCompactMode: (enabled) => set({ compactMode: enabled }),
-            setSidebarOpen: (open) => set({ sidebarOpen: open }),
+type SettingsStore = UseBoundStore<StoreApi<SettingsState>>;
 
-            // Behavior
-            setConfirmDelete: (enabled) => set({ confirmDelete: enabled }),
-            setConfirmExtend: (enabled) => set({ confirmExtend: enabled }),
-            setAutoRefreshInterval: (seconds) => set({ autoRefreshInterval: seconds }),
+export const createSettingsStore = (
+    initialState: Partial<SettingsState> = {}
+): SettingsStore => {
+    return create<SettingsState>()(
+        persist(
+            (set) => ({
+                // Default values
+                ...(DEFAULT_SETTINGS as any),
+                ...initialState,
 
-            // Caching
-            setCacheTTLMinutes: (minutes) => set({ cacheTTLMinutes: minutes }),
+                // Actions
+                setDefaultDuration: (minutes) => set({ defaultDurationMinutes: minutes }),
+                setPrivacyMode: (enabled) => set({ privacyMode: enabled }),
+                setPanicUrl: (url) => set({ panicUrl: url }),
+                setThemeConfig: (config) => set({ themeConfig: config }),
 
-            // Security
-            setAutoPrivacyDelayMinutes: (minutes) => set({ autoPrivacyDelayMinutes: minutes }),
-            setPanicShortcut: (shortcut) => set({ panicShortcut: shortcut }),
-            setApiToken: (token) => set({ apiToken: token }),
-            setApiUrl: (url) => set({ apiUrl: url }),
+                // Interface
+                setDateTimeFormat: (format) => set({ dateTimeFormat: format }),
+                setCompactMode: (enabled) => set({ compactMode: enabled }),
+                setSidebarOpen: (open) => set({ sidebarOpen: open }),
 
-            resetToDefaults: () => set(DEFAULT_SETTINGS),
-        }),
-        {
-            name: 'chaster-settings',
-        }
-    )
-);
+                // Behavior
+                setConfirmDelete: (enabled) => set({ confirmDelete: enabled }),
+                setConfirmExtend: (enabled) => set({ confirmExtend: enabled }),
+                setAutoRefreshInterval: (seconds) => set({ autoRefreshInterval: seconds }),
+
+                // Caching
+                setCacheTTLMinutes: (minutes) => set({ cacheTTLMinutes: minutes }),
+
+                // Security
+                setAutoPrivacyDelayMinutes: (minutes) => set({ autoPrivacyDelayMinutes: minutes }),
+                setPanicShortcut: (shortcut) => set({ panicShortcut: shortcut }),
+                setApiToken: (token) => set({ apiToken: token }),
+                setApiUrl: (url) => set({ apiUrl: url }),
+
+                resetToDefaults: () => set(DEFAULT_SETTINGS),
+            }),
+            {
+                name: 'chaster-settings',
+            }
+        )
+    );
+};
+
+// Default singleton store
+export const useSettings = createSettingsStore();
+
+// Reset helper for tests
+export function resetSettingsStore() {
+    useSettings.setState(DEFAULT_SETTINGS as any);
+}
