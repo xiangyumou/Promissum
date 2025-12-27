@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { timeService } from '@/lib/services/time-service';
+import { calculateDurationMinutes, calculateUnlockTimeInfo } from '@/lib/utils/unlock-time';
 
 interface AddModalProps {
     isOpen: boolean;
@@ -72,61 +73,15 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
 
     // Calculate duration in minutes based on current mode
     const calculatedDuration = useMemo(() => {
-        if (timeMode === 'duration') {
-            return Math.max(1, accumulatedDuration);
-        } else {
-            const year = parseInt(absoluteTime.year) + 2000;
-            const month = parseInt(absoluteTime.month) - 1;
-            const day = parseInt(absoluteTime.day);
-            const hour = parseInt(absoluteTime.hour);
-            const minute = parseInt(absoluteTime.minute);
-
-            const targetDate = new Date(year, month, day, hour, minute);
-            const now = new Date(timeService.now());
-            const diffMs = targetDate.getTime() - now.getTime();
-            return Math.ceil(diffMs / 60000);
-        }
+        return calculateDurationMinutes(timeMode, accumulatedDuration, absoluteTime, timeService.now());
     }, [timeMode, accumulatedDuration, absoluteTime]);
 
     // Calculate and format the unlock time
     const unlockTimeInfo = useMemo(() => {
-        const now = new Date(timeService.now());
-        let unlockDate: Date;
-
-        if (timeMode === 'absolute') {
-            const year = parseInt(absoluteTime.year) + 2000;
-            const month = parseInt(absoluteTime.month) - 1;
-            const day = parseInt(absoluteTime.day);
-            const hour = parseInt(absoluteTime.hour);
-            const minute = parseInt(absoluteTime.minute);
-            unlockDate = new Date(year, month, day, hour, minute);
-        } else {
-            unlockDate = new Date(now.getTime() + calculatedDuration * 60 * 1000);
-        }
-
-        const month = (unlockDate.getMonth() + 1).toString().padStart(2, '0');
-        const day = unlockDate.getDate().toString().padStart(2, '0');
-        const hour = unlockDate.getHours().toString().padStart(2, '0');
-        const minute = unlockDate.getMinutes().toString().padStart(2, '0');
-
-        const diffMs = unlockDate.getTime() - now.getTime();
-        const totalMinutes = Math.ceil(diffMs / 60000);
-        const isValid = totalMinutes >= 1;
-
-        const days = Math.floor(totalMinutes / 1440);
-        const hours = Math.floor((totalMinutes % 1440) / 60);
-        const mins = totalMinutes % 60;
-
-        let remaining = '';
-        if (days > 0) remaining += `${days}d `;
-        if (hours > 0) remaining += `${hours}h `;
-        remaining += `${mins}m`;
-
+        const info = calculateUnlockTimeInfo(calculatedDuration, timeMode, absoluteTime, timeService.now());
         return {
-            formatted: `${month}/${day} ${hour}:${minute}`,
-            remaining: isValid ? remaining.trim() : t('invalidTime'),
-            isValid: isValid,
-            unlockDate: unlockDate
+            ...info,
+            remaining: info.isValid ? info.remaining : t('invalidTime'),
         };
     }, [calculatedDuration, timeMode, absoluteTime, t]);
 

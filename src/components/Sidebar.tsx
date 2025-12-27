@@ -13,6 +13,7 @@ import { Link } from '@/i18n/routing';
 import { useSettings } from '@/lib/stores/settings-store';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { timeService } from '@/lib/services/time-service';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface SidebarProps {
     items: ItemListView[];
@@ -73,7 +74,7 @@ export default function Sidebar({
     };
 
     // Media query to detect desktop
-    const isDesktop = useMediaQuery("(min-width: 768px)");
+    const isDesktop = useMediaQuery("(min-width: 768px)", true);
 
     // Determine animation state
     const animateState = isDesktop
@@ -157,31 +158,6 @@ export default function Sidebar({
     );
 }
 
-// Simple useMediaQuery hook
-function useMediaQuery(query: string) {
-    const [matches, setMatches] = React.useState(true); // Default to DESKTOP (true) to prevent layout shift/blank gap on desktop
-
-    React.useLayoutEffect(() => {
-        if (typeof window !== 'undefined') {
-            setMatches(window.matchMedia(query).matches);
-        }
-    }, [query]);
-
-    React.useEffect(() => {
-        const media = window.matchMedia(query);
-        const listener = () => setMatches(media.matches);
-
-        // Update immediately in effect in case hydration differed
-        if (media.matches !== matches) {
-            setMatches(media.matches);
-        }
-
-        media.addEventListener("change", listener);
-        return () => media.removeEventListener("change", listener);
-    }, [matches, query]);
-
-    return matches;
-}
 
 interface SidebarContentProps {
     items: ItemListView[];
@@ -370,7 +346,7 @@ function ItemCard({ item, isSelected, onClick, compactMode = false }: ItemCardPr
 }
 
 function getTimeRemaining(decryptAt: number): string {
-    const now = Date.now();
+    const now = timeService.now();
     const diff = decryptAt - now;
 
     if (diff <= 0) return 'Unlocked';

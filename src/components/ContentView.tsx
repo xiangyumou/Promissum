@@ -15,6 +15,7 @@ import { useSettings } from '@/lib/stores/settings-store';
 import { PanelLeftOpen } from 'lucide-react';
 import ConfirmDialog from './ConfirmDialog';
 import { timeService } from '@/lib/services/time-service';
+import { useCountdown } from '@/hooks/useCountdown';
 
 interface ContentViewProps {
     selectedId: string | null;
@@ -385,15 +386,7 @@ function ExtendButton({ onExtend }: { onExtend: (minutes: number) => void }) {
 }
 
 function Countdown({ targetDate }: { targetDate: number }) {
-    const [timeLeft, setTimeLeft] = useState(Math.max(0, targetDate - timeService.now()));
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            const diff = targetDate - timeService.now();
-            setTimeLeft(Math.max(0, diff));
-        }, 1000);
-        return () => clearInterval(interval);
-    }, [targetDate]);
+    const timeLeft = useCountdown(targetDate);
 
     if (timeLeft <= 0) return <>00:00:00</>;
 
