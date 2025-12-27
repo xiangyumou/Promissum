@@ -32,6 +32,8 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import Dashboard from '@/components/Dashboard'; // Moved here as per previous refactor
 import { queryClient } from '@/lib/query-client';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { useHasMounted } from '@/hooks/useHasMounted';
+import { getCacheStats, clearPersistedCache, setCacheTTL } from '@/lib/cache-config';
 
 export default function SettingsPage() {
     const t = useTranslations('Settings');
@@ -100,16 +102,11 @@ export default function SettingsPage() {
     // Cache Statistics State
     const [cacheStats, setCacheStats] = useState({ queryCount: 0, sizeKB: 0 });
     const [isPersisted, setIsPersisted] = useState(false);
-    const [isMounted, setIsMounted] = useState(false);
-
-    // Initial Mounting
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
+    const hasMounted = useHasMounted();
 
     // Calculate cache statistics and monitor persistence
     useEffect(() => {
-        if (!isMounted) return;
+        if (!hasMounted) return;
 
         const updateCacheStats = () => {
             const cache = queryClient.getQueryCache();
@@ -135,6 +132,9 @@ export default function SettingsPage() {
             // Convert bytes to KB
             const sizeKB = Math.round(totalSize / 1024);
 
+            // Get storage stats from cache-config
+            const storageStats = getCacheStats();
+
             // Only update if values actually changed to prevent loops
             setCacheStats(prev => {
                 if (prev.queryCount === queryCount && prev.sizeKB === sizeKB) {
@@ -143,9 +143,9 @@ export default function SettingsPage() {
                 return { queryCount, sizeKB };
             });
 
-            // Simple check for persistence in localStorage
+            // Check persistence using the actual cache key
             if (typeof window !== 'undefined') {
-                const persistedData = localStorage.getItem('REACT_QUERY_OFFLINE_CACHE');
+                const persistedData = localStorage.getItem('promissum-react-query-cache');
                 setIsPersisted(!!persistedData);
             }
         };
@@ -166,7 +166,14 @@ export default function SettingsPage() {
             unsubscribe();
             clearInterval(interval);
         };
-    }, [isMounted]);
+    }, [hasMounted]);
+
+    // Sync TTL changes to cache config
+    useEffect(() => {
+        if (hasMounted) {
+            setCacheTTL(cacheTTLMinutes);
+        }
+    }, [cacheTTLMinutes, hasMounted]);
 
     // Computed Styles Logic
     const [computedStyles, setComputedStyles] = useState<Record<string, string>>({});
@@ -255,6 +262,8 @@ export default function SettingsPage() {
                 queryClient.removeQueries()
             ]);
 
+            // Clear persisted cache
+            clearPersistedCache();
             localStorage.clear();
             sessionStorage.clear();
 
@@ -771,7 +780,7 @@ export default function SettingsPage() {
                     </h2>
 
                     <div className="space-y-4">
-                        {isMounted && <ExportButton />}
+                        {hasMounted && <ExportButton />}
 
                         <div className="glass-card rounded-xl p-6 border border-red-500/20 bg-red-500/5">
                             <div className="flex items-center justify-between">
@@ -813,7 +822,7 @@ export default function SettingsPage() {
                 </div>
                 {/* Dashboard Section */}
                 <section className="space-y-4 pt-8 border-t border-border">
-                    {isMounted && <Dashboard />}
+                    {hasMounted && <Dashboard />}
                 </section>
 
                 <ConfirmDialog
