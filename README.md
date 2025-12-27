@@ -1,103 +1,138 @@
 # Chaster - 时间锁加密内容保护应用
 
-基于**时间锁加密技术 (Timelock Encryption)** 和 **drand 去中心化随机信标网络**的内容保护应用。
+基于**时间锁加密技术 (Timelock Encryption)** 和 **drand 去中心化随机信标网络**的内容保护应用客户端。
 
 ## ✨ 核心特性
 
 - 🔐 **真正的强制时间锁**：基于密码学，无法提前解密
-- 🌐 **去中心化信任**：依赖 drand 公共随机信标，无需信任第三方
-- 🔄 **多层加密**：支持对已加密内容再次加密，延长锁定时间
+- 🌐 **远程加密服务**：调用独立的加密 API 服务
+- 🔄 **多层加密**：支持延长锁定时间
 - 📱 **响应式设计**：完美适配桌面和移动设备
 - 🎨 **现代化 UI**：简洁美观的用户界面
 
+## 🏗️ 架构说明
+
+### 当前架构（基于远程 API）
+
+```
+前端 UI (Next.js)
+    ↓
+本地 API Routes (代理层)
+    ↓
+远程加密服务 API
+    ↓
+时间锁加密 + drand 网络
+```
+
+**特点**:
+- 前端代码与原来完全兼容
+- 后端 API Routes 作为代理层
+- Token 安全存储在服务端
+- 加密逻辑由远程服务处理
+
 ## 🚀 快速开始
 
-### 开发环境
+### 1. 环境配置
+
+创建 `.env.local` 文件：
 
 ```bash
-# 安装依赖
+# 远程加密服务配置
+CHASTER_API_URL=http://localhost:3000/api/v1
+CHASTER_API_TOKEN=tok_your_token_here
+```
+
+> **获取 Token**: 在加密服务端运行 `npm run token` 创建新的 API token
+
+### 2. 安装依赖
+
+```bash
 npm install
+```
 
-# 启动开发服务器
+### 3. 启动开发服务器
+
+```bash
 npm run dev
-
-# 访问应用
-打开 http://localhost:3000
 ```
 
-### 生产构建
+访问 `http://localhost:3001`（如果 3000 端口被占用）
+
+### 4. 生产构建
 
 ```bash
-# 构建生产版本
 npm run build
-
-# 启动生产服务器
 npm start
-```
-
-### Docker 部署
-
-```bash
-# 使用 Docker Compose
-docker-compose up -d
-
-# 或直接使用 Docker
-docker build -t chaster .
-docker run -p 3000:3000 -v $(pwd)/data:/app/data chaster
 ```
 
 ## 📚 技术栈
 
-- **框架**：Next.js 16 + React 19
+- **前端框架**：Next.js 16 + React 19
 - **样式**：Tailwind CSS 4
-- **数据库**：SQLite (Better-SQLite3)
-- **加密**：tlock-js + drand-client
 - **语言**：TypeScript 5
-
-## 🏗️ 架构特点
-
-### 单用户模式（当前）
-当前版本为单用户本地应用，所有数据存储在本地 SQLite 数据库中。
-
-### 多用户架构预留
-项目已预留多用户架构基础，将来可轻松升级：
-- 所有数据表包含 `user_id` 字段
-- 用户上下文抽象层 (`user-context.ts`)
-- API 已支持用户级数据隔离
-
-**升级到多用户预计只需 3-4 天**（相比完全重构节省 60%+ 时间）
-
-详见 [多用户架构预留](docs/PRD.md#🏗️-多用户架构预留)
+- **远程服务**：Chaster 加密 API（独立部署）
 
 ## 📖 文档
 
 - [产品需求文档 (PRD)](docs/PRD.md) - 完整的产品规格说明
-- [数据库迁移指南](docs/MIGRATION_GUIDE.md) - 架构升级与迁移说明
+- [API 参考文档](docs/API_REFERENCE.md) - 远程加密服务 API 说明
+- [架构迁移指南](docs/MIGRATION_GUIDE.md) - 从本地到远程服务的迁移说明
 
 ## 🔒 安全性
 
+- **Token 保护**：API Token 存储在服务端环境变量
+- **代理模式**：前端不直接暴露 Token
 - **加密强度**：使用 BLS12-381 曲线的 IBE (Identity-Based Encryption)
-- **去中心化**：drand 网络由多个独立节点运行，无单点故障
-- **本地存储**：数据仅存储在本地，不上传第三方服务器
-- **密码学保证**：时间到达前数学上无法解密
+- **去中心化**：依赖 drand 网络，无单点故障
 
-## 🛣️ 路线图
+## 🛣️ 功能状态
 
 ### 已完成
 - ✅ 文本/图片时间锁加密
-- ✅ 双模式时间设定（持续时长 / 绝对时间）
+- ✅ 双模式时间设定（持续时长/绝对时间）
 - ✅ 实时倒计时与自动解锁
 - ✅ 延长锁定功能（多层加密）
 - ✅ 响应式移动端适配
-- ✅ 多用户架构预留
+- ✅ 远程 API 服务集成
+- ✅ 图片 Base64 转换处理
 
 ### 规划中
+- 🔮 管理后台（统计、Token 管理）
 - 🔮 深色模式支持
-- 🔮 标签/分类系统
+- 🔮 批量操作功能
 - 🔮 导出功能
-- 🔮 公开分享功能
 - 🔮 通知提醒系统
-- 🔮 完整多用户支持
+
+## 🔧 开发说明
+
+### 项目结构
+
+```
+├── src/
+│   ├── app/
+│   │   ├── api/          # API Routes (代理层)
+│   │   ├── page.tsx      # 主页面
+│   │   └── globals.css   # 全局样式
+│   ├── components/       # UI 组件
+│   │   ├── AddModal.tsx  # 创建项目弹窗
+│   │   ├── Sidebar.tsx   # 侧边栏
+│   │   └── ContentView.tsx # 内容详情
+│   └── lib/
+│       ├── api-client.ts # API 客户端封装
+│       └── env.ts        # 环境变量配置
+├── docs/                 # 项目文档
+└── public/               # 静态资源
+```
+
+### API Routes 说明
+
+所有 API Routes 充当代理层，将请求转发到远程加密服务：
+
+- `GET /api/items` - 获取项目列表
+- `POST /api/items` - 创建新项目
+- `GET /api/items/[id]` - 获取项目详情
+- `POST /api/items/[id]/extend` - 延长锁定
+- `DELETE /api/items/[id]` - 删除项目
 
 ## 📄 许可证
 
@@ -105,5 +140,5 @@ MIT License
 
 ---
 
-**更新时间**：2025-12-26  
-**版本**：v0.1.0 (Multi-User Ready)
+**更新时间**：2025-12-27  
+**版本**：v0.2.0 (Remote API Client)
