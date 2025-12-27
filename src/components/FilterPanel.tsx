@@ -26,6 +26,10 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
         onFilterChange({ ...filters, type });
     };
 
+    const handleSortChange = (sort: FilterParams['sort']) => {
+        onFilterChange({ ...filters, sort });
+    };
+
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setSearchInput(value);
@@ -47,7 +51,7 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
 
     const resetAll = () => {
         setSearchInput('');
-        onFilterChange({ status: 'all' });
+        onFilterChange({ status: 'all', sort: filters.sort || 'created_desc' });
     };
 
     const hasActiveFilters = filters.status !== 'all' || !!filters.type || !!filters.search;
@@ -199,6 +203,71 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
                                         icon={<ImageIcon size={14} />}
                                         label={tCommon('image')}
                                     />
+                                </div>
+                            </div>
+
+                            {/* Sort Filter */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                    {t('sortBy')}
+                                </label>
+                                <div className="space-y-1">
+                                    <button
+                                        onClick={() => handleSortChange('created_desc')}
+                                        className={cn(
+                                            "w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-all",
+                                            (filters.sort || 'created_desc') === 'created_desc'
+                                                ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                                                : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                                        )}
+                                    >
+                                        <span>{t('sortCreatedDesc')}</span>
+                                        {(filters.sort || 'created_desc') === 'created_desc' && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={() => handleSortChange('created_asc')}
+                                        className={cn(
+                                            "w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-all",
+                                            filters.sort === 'created_asc'
+                                                ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                                                : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                                        )}
+                                    >
+                                        <span>{t('sortCreatedAsc')}</span>
+                                        {filters.sort === 'created_asc' && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={() => handleSortChange('decrypt_desc')}
+                                        className={cn(
+                                            "w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-all",
+                                            filters.sort === 'decrypt_desc'
+                                                ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                                                : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                                        )}
+                                    >
+                                        <span>{t('sortDecryptDesc')}</span>
+                                        {filters.sort === 'decrypt_desc' && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />
+                                        )}
+                                    </button>
+                                    <button
+                                        onClick={() => handleSortChange('decrypt_asc')}
+                                        className={cn(
+                                            "w-full flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-all",
+                                            filters.sort === 'decrypt_asc'
+                                                ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                                                : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                                        )}
+                                    >
+                                        <span>{t('sortDecryptAsc')}</span>
+                                        {filters.sort === 'decrypt_asc' && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />
+                                        )}
+                                    </button>
                                 </div>
                             </div>
 

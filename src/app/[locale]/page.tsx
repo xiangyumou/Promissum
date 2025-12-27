@@ -13,8 +13,8 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { defaultDurationMinutes, defaultSort } = useSettings();
-  const [filters, setFilters] = useState<FilterParams>({ status: 'all', sort: defaultSort });
+  const { defaultDurationMinutes } = useSettings();
+  const [filters, setFilters] = useState<FilterParams>({ status: 'all', sort: 'created_desc' });
 
   // Fetch items with automatic caching and refetching
   const { data: items = [], isLoading: listLoading } = useItems(filters);

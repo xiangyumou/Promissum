@@ -45,7 +45,12 @@
         "resetFilters": "重置所有筛选",
         "applyFilters": "应用筛选",
         "settings": "设置",
-        "collapseSidebar": "折叠侧边栏"
+        "collapseSidebar": "折叠侧边栏",
+        "sortBy": "排序方式",
+        "sortCreatedDesc": "创建时间 (新→旧)",
+        "sortCreatedAsc": "创建时间 (旧→新)",
+        "sortDecryptDesc": "解锁时间 (晚→早)",
+        "sortDecryptAsc": "解锁时间 (早→晚)"
     },
     "AddModal": {
         "title": "创建加密项目",
