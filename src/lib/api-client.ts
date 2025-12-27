@@ -45,6 +45,17 @@ export interface ExtendItemRequest {
 }
 
 /**
+ * Filter parameters for listing items
+ */
+export interface FilterParams {
+    status?: 'all' | 'locked' | 'unlocked';
+    type?: 'text' | 'image';
+    limit?: number;
+    offset?: number;
+    sort?: 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc';
+}
+
+/**
  * API Client Class
  */
 class ChasterApiClient {
@@ -87,13 +98,7 @@ class ChasterApiClient {
     /**
      * List all items with optional filtering
      */
-    async getItems(params?: {
-        status?: 'all' | 'locked' | 'unlocked';
-        type?: 'text' | 'image';
-        limit?: number;
-        offset?: number;
-        sort?: 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc';
-    }): Promise<ApiItemListView[]> {
+    async getItems(params?: FilterParams): Promise<ApiItemListView[]> {
         const queryParams = new URLSearchParams();
 
         if (params?.status) queryParams.set('status', params.status);
