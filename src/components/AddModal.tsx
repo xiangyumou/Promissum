@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import Modal from './ui/Modal';
 import { cn } from '@/lib/utils';
 import {
@@ -42,9 +42,18 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
     const [text, setText] = useState('');
     const [file, setFile] = useState<File | null>(null);
     const [timeMode, setTimeMode] = useState<TimeMode>('duration');
-    const [accumulatedDuration, setAccumulatedDuration] = useState(0);
+    const [accumulatedDuration, setAccumulatedDuration] = useState(defaultDuration);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Reset duration when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            setAccumulatedDuration(defaultDuration);
+            // Default to duration mode when re-opening
+            setTimeMode('duration');
+        }
+    }, [isOpen, defaultDuration]);
 
     // Absolute time state
     const getDefaultAbsoluteTime = () => {
@@ -130,7 +139,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
     };
 
     const handleResetDuration = () => {
-        setAccumulatedDuration(0);
+        setAccumulatedDuration(defaultDuration);
     };
 
     const handleAbsoluteTimeChange = (field: keyof typeof absoluteTime, value: string) => {
@@ -173,7 +182,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
             setTitle('');
             setText('');
             setFile(null);
-            setAccumulatedDuration(0);
+            setAccumulatedDuration(defaultDuration);
             setTimeMode('duration');
             onClose();
         } finally {

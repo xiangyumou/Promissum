@@ -7,13 +7,14 @@ import AddModal from '@/components/AddModal';
 import ContentView from '@/components/ContentView';
 import { FilterParams } from '@/lib/api-client';
 import { useItems, useCreateItem, useItem, useExtendItem, useDeleteItem } from '@/lib/queries';
+import { useSettings } from '@/lib/stores/settings-store';
 
 export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [lastDuration, setLastDuration] = useState(720);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filters, setFilters] = useState<FilterParams>({ status: 'all' });
+  const { defaultDurationMinutes } = useSettings();
 
   // Fetch items with automatic caching and refetching
   const { data: items = [], isLoading: listLoading } = useItems(filters);
@@ -49,12 +50,6 @@ export default function Home() {
           if (result.success) {
             // Select the newly created item
             setSelectedId(result.item.id);
-
-            // Update last duration
-            const newDuration = parseInt(formData.get('durationMinutes') as string);
-            if (!isNaN(newDuration)) {
-              setLastDuration(newDuration);
-            }
           }
           return 'Item created successfully!';
         },
@@ -125,7 +120,7 @@ export default function Home() {
 
       <AddModal
         isOpen={showAddModal}
-        defaultDuration={lastDuration}
+        defaultDuration={defaultDurationMinutes}
         onClose={() => setShowAddModal(false)}
         onSubmit={handleAddSubmit}
       />
