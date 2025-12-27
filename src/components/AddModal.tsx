@@ -13,6 +13,7 @@ import {
     Lock,
     AlertCircle
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface AddModalProps {
     isOpen: boolean;
@@ -33,6 +34,9 @@ const DURATION_PRESETS = [
 type TimeMode = 'duration' | 'absolute';
 
 export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }: AddModalProps) {
+    const t = useTranslations('AddModal');
+    const tCommon = useTranslations('Common');
+
     const [type, setType] = useState<'text' | 'image'>('text');
     const [text, setText] = useState('');
     const [file, setFile] = useState<File | null>(null);
@@ -109,11 +113,11 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
 
         return {
             formatted: `${month}/${day} ${hour}:${minute}`,
-            remaining: isValid ? remaining.trim() : 'Invalid Time',
+            remaining: isValid ? remaining.trim() : t('invalidTime'),
             isValid: isValid,
             unlockDate: unlockDate
         };
-    }, [calculatedDuration, timeMode, absoluteTime]);
+    }, [calculatedDuration, timeMode, absoluteTime, t]);
 
     const handlePresetClick = (minutes: number) => {
         setAccumulatedDuration(prev => prev + minutes);
@@ -181,37 +185,37 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Create Encrypted Item"
+            title={t('title')}
             className="max-w-[500px]"
         >
             <form onSubmit={handleSubmit} className="p-6 pt-2 space-y-6">
                 {/* Type Selection */}
-                <div className="flex bg-black/20 p-1 rounded-xl">
+                <div className="flex bg-card/50 p-1 rounded-xl border border-border">
                     <button
                         type="button"
                         className={cn(
                             "flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium rounded-lg transition-all",
                             type === 'text'
-                                ? "bg-white/10 text-white shadow-inner border border-white/5"
-                                : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
+                                ? "bg-accent text-accent-foreground shadow-sm border border-border"
+                                : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                         )}
                         onClick={() => setType('text')}
                     >
                         <FileText size={16} />
-                        Text Note
+                        {tCommon('textNote')}
                     </button>
                     <button
                         type="button"
                         className={cn(
                             "flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium rounded-lg transition-all",
                             type === 'image'
-                                ? "bg-white/10 text-white shadow-inner border border-white/5"
-                                : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
+                                ? "bg-accent text-accent-foreground shadow-sm border border-border"
+                                : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                         )}
                         onClick={() => setType('image')}
                     >
                         <ImageIcon size={16} />
-                        Image
+                        {tCommon('image')}
                     </button>
                 </div>
 
@@ -219,8 +223,8 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                 <div>
                     {type === 'text' ? (
                         <textarea
-                            className="w-full p-4 bg-black/30 border border-white/5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all resize-none text-zinc-200 placeholder-zinc-600"
-                            placeholder="Enter your secret content here..."
+                            className="w-full p-4 bg-muted/30 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-all resize-none text-foreground placeholder-muted-foreground"
+                            placeholder={t('enterContent')}
                             value={text}
                             onChange={(e) => setText(e.target.value)}
                             rows={5}
@@ -240,29 +244,29 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                                 className={cn(
                                     "w-full h-40 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-3 transition-colors",
                                     file
-                                        ? "border-indigo-500/50 bg-indigo-500/10"
-                                        : "border-white/10 hover:border-indigo-500/30 hover:bg-white/5"
+                                        ? "border-primary/50 bg-primary/10"
+                                        : "border-border hover:border-primary/30 hover:bg-accent/30"
                                 )}
                                 onClick={() => fileInputRef.current?.click()}
                             >
                                 {file ? (
                                     <>
-                                        <div className="w-12 h-12 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                                        <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary">
                                             <ImageIcon size={24} />
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-sm font-medium text-indigo-400 truncate max-w-[200px]">{file.name}</p>
-                                            <p className="text-xs text-indigo-300/70">Click to change</p>
+                                            <p className="text-sm font-medium text-primary truncate max-w-[200px]">{file.name}</p>
+                                            <p className="text-xs text-primary/70">{t('changeImage')}</p>
                                         </div>
                                     </>
                                 ) : (
                                     <>
-                                        <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-zinc-500 group-hover:text-zinc-300">
+                                        <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center text-muted-foreground group-hover:text-foreground">
                                             <Upload size={24} />
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-sm font-medium text-zinc-400 group-hover:text-zinc-200">Click to upload image</p>
-                                            <p className="text-xs text-zinc-600">PNG, JPG, GIF up to 5MB</p>
+                                            <p className="text-sm font-medium text-muted-foreground group-hover:text-foreground">{t('uploadImage')}</p>
+                                            <p className="text-xs text-muted-foreground/70">{t('uploadHint')}</p>
                                         </div>
                                     </>
                                 )}
@@ -274,30 +278,30 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                 {/* Time Selection */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+                        <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                             <Clock size={16} />
-                            Lock Duration
+                            {t('lockDuration')}
                         </label>
-                        <div className="flex bg-black/20 p-0.5 rounded-lg">
+                        <div className="flex bg-card/50 p-0.5 rounded-lg border border-border">
                             <button
                                 type="button"
                                 className={cn(
                                     "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                    timeMode === 'duration' ? "bg-white/10 text-white" : "text-zinc-500 hover:text-zinc-300"
+                                    timeMode === 'duration' ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"
                                 )}
                                 onClick={() => setTimeMode('duration')}
                             >
-                                Duration
+                                {t('duration')}
                             </button>
                             <button
                                 type="button"
                                 className={cn(
                                     "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                    timeMode === 'absolute' ? "bg-white/10 text-white" : "text-zinc-500 hover:text-zinc-300"
+                                    timeMode === 'absolute' ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"
                                 )}
                                 onClick={() => setTimeMode('absolute')}
                             >
-                                Custom Date
+                                {t('customDate')}
                             </button>
                         </div>
                     </div>
@@ -309,7 +313,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                                     <button
                                         key={preset.label}
                                         type="button"
-                                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/5 rounded-full text-xs font-medium text-zinc-400 hover:text-white transition-colors flex items-center gap-1"
+                                        className="px-3 py-1.5 bg-accent/30 hover:bg-accent border border-border rounded-full text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
                                         onClick={() => handlePresetClick(preset.minutes)}
                                     >
                                         <Plus size={10} />
@@ -319,11 +323,11 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                                 {accumulatedDuration > 0 && (
                                     <button
                                         type="button"
-                                        className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-full text-xs font-medium transition-colors flex items-center gap-1 border border-red-500/20"
+                                        className="px-3 py-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-full text-xs font-medium transition-colors flex items-center gap-1 border border-destructive/20"
                                         onClick={handleResetDuration}
                                     >
                                         <RefreshCw size={10} />
-                                        Reset
+                                        {t('reset')}
                                     </button>
                                 )}
                             </div>
@@ -334,13 +338,13 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                                     value={accumulatedDuration || ''}
                                     placeholder="0"
                                     onChange={(e) => handleCustomDurationChange(e.target.value)}
-                                    className="w-full pl-4 pr-12 py-3 bg-black/30 border border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono text-lg text-white"
+                                    className="w-full pl-4 pr-12 py-3 bg-muted/30 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono text-lg text-foreground"
                                 />
-                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-zinc-500">min</span>
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">min</span>
                             </div>
                         </div>
                     ) : (
-                        <div className="flex items-center justify-between gap-2 p-3 bg-black/30 rounded-xl border border-white/5">
+                        <div className="flex items-center justify-between gap-2 p-3 bg-muted/30 rounded-xl border border-border">
                             {/* Date Inputs */}
                             <div className="flex items-center gap-1">
                                 <TimeInput
@@ -348,13 +352,13 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                                     onChange={(v) => handleAbsoluteTimeChange('year', v)}
                                     placeholder="YY"
                                 />
-                                <span className="text-zinc-600">/</span>
+                                <span className="text-zinc-500">/</span>
                                 <TimeInput
                                     value={absoluteTime.month}
                                     onChange={(v) => handleAbsoluteTimeChange('month', v)}
                                     placeholder="MM"
                                 />
-                                <span className="text-zinc-600">/</span>
+                                <span className="text-zinc-500">/</span>
                                 <TimeInput
                                     value={absoluteTime.day}
                                     onChange={(v) => handleAbsoluteTimeChange('day', v)}
@@ -369,7 +373,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                                     onChange={(v) => handleAbsoluteTimeChange('hour', v)}
                                     placeholder="HH"
                                 />
-                                <span className="text-zinc-600">:</span>
+                                <span className="text-zinc-500">:</span>
                                 <TimeInput
                                     value={absoluteTime.minute}
                                     onChange={(v) => handleAbsoluteTimeChange('minute', v)}
@@ -383,28 +387,28 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                     <div className={cn(
                         "rounded-xl p-4 flex items-center justify-between border transition-all duration-300",
                         unlockTimeInfo.isValid
-                            ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-200"
-                            : "bg-red-500/10 border-red-500/20 text-red-200"
+                            ? "bg-primary/10 border-primary/20 text-primary"
+                            : "bg-destructive/10 border-destructive/20 text-destructive"
                     )}>
                         <div className="flex items-center gap-3">
                             <div className={cn(
                                 "p-2 rounded-full",
-                                unlockTimeInfo.isValid ? "bg-indigo-500/20 text-indigo-400" : "bg-red-500/20 text-red-400"
+                                unlockTimeInfo.isValid ? "bg-primary/20 text-primary" : "bg-destructive/20 text-destructive"
                             )}>
                                 {unlockTimeInfo.isValid ? <Lock size={18} /> : <AlertCircle size={18} />}
                             </div>
                             <div>
                                 <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">
-                                    {unlockTimeInfo.isValid ? "Unlocks at" : "Invalid Time"}
+                                    {unlockTimeInfo.isValid ? t('unlocksAt') : t('invalidTime')}
                                 </p>
                                 <p className="text-lg font-bold font-mono tracking-tight">
-                                    {unlockTimeInfo.isValid ? unlockTimeInfo.formatted : "Check Input"}
+                                    {unlockTimeInfo.isValid ? unlockTimeInfo.formatted : t('checkInput')}
                                 </p>
                             </div>
                         </div>
                         {unlockTimeInfo.isValid && (
                             <div className="text-right">
-                                <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">Remaining</p>
+                                <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">{t('remaining')}</p>
                                 <p className="text-sm font-medium">{unlockTimeInfo.remaining}</p>
                             </div>
                         )}
@@ -413,18 +417,18 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
 
                 <button
                     type="submit"
-                    className="w-full py-4 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transform active:scale-[0.99]"
+                    className="w-full py-4 px-4 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-500 text-white rounded-xl font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transform active:scale-[0.99]"
                     disabled={isSubmitting || (type === 'text' ? !text.trim() : !file) || !unlockTimeInfo.isValid}
                 >
                     {isSubmitting ? (
                         <>
                             <RefreshCw size={18} className="animate-spin" />
-                            Encrypting...
+                            {t('encrypting')}
                         </>
                     ) : (
                         <>
                             <Lock size={18} />
-                            Encrypt & Save
+                            {t('encryptAndSave')}
                         </>
                     )}
                 </button>
@@ -438,7 +442,7 @@ function TimeInput({ value, onChange, placeholder }: { value: string, onChange: 
         <input
             type="text"
             maxLength={2}
-            className="w-10 p-1 text-center bg-transparent border-b-2 border-white/10 focus:border-indigo-500 focus:outline-none font-mono font-medium rounded text-lg text-white placeholder-zinc-700 transition-colors"
+            className="w-10 p-1 text-center bg-transparent border-b-2 border-border focus:border-primary focus:outline-none font-mono font-medium rounded text-lg text-foreground placeholder-muted-foreground/50 transition-colors"
             placeholder={placeholder}
             value={value}
             onChange={(e) => onChange(e.target.value.replace(/\D/g, ''))}

@@ -6,7 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import AddModal from '@/components/AddModal';
 import ContentView from '@/components/ContentView';
 import { FilterParams } from '@/lib/api-client';
-import { useItems, useCreateItem } from '@/lib/queries';
+import { useItems, useCreateItem, useItem, useExtendItem, useDeleteItem } from '@/lib/queries';
 
 export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -16,10 +16,29 @@ export default function Home() {
   const [filters, setFilters] = useState<FilterParams>({ status: 'all' });
 
   // Fetch items with automatic caching and refetching
-  const { data: items = [], isLoading: loading } = useItems(filters);
+  const { data: items = [], isLoading: listLoading } = useItems(filters);
 
-  // Create item mutation
+  // Fetch selected item detail
+  // Note: useItem automatically polls if locked
+  const { data: selectedItemDetail, isLoading: itemLoading } = useItem(selectedId);
+
+  // Mutations
   const createItem = useCreateItem();
+  const deleteItem = useDeleteItem();
+  // We need to use extendItem inside the handler because the ID isn't constant
+  // Actually, useExtendItem takes an ID. So we can't call it conditionally at top level if ID changes?
+  // queries.ts defines: export function useExtendItem(id: string) { ... }
+  // This means we need to call it with a specific ID. 
+  // But here we might switch IDs.
+  // Best practice: component specific hook or pass ID to mutationFn?
+  // Checking queries.ts: useExtendItem takes id as argument to the HOOK.
+  // This is problematic if we switch items.
+  // Ideally useExtendItem should accept ID in mutate.
+  // I will check queries.ts again. 
+  // If useExtendItem requires ID at hook level, I should use useMutation directly or a modified hook.
+  // BUT: selectedId is state. `useExtendItem(selectedId || '')` works if we respect Rules of Hooks (always call it).
+  // If selectedId is null, we pass ''. 
+  const extendItem = useExtendItem(selectedId || '');
 
   const handleAddSubmit = async (formData: FormData) => {
     toast.promise(
@@ -45,9 +64,34 @@ export default function Home() {
   };
 
   const handleDelete = (id: string) => {
-    if (selectedId === id) {
-      setSelectedId(null);
-    }
+    toast.promise(
+      deleteItem.mutateAsync(id),
+      {
+        loading: 'Deleting item...',
+        success: () => {
+          if (selectedId === id) {
+            setSelectedId(null);
+          }
+          return 'Item deleted';
+        },
+        error: 'Failed to delete item'
+      }
+    );
+  };
+
+  const handleExtend = (id: string, minutes: number) => {
+    // If selectedId is not id (unlikely in this view), this hook might be stale?
+    // But ContentView only shows selectedId.
+    if (id !== selectedId) return;
+
+    toast.promise(
+      extendItem.mutateAsync(minutes),
+      {
+        loading: 'Extending lock...',
+        success: 'Lock extended successfully',
+        error: 'Failed to extend lock'
+      }
+    );
   };
 
   const handleSelectItem = (id: string) => {
@@ -55,7 +99,6 @@ export default function Home() {
     // Close sidebar on mobile after selecting item
     setSidebarOpen(false);
   };
-
 
   return (
     <div className="app-container">
@@ -72,12 +115,15 @@ export default function Home() {
         onClose={() => setSidebarOpen(false)}
         filters={filters}
         onFilterChange={setFilters}
-        isLoading={loading}
+        isLoading={listLoading}
       />
 
       <ContentView
         selectedId={selectedId}
+        item={selectedItemDetail}
+        isLoading={itemLoading}
         onDelete={handleDelete}
+        onExtend={handleExtend}
         onMenuClick={() => setSidebarOpen(true)}
       />
 

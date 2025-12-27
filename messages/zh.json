@@ -1,0 +1,72 @@
+{
+    "Common": {
+        "loading": "加载中...",
+        "error": "错误",
+        "dashboard": "仪表盘",
+        "newEntry": "新建项目",
+        "delete": "删除",
+        "cancel": "取消",
+        "confirm": "确认",
+        "save": "保存",
+        "textNote": "文本笔记",
+        "image": "图片",
+        "unlocksAt": "解锁时间",
+        "layers": "层加密",
+        "locked": "锁定中",
+        "unlocked": "已解锁"
+    },
+    "Dashboard": {
+        "systemOverview": "系统概览",
+        "totalItems": "项目总数",
+        "encrypted": "已加密",
+        "unlocked": "已解锁",
+        "textNotes": "文本笔记",
+        "images": "图片",
+        "averageLockDuration": "平均锁定时间",
+        "hours": "小时",
+        "basedOnHistory": "基于历史数据",
+        "failedToLoad": "加载统计失败"
+    },
+    "Sidebar": {
+        "noItems": "暂无项目",
+        "search": "搜索...",
+        "all": "全部",
+        "locked": "锁定中",
+        "unlocked": "已解锁"
+    },
+    "AddModal": {
+        "title": "创建加密项目",
+        "enterContent": "在此输入您的秘密内容...",
+        "uploadImage": "点击上传图片",
+        "uploadHint": "支持 PNG, JPG, GIF (最大 5MB)",
+        "changeImage": "点击更换",
+        "lockDuration": "锁定持续时间",
+        "duration": "时长",
+        "customDate": "自定义日期",
+        "encryptAndSave": "加密并保存",
+        "encrypting": "加密中...",
+        "invalidTime": "时间无效",
+        "checkInput": "检查输入",
+        "remaining": "剩余",
+        "reset": "重置"
+    },
+    "ContentView": {
+        "contentDecrypted": "内容已成功解密",
+        "timeLocked": "时间锁定中",
+        "sealedInVault": "此内容已被封存",
+        "remainingTime": "剩余时间",
+        "addTime": "增加时间",
+        "deleteTitle": "删除封存项目",
+        "deleteDesc": "您确定要删除此项目吗？此操作不可撤销，加密内容将永久丢失。",
+        "deleteConfirm": "永久删除",
+        "itemDeleted": "项目已删除",
+        "itemExtended": "已延长 {time}",
+        "conflictError": "检测到冲突，数据已刷新。请重试。",
+        "extendError": "延长锁定失败"
+    },
+    "Theme": {
+        "light": "浅色",
+        "dark": "深色",
+        "system": "系统"
+    }
+}

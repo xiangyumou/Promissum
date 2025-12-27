@@ -6,7 +6,10 @@ import FilterBar from './FilterBar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, LayoutDashboard } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Skeleton } from './ui/Skeleton';
+import { Skeleton } from './ui/Skeleton'; // Assuming Skeleton is theme-neutral or updated later
+import ThemeToggle from './ThemeToggle';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslations } from 'next-intl';
 
 interface SidebarProps {
     items: ItemListView[];
@@ -33,6 +36,9 @@ export default function Sidebar({
     onFilterChange,
     isLoading = false
 }: SidebarProps) {
+    const t = useTranslations('Sidebar');
+    const tCommon = useTranslations('Common');
+
     // Sidebar motion variants
     const sidebarVariants = {
         closed: {
@@ -81,7 +87,7 @@ export default function Sidebar({
             {/* Sidebar Container */}
             <motion.div
                 className={cn(
-                    "fixed sidebar h-full z-50 shadow-2xl md:shadow-none border-r border-white/5",
+                    "fixed sidebar h-full z-50 shadow-2xl md:shadow-none border-r border-border",
                     "md:relative md:!transform-none md:!opacity-100" // Reset for desktop
                 )}
                 initial={false}
@@ -90,7 +96,7 @@ export default function Sidebar({
             >
                 {/* Mobile Close Button */}
                 <button
-                    className="absolute top-3 right-3 p-2 rounded-full hover:bg-white/10 text-zinc-400 md:hidden transition-colors"
+                    className="absolute top-3 right-3 p-2 rounded-full hover:bg-white/10 text-muted-foreground md:hidden transition-colors"
                     onClick={onClose}
                     aria-label="Close menu"
                 >
@@ -101,11 +107,11 @@ export default function Sidebar({
                 <div className="p-4 pb-2 space-y-3">
                     {/* Add Button - Premium Gradient */}
                     <button
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] text-sm font-semibold tracking-wide"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-primary to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white rounded-xl shadow-lg shadow-primary/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] text-sm font-semibold tracking-wide"
                         onClick={onAddClick}
                     >
                         <Plus size={18} />
-                        New Entry
+                        {tCommon('newEntry')}
                     </button>
 
                     {/* Dashboard Link */}
@@ -113,18 +119,18 @@ export default function Sidebar({
                         className={cn(
                             "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
                             isDashboardActive
-                                ? "bg-white/10 text-white shadow-inner border border-white/5"
-                                : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
+                                ? "bg-accent text-accent-foreground shadow-sm border border-border"
+                                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                         )}
                         onClick={onShowDashboard}
                     >
-                        <LayoutDashboard size={18} className={isDashboardActive ? "text-indigo-400" : ""} />
-                        Dashboard
+                        <LayoutDashboard size={18} className={isDashboardActive ? "text-primary" : ""} />
+                        {tCommon('dashboard')}
                     </button>
                 </div>
 
                 {/* Divider - Subtle */}
-                <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mx-4 my-2" />
+                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mx-4 my-2" />
 
                 {/* Filter Bar */}
                 <FilterBar filters={filters} onFilterChange={onFilterChange} />
@@ -134,20 +140,20 @@ export default function Sidebar({
                     {isLoading ? (
                         // Loading Skeletons
                         Array.from({ length: 5 }).map((_, i) => (
-                            <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 animate-pulse">
-                                <div className="h-8 w-8 rounded-full bg-white/10" />
+                            <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-accent/50 animate-pulse">
+                                <div className="h-8 w-8 rounded-full bg-accent" />
                                 <div className="space-y-2 flex-1">
-                                    <div className="h-3 w-3/4 bg-white/10 rounded" />
-                                    <div className="h-2 w-1/2 bg-white/5 rounded" />
+                                    <div className="h-3 w-3/4 bg-accent rounded" />
+                                    <div className="h-2 w-1/2 bg-accent/50 rounded" />
                                 </div>
                             </div>
                         ))
                     ) : items.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-16 text-zinc-500">
-                            <div className="p-4 rounded-full bg-white/5 mb-3">
+                        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                            <div className="p-4 rounded-full bg-accent mb-3">
                                 <Lock size={24} className="opacity-40" />
                             </div>
-                            <p className="text-sm">No items yet</p>
+                            <p className="text-sm">{t('noItems')}</p>
                         </div>
                     ) : (
                         <AnimatePresence initial={false} mode="popLayout">
@@ -162,6 +168,15 @@ export default function Sidebar({
                         </AnimatePresence>
                     )}
                 </div>
+
+                {/* Footer - Settings */}
+                <div className="p-4 border-t border-border space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                        <ThemeToggle />
+                        <LanguageSwitcher />
+                    </div>
+                </div>
+
             </motion.div>
         </>
     );
@@ -176,6 +191,7 @@ interface ItemCardProps {
 function ItemCard({ item, isSelected, onClick }: ItemCardProps) {
     const isUnlocked = Date.now() >= item.decrypt_at;
     const timeRemaining = getTimeRemaining(item.decrypt_at);
+    const tCommon = useTranslations('Common');
 
     return (
         <motion.div
@@ -187,13 +203,13 @@ function ItemCard({ item, isSelected, onClick }: ItemCardProps) {
             className={cn(
                 "flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200 group relative border",
                 isSelected
-                    ? "bg-white/10 border-white/10 shadow-lg shadow-black/20"
-                    : "border-transparent hover:bg-white/5 hover:border-white/5"
+                    ? "bg-accent border-border shadow-sm"
+                    : "border-transparent hover:bg-accent/50 hover:border-border/50"
             )}
             onClick={onClick}
         >
             <div className={cn(
-                "flex items-center justify-center w-9 h-9 rounded-lg shadow-inner text-sm transition-transform group-hover:scale-105",
+                "flex items-center justify-center w-9 h-9 rounded-lg shadow-sm text-sm transition-transform group-hover:scale-105",
                 item.type === 'text'
                     ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
                     : "bg-purple-500/10 text-purple-400 border border-purple-500/20"
@@ -204,16 +220,16 @@ function ItemCard({ item, isSelected, onClick }: ItemCardProps) {
             <div className="flex-1 min-w-0">
                 <div className={cn(
                     "text-sm font-medium truncate transition-colors",
-                    isSelected ? "text-white" : "text-zinc-300 group-hover:text-zinc-200"
+                    isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                 )}>
-                    {item.type === 'text' ? 'Text Note' : (item.original_name || 'Image')}
+                    {item.type === 'text' ? tCommon('textNote') : (item.original_name || tCommon('image'))}
                 </div>
                 <div className={cn(
                     "text-xs flex items-center gap-1.5 mt-1 font-medium truncate",
-                    isUnlocked ? "text-emerald-400" : "text-zinc-500"
+                    isUnlocked ? "text-emerald-500" : "text-muted-foreground"
                 )}>
                     {isUnlocked ? (
-                        <><Unlock size={10} /> Unlocked</>
+                        <><Unlock size={10} /> {tCommon('unlocked')}</>
                     ) : (
                         <><Lock size={10} /> {timeRemaining}</>
                     )}
@@ -223,7 +239,7 @@ function ItemCard({ item, isSelected, onClick }: ItemCardProps) {
             {isSelected && (
                 <motion.div
                     layoutId="activeIndicator"
-                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-500 rounded-r-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full shadow-[0_0_10px_var(--primary)]"
                 />
             )}
         </motion.div>
