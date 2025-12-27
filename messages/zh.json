@@ -71,6 +71,12 @@
         "dark": "深色",
         "system": "系统"
     },
+    "ApiStatus": {
+        "checking": "检测中...",
+        "connected": "API 已连接",
+        "offline": "API 离线",
+        "disconnected": "未连接"
+    },
     "Error": {
         "title": "出了点问题",
         "description": "发生了意外错误，请重试。",
