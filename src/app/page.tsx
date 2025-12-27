@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import AddModal from '@/components/AddModal';
 import ContentView from '@/components/ContentView';
-import { ItemListView } from '@/lib/db';
+import { ItemListView } from '@/lib/types';
+import { FilterParams } from '@/lib/api-client';
 
 export default function Home() {
   const [items, setItems] = useState<ItemListView[]>([]);
@@ -13,10 +14,20 @@ export default function Home() {
   const [lastDuration, setLastDuration] = useState(720);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [filters, setFilters] = useState<FilterParams>({ status: 'all' });
 
   const fetchItems = useCallback(async () => {
     try {
-      const response = await fetch('/api/items');
+      // Build query string from filters
+      const params = new URLSearchParams();
+      if (filters.status && filters.status !== 'all') params.set('status', filters.status);
+      if (filters.type) params.set('type', filters.type);
+      params.set('sort', 'created_desc');
+
+      const queryString = params.toString();
+      const url = `/api/items${queryString ? `?${queryString}` : ''}`;
+
+      const response = await fetch(url);
       const data = await response.json();
       setItems(data.items || []);
       setLastDuration(data.lastDuration || 720);
@@ -25,7 +36,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [filters]);
 
   useEffect(() => {
     fetchItems();
@@ -83,6 +94,8 @@ export default function Home() {
         onAddClick={() => setShowAddModal(true)}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        filters={filters}
+        onFilterChange={setFilters}
       />
 
       <ContentView

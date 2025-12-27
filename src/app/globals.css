@@ -1022,3 +1022,37 @@ body {
     }
   }
 }
+
+/* ===== FILTER BAR ===== */
+
+.filter-bar {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-section-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+/* FilterBar reuses existing .type-toggle and .toggle-btn classes from AddModal */
+/* FilterBar reuses existing .reset-btn class */
+
+/* Mobile adjustments for filter bar */
+@media (max-width: 767px) {
+  .filter-bar {
+    padding: 10px;
+  }
+}
