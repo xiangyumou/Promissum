@@ -77,6 +77,16 @@
         "offline": "API Offline",
         "disconnected": "Disconnected"
     },
+    "Settings": {
+        "title": "Settings",
+        "defaultBehavior": "Default Behavior",
+        "defaultDuration": "Default Lock Duration",
+        "defaultDurationDesc": "Default duration when creating new items",
+        "minutes": "minutes",
+        "saveChanges": "Save Changes",
+        "resetDefaults": "Reset to Defaults",
+        "changesSaved": "Settings saved successfully"
+    },
     "Error": {
         "title": "Something went wrong",
         "description": "An unexpected error occurred. Please try again.",
