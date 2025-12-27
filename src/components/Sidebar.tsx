@@ -3,61 +3,166 @@
 import { ItemListView } from '@/lib/types';
 import { FilterParams } from '@/lib/api-client';
 import FilterBar from './FilterBar';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, LayoutDashboard } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Skeleton } from './ui/Skeleton';
 
 interface SidebarProps {
     items: ItemListView[];
     selectedId: string | null;
     onSelectItem: (id: string) => void;
     onAddClick: () => void;
+    onShowDashboard: () => void;
     isOpen: boolean;
     onClose: () => void;
     filters: FilterParams;
     onFilterChange: (filters: FilterParams) => void;
+    isLoading?: boolean;
 }
 
-export default function Sidebar({ items, selectedId, onSelectItem, onAddClick, isOpen, onClose, filters, onFilterChange }: SidebarProps) {
+export default function Sidebar({
+    items,
+    selectedId,
+    onSelectItem,
+    onAddClick,
+    onShowDashboard,
+    isOpen,
+    onClose,
+    filters,
+    onFilterChange,
+    isLoading = false
+}: SidebarProps) {
+    // Sidebar motion variants
+    const sidebarVariants = {
+        closed: {
+            x: "-100%",
+            opacity: 0,
+            transition: {
+                type: "spring" as const,
+                stiffness: 300,
+                damping: 30
+            }
+        },
+        open: {
+            x: 0,
+            opacity: 1,
+            transition: {
+                type: "spring" as const,
+                stiffness: 300,
+                damping: 30
+            }
+        }
+    };
+
+    const overlayVariants = {
+        closed: { opacity: 0, pointerEvents: "none" as const },
+        open: { opacity: 1, pointerEvents: "auto" as const }
+    };
+
+    const isDashboardActive = selectedId === null;
+
     return (
         <>
-            {/* Mobile overlay */}
-            <div
-                className={`sidebar-overlay ${isOpen ? 'visible' : ''}`}
-                onClick={onClose}
-            />
+            {/* Mobile Overlay */}
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm"
+                        initial="closed"
+                        animate="open"
+                        exit="closed"
+                        variants={overlayVariants}
+                        onClick={onClose}
+                    />
+                )}
+            </AnimatePresence>
 
-            <div className={`sidebar ${isOpen ? 'open' : ''}`}>
-                {/* Mobile close button */}
-                <button className="sidebar-close-btn" onClick={onClose} aria-label="Close menu">
-                    ×
+            {/* Sidebar Container */}
+            <motion.div
+                className={cn(
+                    "fixed sidebar h-full z-50 shadow-2xl md:shadow-none border-r border-white/5",
+                    "md:relative md:!transform-none md:!opacity-100" // Reset for desktop
+                )}
+                initial={false}
+                animate={isOpen ? "open" : "closed"}
+                variants={sidebarVariants}
+            >
+                {/* Mobile Close Button */}
+                <button
+                    className="absolute top-3 right-3 p-2 rounded-full hover:bg-white/10 text-zinc-400 md:hidden transition-colors"
+                    onClick={onClose}
+                    aria-label="Close menu"
+                >
+                    <X size={20} />
                 </button>
 
-                <button className="add-button" onClick={onAddClick}>
-                    <svg className="add-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    Add New
-                </button>
+                {/* Primary Actions Group */}
+                <div className="p-4 pb-2 space-y-3">
+                    {/* Add Button - Premium Gradient */}
+                    <button
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white rounded-xl shadow-lg shadow-indigo-500/20 transition-all transform hover:scale-[1.02] active:scale-[0.98] text-sm font-semibold tracking-wide"
+                        onClick={onAddClick}
+                    >
+                        <Plus size={18} />
+                        New Entry
+                    </button>
+
+                    {/* Dashboard Link */}
+                    <button
+                        className={cn(
+                            "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                            isDashboardActive
+                                ? "bg-white/10 text-white shadow-inner border border-white/5"
+                                : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200"
+                        )}
+                        onClick={onShowDashboard}
+                    >
+                        <LayoutDashboard size={18} className={isDashboardActive ? "text-indigo-400" : ""} />
+                        Dashboard
+                    </button>
+                </div>
+
+                {/* Divider - Subtle */}
+                <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mx-4 my-2" />
 
                 {/* Filter Bar */}
                 <FilterBar filters={filters} onFilterChange={onFilterChange} />
 
-                <div className="items-list">
-                    {items.length === 0 ? (
-                        <div className="empty-state">
-                            No encrypted items yet
+                {/* Items List */}
+                <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5 custom-scrollbar">
+                    {isLoading ? (
+                        // Loading Skeletons
+                        Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 animate-pulse">
+                                <div className="h-8 w-8 rounded-full bg-white/10" />
+                                <div className="space-y-2 flex-1">
+                                    <div className="h-3 w-3/4 bg-white/10 rounded" />
+                                    <div className="h-2 w-1/2 bg-white/5 rounded" />
+                                </div>
+                            </div>
+                        ))
+                    ) : items.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-16 text-zinc-500">
+                            <div className="p-4 rounded-full bg-white/5 mb-3">
+                                <Lock size={24} className="opacity-40" />
+                            </div>
+                            <p className="text-sm">No items yet</p>
                         </div>
                     ) : (
-                        items.map((item) => (
-                            <ItemCard
-                                key={item.id}
-                                item={item}
-                                isSelected={item.id === selectedId}
-                                onClick={() => onSelectItem(item.id)}
-                            />
-                        ))
+                        <AnimatePresence initial={false} mode="popLayout">
+                            {items.map((item) => (
+                                <ItemCard
+                                    key={item.id}
+                                    item={item}
+                                    isSelected={item.id === selectedId}
+                                    onClick={() => onSelectItem(item.id)}
+                                />
+                            ))}
+                        </AnimatePresence>
                     )}
                 </div>
-            </div>
+            </motion.div>
         </>
     );
 }
@@ -69,27 +174,59 @@ interface ItemCardProps {
 }
 
 function ItemCard({ item, isSelected, onClick }: ItemCardProps) {
-    const now = Date.now();
-    const isUnlocked = now >= item.decrypt_at;
+    const isUnlocked = Date.now() >= item.decrypt_at;
     const timeRemaining = getTimeRemaining(item.decrypt_at);
 
     return (
-        <div
-            className={`item-card ${isSelected ? 'selected' : ''}`}
+        <motion.div
+            layout
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className={cn(
+                "flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200 group relative border",
+                isSelected
+                    ? "bg-white/10 border-white/10 shadow-lg shadow-black/20"
+                    : "border-transparent hover:bg-white/5 hover:border-white/5"
+            )}
             onClick={onClick}
         >
-            <div className="item-icon">
-                {item.type === 'text' ? '📝' : '🖼️'}
+            <div className={cn(
+                "flex items-center justify-center w-9 h-9 rounded-lg shadow-inner text-sm transition-transform group-hover:scale-105",
+                item.type === 'text'
+                    ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                    : "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+            )}>
+                {item.type === 'text' ? <FileText size={16} /> : <ImageIcon size={16} />}
             </div>
-            <div className="item-info">
-                <div className="item-title">
-                    {item.type === 'text' ? 'Text' : (item.original_name || 'Image')}
+
+            <div className="flex-1 min-w-0">
+                <div className={cn(
+                    "text-sm font-medium truncate transition-colors",
+                    isSelected ? "text-white" : "text-zinc-300 group-hover:text-zinc-200"
+                )}>
+                    {item.type === 'text' ? 'Text Note' : (item.original_name || 'Image')}
                 </div>
-                <div className={`item-status ${isUnlocked ? 'unlocked' : 'locked'}`}>
-                    {isUnlocked ? '✅ Unlocked' : `🔒 ${timeRemaining}`}
+                <div className={cn(
+                    "text-xs flex items-center gap-1.5 mt-1 font-medium truncate",
+                    isUnlocked ? "text-emerald-400" : "text-zinc-500"
+                )}>
+                    {isUnlocked ? (
+                        <><Unlock size={10} /> Unlocked</>
+                    ) : (
+                        <><Lock size={10} /> {timeRemaining}</>
+                    )}
                 </div>
             </div>
-        </div>
+
+            {isSelected && (
+                <motion.div
+                    layoutId="activeIndicator"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-500 rounded-r-full shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+                />
+            )}
+        </motion.div>
     );
 }
 
@@ -105,9 +242,9 @@ function getTimeRemaining(decryptAt: number): string {
     if (hours > 24) {
         const days = Math.floor(hours / 24);
         const remainingHours = hours % 24;
-        return `${days}d ${remainingHours}h left`;
+        return `${days}d ${remainingHours}h`;
     }
 
-    if (hours > 0) return `${hours}h ${minutes}m left`;
-    return `${minutes}m left`;
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
 }

@@ -1,6 +1,18 @@
 'use client';
 
 import { useState, useRef, useMemo } from 'react';
+import Modal from './ui/Modal';
+import { cn } from '@/lib/utils';
+import {
+    Clock,
+    FileText,
+    Image as ImageIcon,
+    Upload,
+    RefreshCw,
+    Plus,
+    Lock,
+    AlertCircle
+} from 'lucide-react';
 
 interface AddModalProps {
     isOpen: boolean;
@@ -25,12 +37,11 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
     const [text, setText] = useState('');
     const [file, setFile] = useState<File | null>(null);
     const [timeMode, setTimeMode] = useState<TimeMode>('duration');
-    // Total accumulated duration in minutes (starts at 0, user adds to it)
     const [accumulatedDuration, setAccumulatedDuration] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Absolute time state - initialize with current time + 1 hour
+    // Absolute time state
     const getDefaultAbsoluteTime = () => {
         const d = new Date(Date.now() + 60 * 60 * 1000);
         return {
@@ -47,9 +58,8 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
     // Calculate duration in minutes based on current mode
     const calculatedDuration = useMemo(() => {
         if (timeMode === 'duration') {
-            return Math.max(1, accumulatedDuration); // At least 1 minute
+            return Math.max(1, accumulatedDuration);
         } else {
-            // Absolute mode - calculate duration from now to target time
             const year = parseInt(absoluteTime.year) + 2000;
             const month = parseInt(absoluteTime.month) - 1;
             const day = parseInt(absoluteTime.day);
@@ -59,7 +69,6 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
             const targetDate = new Date(year, month, day, hour, minute);
             const now = new Date();
             const diffMs = targetDate.getTime() - now.getTime();
-            // Allow negative values to indicate invalid time
             return Math.ceil(diffMs / 60000);
         }
     }, [timeMode, accumulatedDuration, absoluteTime]);
@@ -80,14 +89,11 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
             unlockDate = new Date(now.getTime() + calculatedDuration * 60 * 1000);
         }
 
-        // Format as "MM月dd日 HH:mm"
         const month = (unlockDate.getMonth() + 1).toString().padStart(2, '0');
         const day = unlockDate.getDate().toString().padStart(2, '0');
         const hour = unlockDate.getHours().toString().padStart(2, '0');
         const minute = unlockDate.getMinutes().toString().padStart(2, '0');
 
-        // Calculate remaining time
-        // validation: must be at least 1 minute in future
         const diffMs = unlockDate.getTime() - now.getTime();
         const totalMinutes = Math.ceil(diffMs / 60000);
         const isValid = totalMinutes >= 1;
@@ -101,32 +107,23 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
         if (hours > 0) remaining += `${hours}h `;
         remaining += `${mins}m`;
 
-        if (!isValid) {
-            remaining = 'Time must be in the future';
-        }
-
         return {
-            formatted: `${month}月${day}日 ${hour}:${minute}`,
-            remaining: remaining.trim(),
+            formatted: `${month}/${day} ${hour}:${minute}`,
+            remaining: isValid ? remaining.trim() : 'Invalid Time',
             isValid: isValid,
-            unlockDate: unlockDate // Pass the date object for submission
+            unlockDate: unlockDate
         };
     }, [calculatedDuration, timeMode, absoluteTime]);
 
-    if (!isOpen) return null;
-
-    // Add duration from preset button (accumulative)
     const handlePresetClick = (minutes: number) => {
         setAccumulatedDuration(prev => prev + minutes);
     };
 
-    // Set custom duration directly
     const handleCustomDurationChange = (value: string) => {
         const num = Math.max(0, parseInt(value) || 0);
         setAccumulatedDuration(num);
     };
 
-    // Reset duration
     const handleResetDuration = () => {
         setAccumulatedDuration(0);
     };
@@ -149,10 +146,8 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
             formData.append('type', type);
 
             if (timeMode === 'absolute') {
-                // Send specific timestamp
                 formData.append('decryptAt', unlockTimeInfo.unlockDate.getTime().toString());
             } else {
-                // Send duration
                 formData.append('durationMinutes', calculatedDuration.toString());
             }
 
@@ -183,182 +178,271 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
     };
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h2>Add New Item</h2>
-                    <button className="close-button" onClick={onClose}>×</button>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Create Encrypted Item"
+            className="max-w-[500px]"
+        >
+            <form onSubmit={handleSubmit} className="p-6 pt-2 space-y-6">
+                {/* Type Selection */}
+                <div className="flex bg-black/20 p-1 rounded-xl">
+                    <button
+                        type="button"
+                        className={cn(
+                            "flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium rounded-lg transition-all",
+                            type === 'text'
+                                ? "bg-white/10 text-white shadow-inner border border-white/5"
+                                : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
+                        )}
+                        onClick={() => setType('text')}
+                    >
+                        <FileText size={16} />
+                        Text Note
+                    </button>
+                    <button
+                        type="button"
+                        className={cn(
+                            "flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium rounded-lg transition-all",
+                            type === 'image'
+                                ? "bg-white/10 text-white shadow-inner border border-white/5"
+                                : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
+                        )}
+                        onClick={() => setType('image')}
+                    >
+                        <ImageIcon size={16} />
+                        Image
+                    </button>
                 </div>
 
-                <form onSubmit={handleSubmit}>
-                    <div className="type-toggle">
-                        <button
-                            type="button"
-                            className={`toggle-btn ${type === 'text' ? 'active' : ''}`}
-                            onClick={() => setType('text')}
-                        >
-                            📝 Text
-                        </button>
-                        <button
-                            type="button"
-                            className={`toggle-btn ${type === 'image' ? 'active' : ''}`}
-                            onClick={() => setType('image')}
-                        >
-                            🖼️ Image
-                        </button>
-                    </div>
-
+                {/* Content Input */}
+                <div>
                     {type === 'text' ? (
                         <textarea
-                            className="text-input"
-                            placeholder="Enter your secret text..."
+                            className="w-full p-4 bg-black/30 border border-white/5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all resize-none text-zinc-200 placeholder-zinc-600"
+                            placeholder="Enter your secret content here..."
                             value={text}
                             onChange={(e) => setText(e.target.value)}
-                            rows={6}
+                            rows={5}
+                            autoFocus
                         />
                     ) : (
-                        <div className="file-input-wrapper">
+                        <div>
                             <input
                                 ref={fileInputRef}
                                 type="file"
                                 accept="image/*"
                                 onChange={handleFileChange}
-                                className="file-input-hidden"
+                                className="hidden"
                             />
                             <button
                                 type="button"
-                                className="file-select-button"
+                                className={cn(
+                                    "w-full h-40 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-3 transition-colors",
+                                    file
+                                        ? "border-indigo-500/50 bg-indigo-500/10"
+                                        : "border-white/10 hover:border-indigo-500/30 hover:bg-white/5"
+                                )}
                                 onClick={() => fileInputRef.current?.click()}
                             >
-                                {file ? file.name : 'Select Image'}
+                                {file ? (
+                                    <>
+                                        <div className="w-12 h-12 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                                            <ImageIcon size={24} />
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-sm font-medium text-indigo-400 truncate max-w-[200px]">{file.name}</p>
+                                            <p className="text-xs text-indigo-300/70">Click to change</p>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-zinc-500 group-hover:text-zinc-300">
+                                            <Upload size={24} />
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-sm font-medium text-zinc-400 group-hover:text-zinc-200">Click to upload image</p>
+                                            <p className="text-xs text-zinc-600">PNG, JPG, GIF up to 5MB</p>
+                                        </div>
+                                    </>
+                                )}
                             </button>
                         </div>
                     )}
+                </div>
 
-                    {/* Time Mode Tabs */}
-                    <div className="time-mode-section">
-                        <div className="time-mode-tabs">
+                {/* Time Selection */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+                            <Clock size={16} />
+                            Lock Duration
+                        </label>
+                        <div className="flex bg-black/20 p-0.5 rounded-lg">
                             <button
                                 type="button"
-                                className={`time-mode-tab ${timeMode === 'duration' ? 'active' : ''}`}
+                                className={cn(
+                                    "px-3 py-1 text-xs font-medium rounded-md transition-all",
+                                    timeMode === 'duration' ? "bg-white/10 text-white" : "text-zinc-500 hover:text-zinc-300"
+                                )}
                                 onClick={() => setTimeMode('duration')}
                             >
-                                ⏱️ Duration
+                                Duration
                             </button>
                             <button
                                 type="button"
-                                className={`time-mode-tab ${timeMode === 'absolute' ? 'active' : ''}`}
+                                className={cn(
+                                    "px-3 py-1 text-xs font-medium rounded-md transition-all",
+                                    timeMode === 'absolute' ? "bg-white/10 text-white" : "text-zinc-500 hover:text-zinc-300"
+                                )}
                                 onClick={() => setTimeMode('absolute')}
                             >
-                                📅 Absolute Time
+                                Custom Date
                             </button>
-                        </div>
-
-                        {timeMode === 'duration' ? (
-                            <div className="duration-mode">
-                                <div className="duration-presets-header">
-                                    <span className="duration-hint">Click to add time:</span>
-                                    {accumulatedDuration > 0 && (
-                                        <button
-                                            type="button"
-                                            className="reset-btn"
-                                            onClick={handleResetDuration}
-                                        >
-                                            ↺ Reset
-                                        </button>
-                                    )}
-                                </div>
-                                <div className="duration-presets-new">
-                                    {DURATION_PRESETS.map((preset) => (
-                                        <button
-                                            key={preset.label}
-                                            type="button"
-                                            className="preset-btn"
-                                            onClick={() => handlePresetClick(preset.minutes)}
-                                        >
-                                            +{preset.label}
-                                        </button>
-                                    ))}
-                                </div>
-                                <div className="custom-duration">
-                                    <label>Or set exact duration (minutes):</label>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={accumulatedDuration || ''}
-                                        placeholder="Enter minutes..."
-                                        onChange={(e) => handleCustomDurationChange(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="absolute-mode">
-                                <div className="absolute-time-inputs">
-                                    <div className="time-input-group">
-                                        <input
-                                            type="text"
-                                            maxLength={2}
-                                            placeholder="YY"
-                                            value={absoluteTime.year}
-                                            onChange={(e) => handleAbsoluteTimeChange('year', e.target.value.replace(/\D/g, ''))}
-                                        />
-                                        <span className="time-separator">-</span>
-                                        <input
-                                            type="text"
-                                            maxLength={2}
-                                            placeholder="MM"
-                                            value={absoluteTime.month}
-                                            onChange={(e) => handleAbsoluteTimeChange('month', e.target.value.replace(/\D/g, ''))}
-                                        />
-                                        <span className="time-separator">-</span>
-                                        <input
-                                            type="text"
-                                            maxLength={2}
-                                            placeholder="DD"
-                                            value={absoluteTime.day}
-                                            onChange={(e) => handleAbsoluteTimeChange('day', e.target.value.replace(/\D/g, ''))}
-                                        />
-                                        <span className="time-separator" style={{ margin: '0 8px' }}>@</span>
-                                        <input
-                                            type="text"
-                                            maxLength={2}
-                                            placeholder="HH"
-                                            value={absoluteTime.hour}
-                                            onChange={(e) => handleAbsoluteTimeChange('hour', e.target.value.replace(/\D/g, ''))}
-                                        />
-                                        <span className="time-separator">:</span>
-                                        <input
-                                            type="text"
-                                            maxLength={2}
-                                            placeholder="MM"
-                                            value={absoluteTime.minute}
-                                            onChange={(e) => handleAbsoluteTimeChange('minute', e.target.value.replace(/\D/g, ''))}
-                                        />
-                                    </div>
-                                </div>
-                                {calculatedDuration < 1 && (
-                                    <div className="time-error">⚠️ Please select a future time</div>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Unlock Time Preview */}
-                        <div className="unlock-preview">
-                            <div className="unlock-preview-label">Unlock at:</div>
-                            <div className="unlock-preview-time">{unlockTimeInfo.formatted}</div>
-                            <div className="unlock-preview-remaining">({unlockTimeInfo.remaining} from now)</div>
                         </div>
                     </div>
 
-                    <button
-                        type="submit"
-                        className="submit-button"
-                        disabled={isSubmitting || (type === 'text' ? !text.trim() : !file) || !unlockTimeInfo.isValid}
-                    >
-                        {isSubmitting ? 'Encrypting...' : 'Encrypt & Save'}
-                    </button>
-                </form>
-            </div>
-        </div>
+                    {timeMode === 'duration' ? (
+                        <div className="space-y-3">
+                            <div className="flex flex-wrap gap-2">
+                                {DURATION_PRESETS.map((preset) => (
+                                    <button
+                                        key={preset.label}
+                                        type="button"
+                                        className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/5 rounded-full text-xs font-medium text-zinc-400 hover:text-white transition-colors flex items-center gap-1"
+                                        onClick={() => handlePresetClick(preset.minutes)}
+                                    >
+                                        <Plus size={10} />
+                                        {preset.label}
+                                    </button>
+                                ))}
+                                {accumulatedDuration > 0 && (
+                                    <button
+                                        type="button"
+                                        className="px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-full text-xs font-medium transition-colors flex items-center gap-1 border border-red-500/20"
+                                        onClick={handleResetDuration}
+                                    >
+                                        <RefreshCw size={10} />
+                                        Reset
+                                    </button>
+                                )}
+                            </div>
+                            <div className="relative">
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={accumulatedDuration || ''}
+                                    placeholder="0"
+                                    onChange={(e) => handleCustomDurationChange(e.target.value)}
+                                    className="w-full pl-4 pr-12 py-3 bg-black/30 border border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono text-lg text-white"
+                                />
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-zinc-500">min</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-between gap-2 p-3 bg-black/30 rounded-xl border border-white/5">
+                            {/* Date Inputs */}
+                            <div className="flex items-center gap-1">
+                                <TimeInput
+                                    value={absoluteTime.year}
+                                    onChange={(v) => handleAbsoluteTimeChange('year', v)}
+                                    placeholder="YY"
+                                />
+                                <span className="text-zinc-600">/</span>
+                                <TimeInput
+                                    value={absoluteTime.month}
+                                    onChange={(v) => handleAbsoluteTimeChange('month', v)}
+                                    placeholder="MM"
+                                />
+                                <span className="text-zinc-600">/</span>
+                                <TimeInput
+                                    value={absoluteTime.day}
+                                    onChange={(v) => handleAbsoluteTimeChange('day', v)}
+                                    placeholder="DD"
+                                />
+                            </div>
+                            <span className="text-zinc-500">@</span>
+                            {/* Time Inputs */}
+                            <div className="flex items-center gap-1">
+                                <TimeInput
+                                    value={absoluteTime.hour}
+                                    onChange={(v) => handleAbsoluteTimeChange('hour', v)}
+                                    placeholder="HH"
+                                />
+                                <span className="text-zinc-600">:</span>
+                                <TimeInput
+                                    value={absoluteTime.minute}
+                                    onChange={(v) => handleAbsoluteTimeChange('minute', v)}
+                                    placeholder="MM"
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Unlock Preview */}
+                    <div className={cn(
+                        "rounded-xl p-4 flex items-center justify-between border transition-all duration-300",
+                        unlockTimeInfo.isValid
+                            ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-200"
+                            : "bg-red-500/10 border-red-500/20 text-red-200"
+                    )}>
+                        <div className="flex items-center gap-3">
+                            <div className={cn(
+                                "p-2 rounded-full",
+                                unlockTimeInfo.isValid ? "bg-indigo-500/20 text-indigo-400" : "bg-red-500/20 text-red-400"
+                            )}>
+                                {unlockTimeInfo.isValid ? <Lock size={18} /> : <AlertCircle size={18} />}
+                            </div>
+                            <div>
+                                <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">
+                                    {unlockTimeInfo.isValid ? "Unlocks at" : "Invalid Time"}
+                                </p>
+                                <p className="text-lg font-bold font-mono tracking-tight">
+                                    {unlockTimeInfo.isValid ? unlockTimeInfo.formatted : "Check Input"}
+                                </p>
+                            </div>
+                        </div>
+                        {unlockTimeInfo.isValid && (
+                            <div className="text-right">
+                                <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">Remaining</p>
+                                <p className="text-sm font-medium">{unlockTimeInfo.remaining}</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <button
+                    type="submit"
+                    className="w-full py-4 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transform active:scale-[0.99]"
+                    disabled={isSubmitting || (type === 'text' ? !text.trim() : !file) || !unlockTimeInfo.isValid}
+                >
+                    {isSubmitting ? (
+                        <>
+                            <RefreshCw size={18} className="animate-spin" />
+                            Encrypting...
+                        </>
+                    ) : (
+                        <>
+                            <Lock size={18} />
+                            Encrypt & Save
+                        </>
+                    )}
+                </button>
+            </form>
+        </Modal>
+    );
+}
+
+function TimeInput({ value, onChange, placeholder }: { value: string, onChange: (v: string) => void, placeholder: string }) {
+    return (
+        <input
+            type="text"
+            maxLength={2}
+            className="w-10 p-1 text-center bg-transparent border-b-2 border-white/10 focus:border-indigo-500 focus:outline-none font-mono font-medium rounded text-lg text-white placeholder-zinc-700 transition-colors"
+            placeholder={placeholder}
+            value={value}
+            onChange={(e) => onChange(e.target.value.replace(/\D/g, ''))}
+            onFocus={(e) => e.target.select()}
+        />
     );
 }

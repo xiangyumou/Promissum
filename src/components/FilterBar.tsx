@@ -1,6 +1,8 @@
 'use client';
 
 import { FilterParams } from '@/lib/api-client';
+import { cn } from '@/lib/utils';
+import { FileText, Image as ImageIcon, Lock, Unlock, X } from 'lucide-react';
 
 interface FilterBarProps {
     filters: FilterParams;
@@ -19,67 +21,83 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
     const hasActiveFilters = filters.status !== 'all' || !!filters.type;
 
     return (
-        <div className="filter-bar">
-            {/* Status Filter - using toggle button pattern from AddModal */}
-            <div className="filter-section">
-                <div className="filter-section-label">状态</div>
-                <div className="type-toggle">
-                    <button
-                        className={`toggle-btn ${filters.status === 'all' ? 'active' : ''}`}
+        <div className="px-3 py-2 space-y-4 mb-2">
+            {/* Status Filter */}
+            <div className="space-y-2">
+                <div className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider pl-1 font-mono">Status</div>
+                <div className="flex bg-black/20 p-1 rounded-xl">
+                    <FilterButton
+                        active={filters.status === 'all'}
                         onClick={() => handleStatusChange('all')}
-                    >
-                        全部
-                    </button>
-                    <button
-                        className={`toggle-btn ${filters.status === 'locked' ? 'active' : ''}`}
+                        label="All"
+                    />
+                    <FilterButton
+                        active={filters.status === 'locked'}
                         onClick={() => handleStatusChange('locked')}
-                    >
-                        🔒 锁定
-                    </button>
-                    <button
-                        className={`toggle-btn ${filters.status === 'unlocked' ? 'active' : ''}`}
+                        icon={<Lock size={12} />}
+                        label="Locked"
+                    />
+                    <FilterButton
+                        active={filters.status === 'unlocked'}
                         onClick={() => handleStatusChange('unlocked')}
-                    >
-                        ✅ 解锁
-                    </button>
+                        icon={<Unlock size={12} />}
+                        label="Open"
+                    />
                 </div>
             </div>
 
-            {/* Type Filter - using toggle button pattern from AddModal */}
-            <div className="filter-section">
-                <div className="filter-section-label">类型</div>
-                <div className="type-toggle">
-                    <button
-                        className={`toggle-btn ${!filters.type ? 'active' : ''}`}
+            {/* Type Filter */}
+            <div className="space-y-2">
+                <div className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider pl-1 font-mono">Type</div>
+                <div className="flex bg-black/20 p-1 rounded-xl">
+                    <FilterButton
+                        active={!filters.type}
                         onClick={() => handleTypeChange(undefined)}
-                    >
-                        全部
-                    </button>
-                    <button
-                        className={`toggle-btn ${filters.type === 'text' ? 'active' : ''}`}
+                        label="All"
+                    />
+                    <FilterButton
+                        active={filters.type === 'text'}
                         onClick={() => handleTypeChange('text')}
-                    >
-                        📝 文本
-                    </button>
-                    <button
-                        className={`toggle-btn ${filters.type === 'image' ? 'active' : ''}`}
+                        icon={<FileText size={12} />}
+                        label="Text"
+                    />
+                    <FilterButton
+                        active={filters.type === 'image'}
                         onClick={() => handleTypeChange('image')}
-                    >
-                        🖼️ 图片
-                    </button>
+                        icon={<ImageIcon size={12} />}
+                        label="Image"
+                    />
                 </div>
             </div>
 
             {/* Reset Button */}
             {hasActiveFilters && (
                 <button
-                    className="reset-btn"
+                    className="w-full mt-2 py-2 flex items-center justify-center gap-1.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors border border-transparent hover:border-white/10"
                     onClick={() => onFilterChange({ status: 'all' })}
-                    title="重置筛选"
+                    title="Reset Filters"
                 >
-                    ✕ 重置
+                    <X size={12} />
+                    Clear Filters
                 </button>
             )}
         </div>
     );
+}
+
+function FilterButton({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon?: React.ReactNode, label: string }) {
+    return (
+        <button
+            className={cn(
+                "flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded-lg transition-all",
+                active
+                    ? "bg-white/10 text-white shadow-sm border border-white/5"
+                    : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
+            )}
+            onClick={onClick}
+        >
+            {icon}
+            {label}
+        </button>
+    )
 }

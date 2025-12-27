@@ -12,6 +12,7 @@ export function Providers({ children }: { children: ReactNode }) {
             {children}
             <Toaster
                 position="top-center"
+                theme="dark"
                 richColors
                 closeButton
                 duration={3000}

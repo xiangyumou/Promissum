@@ -56,13 +56,6 @@ export default function Home() {
     setSidebarOpen(false);
   };
 
-  if (loading) {
-    return (
-      <div className="app-container" style={{ justifyContent: 'center', alignItems: 'center' }}>
-        <div className="spinner"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="app-container">
@@ -71,10 +64,15 @@ export default function Home() {
         selectedId={selectedId}
         onSelectItem={handleSelectItem}
         onAddClick={() => setShowAddModal(true)}
+        onShowDashboard={() => {
+          setSelectedId(null);
+          setSidebarOpen(false);
+        }}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         filters={filters}
         onFilterChange={setFilters}
+        isLoading={loading}
       />
 
       <ContentView
