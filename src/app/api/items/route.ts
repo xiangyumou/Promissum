@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { apiClient } from '@/lib/api-client';
-import { v4 as uuidv4 } from 'uuid';
 
 // GET /api/items - List all items
 export async function GET(request: NextRequest) {

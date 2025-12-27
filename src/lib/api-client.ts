@@ -6,68 +6,28 @@
  */
 
 import { env, validateEnv } from './env';
+import {
+    ApiItemListView,
+    ApiItemDetail,
+    CreateItemRequest,
+    ExtendItemRequest,
+    FilterParams,
+    SystemStats,
+} from './types';
+
+// Re-export types for convenience
+export type {
+    ApiItemListView,
+    ApiItemDetail,
+    CreateItemRequest,
+    ExtendItemRequest,
+    FilterParams,
+    SystemStats,
+};
 
 // Validate environment on module load
 validateEnv();
 
-/**
- * API Response Types
- */
-export interface ApiItemListView {
-    id: string;
-    type: 'text' | 'image';
-    unlocked: boolean;
-    decryptAt: number;
-    createdAt?: number;
-    metadata?: Record<string, unknown>;
-}
-
-export interface ApiItemDetail {
-    id: string;
-    type: 'text' | 'image';
-    unlocked: boolean;
-    timeRemainingMs?: number;
-    decryptAt: number;
-    content: string | null;
-    metadata?: Record<string, unknown>;
-}
-
-export interface CreateItemRequest {
-    type: 'text' | 'image';
-    content: string; // Text string or Base64 for images
-    durationMinutes?: number;
-    decryptAt?: number; // Epoch timestamp in milliseconds
-    metadata?: Record<string, unknown>;
-}
-
-export interface ExtendItemRequest {
-    minutes: number;
-}
-
-/**
- * Filter parameters for listing items
- */
-export interface FilterParams {
-    status?: 'all' | 'locked' | 'unlocked';
-    type?: 'text' | 'image';
-    limit?: number;
-    offset?: number;
-    sort?: 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc';
-}
-
-/**
- * System statistics response
- */
-export interface SystemStats {
-    totalItems: number;
-    lockedItems: number;
-    unlockedItems: number;
-    byType: {
-        text: number;
-        image: number;
-    };
-    avgLockDurationMinutes?: number;
-}
 
 /**
  * API Client Class
