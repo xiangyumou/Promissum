@@ -19,8 +19,22 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             }, { status: 400 });
         }
 
-        // Call remote API service
-        const apiResponse = await apiClient.extendItem(id, minutes);
+        // Fetch current item state to check if it's already unlocked
+        const item = await apiClient.getItemById(id);
+        const now = Date.now();
+        let effectiveMinutes = minutes;
+
+        // If item is already unlocked (time in past), we need to add enough minutes
+        // to cover the gap between now and decrypt_at, plus the requested minutes.
+        if (item.decryptAt < now) {
+            const gapMs = now - item.decryptAt;
+            // gapMinutes needs to be rounded up to ensure we are definitely in the future
+            const gapMinutes = Math.ceil(gapMs / (1000 * 60));
+            effectiveMinutes = minutes + gapMinutes;
+        }
+
+        // Call remote API service with the adjusted duration
+        const apiResponse = await apiClient.extendItem(id, effectiveMinutes);
 
         return NextResponse.json({
             success: true,
