@@ -56,6 +56,20 @@ export interface FilterParams {
 }
 
 /**
+ * System statistics response
+ */
+export interface SystemStats {
+    totalItems: number;
+    lockedItems: number;
+    unlockedItems: number;
+    byType: {
+        text: number;
+        image: number;
+    };
+    avgLockDurationMinutes?: number;
+}
+
+/**
  * API Client Class
  */
 class ChasterApiClient {
@@ -147,6 +161,13 @@ class ChasterApiClient {
         return this.request<{ success: boolean }>(`/items/${id}`, {
             method: 'DELETE',
         });
+    }
+
+    /**
+     * Get system statistics
+     */
+    async getStats(): Promise<SystemStats> {
+        return this.request<SystemStats>('/stats');
     }
 }
 
