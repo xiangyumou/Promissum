@@ -222,7 +222,8 @@ function ItemCard({ item, isSelected, onClick }: ItemCardProps) {
                     "text-sm font-medium truncate transition-colors",
                     isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                 )}>
-                    {item.type === 'text' ? tCommon('textNote') : (item.original_name || tCommon('image'))}
+                    {item.metadata?.title ||
+                        (item.type === 'text' ? tCommon('textNote') : (item.original_name || tCommon('image')))}
                 </div>
                 <div className={cn(
                     "text-xs flex items-center gap-1.5 mt-1 font-medium truncate",

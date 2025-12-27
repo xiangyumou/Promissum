@@ -92,18 +92,18 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-foreground tracking-tight">
-                                {item.type === 'text' ? tCommon('textNote') : (item.original_name || tCommon('image'))}
+                                {item.metadata?.title ||
+                                    (item.type === 'text' ? tCommon('textNote') : (item.original_name || tCommon('image')))}
                             </h2>
-                            <div className="flex items-center gap-2 mt-1 text-sm">
-                                <span className={cn(
-                                    "flex items-center gap-1.5 px-2 py-0.5 rounded-md font-medium text-xs border",
-                                    isUnlocked
-                                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                                        : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                                )}>
-                                    {isUnlocked ? <Unlock size={10} /> : <Lock size={10} />}
-                                    {isUnlocked ? tCommon('unlocked') : tCommon('locked')}
-                                </span>
+                            <div className="flex items-center gap-2 mt-1 text-sm">\n                                <span className={cn(
+                                "flex items-center gap-1.5 px-2 py-0.5 rounded-md font-medium text-xs border",
+                                isUnlocked
+                                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                    : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                            )}>
+                                {isUnlocked ? <Unlock size={10} /> : <Lock size={10} />}
+                                {isUnlocked ? tCommon('unlocked') : tCommon('locked')}
+                            </span>
                                 <span className="text-muted-foreground flex items-center gap-1 text-xs">
                                     <Clock size={10} />
                                     {new Date(item.created_at).toLocaleString()}
