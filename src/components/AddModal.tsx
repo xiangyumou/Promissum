@@ -226,7 +226,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
             isOpen={isOpen}
             onClose={onClose}
             title={t('title')}
-            className="max-w-[500px]"
+            className="md:max-w-[500px]"
         >
             <form onSubmit={handleSubmit} className="p-6 pt-2 space-y-6">
                 {/* Type Selection */}
@@ -399,7 +399,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                             </div>
                         </div>
                     ) : (
-                        <div className="flex items-center justify-between gap-2 p-3 bg-muted/30 rounded-xl border border-border">
+                        <div className="flex flex-wrap items-center justify-center gap-2 p-3 bg-muted/30 rounded-xl border border-border">
                             {/* Date Inputs */}
                             <div className="flex items-center gap-1">
                                 <TimeInput

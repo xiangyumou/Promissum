@@ -480,12 +480,6 @@ body {
   .mobile-show {
     display: block !important;
   }
-
-  /* Responsive grid adjustments */
-  .grid-cols-1.md\\:grid-cols-2,
-  .grid-cols-1.md\\:grid-cols-3 {
-    gap: 0.75rem;
-  }
 }
 
 /* Desktop-only utilities */
