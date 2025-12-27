@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { apiClient } from '@/lib/api-client';
+import { ExtendItemSchema, formatZodErrors } from '@/lib/validation';
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -9,11 +10,20 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     try {
         const { id } = await params;
         const body = await request.json();
-        const { minutes } = body;
+
+        // Validate input with Zod
+        const validation = ExtendItemSchema.safeParse(body);
+        if (!validation.success) {
+            return NextResponse.json({
+                error: formatZodErrors(validation.error)
+            }, { status: 400 });
+        }
+
+        const { minutes } = validation.data;
 
         // Valid presets: 1m, 10m, 1h, 6h, 1d
         const validMinutes = [1, 10, 60, 360, 1440];
-        if (!minutes || !validMinutes.includes(minutes)) {
+        if (!validMinutes.includes(minutes)) {
             return NextResponse.json({
                 error: 'Invalid minutes, must be 1, 10, 60, 360, or 1440'
             }, { status: 400 });
