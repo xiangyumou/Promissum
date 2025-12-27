@@ -158,6 +158,8 @@
         "token": "API Token",
         "allowCustomToken": "Use Custom Token",
         "tokenDesc": "Override system API token (optional)",
+        "apiUrl": "API Service URL",
+        "apiUrlDesc": "Override system API service URL (optional)",
         "checkConnection": "Check Connection",
         "connectionOk": "Connection Successful",
         "connectionFailed": "Connection Failed",

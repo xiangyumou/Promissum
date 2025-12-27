@@ -76,6 +76,8 @@ export default function SettingsPage() {
         setPanicShortcut,
         apiToken,
         setApiToken,
+        apiUrl,
+        setApiUrl,
 
         // Actions
         resetToDefaults,
@@ -87,6 +89,7 @@ export default function SettingsPage() {
     const [durationInput, setDurationInput] = useState(defaultDurationMinutes.toString());
     const [panicUrlInput, setPanicUrlInput] = useState(panicUrl);
     const [panicShortcutInput, setPanicShortcutInput] = useState(panicShortcut);
+    const [apiUrlInput, setApiUrlInput] = useState(apiUrl);
 
     // API Check State
     const [isCheckingApi, setIsCheckingApi] = useState(false);
@@ -723,6 +726,27 @@ export default function SettingsPage() {
                                 onChange={(e) => setPanicShortcutInput(e.target.value)}
                                 className="premium-input"
                                 placeholder="alt+p"
+                            />
+                        </div>
+
+                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+                        {/* API URL */}
+                        <div className="space-y-3">
+                            <div className="space-y-1">
+                                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                    <ExternalLink size={16} />
+                                    {t('apiUrl')}
+                                </label>
+                                <p className="text-xs text-muted-foreground">{t('apiUrlDesc')}</p>
+                            </div>
+                            <input
+                                type="url"
+                                value={apiUrlInput}
+                                onChange={(e) => setApiUrlInput(e.target.value)}
+                                onBlur={() => setApiUrl(apiUrlInput)}
+                                className="flex-1 px-4 py-2 bg-muted/30 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 w-full"
+                                placeholder="http://localhost:3000/api/v1"
                             />
                         </div>
 

@@ -5,7 +5,7 @@
  * Handles authentication, request formatting, and response parsing.
  */
 
-import { env, validateEnv } from './env';
+import { getEffectiveApiUrl, getEffectiveApiToken } from './env';
 import {
     ApiItemListView,
     ApiItemDetail,
@@ -25,20 +25,28 @@ export type {
     SystemStats,
 };
 
-// Validate environment on module load
-validateEnv();
+// Import settings store for dynamic configuration
+import { useSettings } from './stores/settings-store';
 
 
 /**
  * API Client Class
  */
 class ChasterApiClient {
-    private baseUrl: string;
-    private token: string;
+    /**
+     * Get current base URL with priority: env var > user setting > default
+     */
+    private get baseUrl(): string {
+        const { apiUrl } = useSettings.getState();
+        return getEffectiveApiUrl(apiUrl);
+    }
 
-    constructor() {
-        this.baseUrl = env.apiUrl;
-        this.token = env.apiToken;
+    /**
+     * Get current token with priority: env var > user setting
+     */
+    private get token(): string {
+        const { apiToken } = useSettings.getState();
+        return getEffectiveApiToken(apiToken);
     }
 
     /**
