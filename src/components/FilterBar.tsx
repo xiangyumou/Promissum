@@ -2,8 +2,9 @@
 
 import { FilterParams } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
-import { FileText, Image as ImageIcon, Lock, Unlock, X } from 'lucide-react';
+import { FileText, Image as ImageIcon, Lock, Unlock, X, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 
 interface FilterBarProps {
     filters: FilterParams;
@@ -13,6 +14,7 @@ interface FilterBarProps {
 export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
     const t = useTranslations('Sidebar');
     const tCommon = useTranslations('Common');
+    const [searchInput, setSearchInput] = useState(filters.search || '');
 
     const handleStatusChange = (status: FilterParams['status']) => {
         onFilterChange({ ...filters, status });
@@ -22,10 +24,39 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
         onFilterChange({ ...filters, type });
     };
 
-    const hasActiveFilters = filters.status !== 'all' || !!filters.type;
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setSearchInput(value);
+        onFilterChange({ ...filters, search: value });
+    };
+
+    const hasActiveFilters = filters.status !== 'all' || !!filters.type || !!filters.search;
 
     return (
         <div className="px-3 py-2 space-y-4 mb-2">
+            {/* Search Input */}
+            <div className="relative">
+                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <input
+                    type="text"
+                    value={searchInput}
+                    onChange={handleSearchChange}
+                    placeholder={t('searchPlaceholder')}
+                    className="w-full pl-9 pr-3 py-2 text-xs bg-muted/30 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground placeholder-muted-foreground transition-all"
+                />
+                {searchInput && (
+                    <button
+                        onClick={() => {
+                            setSearchInput('');
+                            onFilterChange({ ...filters, search: '' });
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-accent rounded text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                        <X size={12} />
+                    </button>
+                )}
+            </div>
+
             {/* Status Filter */}
             <div className="space-y-2">
                 <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider pl-1 font-mono">Status</div>
@@ -78,7 +109,10 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
             {hasActiveFilters && (
                 <button
                     className="w-full mt-2 py-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors border border-transparent hover:border-border"
-                    onClick={() => onFilterChange({ status: 'all' })}
+                    onClick={() => {
+                        setSearchInput('');
+                        onFilterChange({ status: 'all' });
+                    }}
                     title="Reset Filters"
                 >
                     <X size={12} />
