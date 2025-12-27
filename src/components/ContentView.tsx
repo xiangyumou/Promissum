@@ -27,6 +27,20 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     const tCommon = useTranslations('Common');
     const { sidebarOpen, setSidebarOpen } = useSettings();
 
+    // Image zoom modal state (must be at top level before any conditional returns)
+    const [isZoomed, setIsZoomed] = useState(false);
+
+    // Close modal on ESC key
+    useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isZoomed) {
+                setIsZoomed(false);
+            }
+        };
+        window.addEventListener('keydown', handleEscape);
+        return () => window.removeEventListener('keydown', handleEscape);
+    }, [isZoomed]);
+
     // No item selected state -> Show welcome message
     if (!selectedId) {
         return (
@@ -80,24 +94,12 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     }
 
     const isUnlocked = Date.now() >= item.decrypt_at;
-    const [isZoomed, setIsZoomed] = useState(false);
 
     // Derive image source if type is image and item is unlocked
     // The API route already adds the data URL prefix if needed
     const imageSrc = item.type === 'image' && item.content
         ? (item.content.startsWith('data:') ? item.content : `data:image/png;base64,${item.content}`)
         : '';
-
-    // Close modal on ESC key
-    useEffect(() => {
-        const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && isZoomed) {
-                setIsZoomed(false);
-            }
-        };
-        window.addEventListener('keydown', handleEscape);
-        return () => window.removeEventListener('keydown', handleEscape);
-    }, [isZoomed]);
 
     return (
         <div className="h-full flex flex-col bg-background relative overflow-hidden flex-1 w-full">
