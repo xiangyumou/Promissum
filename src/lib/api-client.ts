@@ -29,22 +29,40 @@ export type {
 import { useSettings } from './stores/settings-store';
 
 
+export interface ApiClientOptions {
+    baseUrl?: string;
+    token?: string;
+    fetchFn?: typeof fetch;
+}
+
 /**
  * API Client Class
  */
-class ChasterApiClient {
+export class ChasterApiClient {
+    private customBaseUrl?: string;
+    private customToken?: string;
+    private fetchFn: typeof fetch;
+
+    constructor(options: ApiClientOptions = {}) {
+        this.customBaseUrl = options.baseUrl;
+        this.customToken = options.token;
+        this.fetchFn = options.fetchFn || fetch;
+    }
+
     /**
-     * Get current base URL with priority: env var > user setting > default
+     * Get current base URL with priority: constructor config > env var > user setting > default
      */
     private get baseUrl(): string {
+        if (this.customBaseUrl) return this.customBaseUrl;
         const { apiUrl } = useSettings.getState();
         return getEffectiveApiUrl(apiUrl);
     }
 
     /**
-     * Get current token with priority: env var > user setting
+     * Get current token with priority: constructor config > env var > user setting
      */
     private get token(): string {
+        if (this.customToken) return this.customToken;
         const { apiToken } = useSettings.getState();
         return getEffectiveApiToken(apiToken);
     }
@@ -58,7 +76,7 @@ class ChasterApiClient {
     ): Promise<T> {
         const url = `${this.baseUrl}${endpoint}`;
 
-        const response = await fetch(url, {
+        const response = await this.fetchFn(url, {
             ...options,
             headers: {
                 'Authorization': `Bearer ${this.token}`,
@@ -140,9 +158,16 @@ class ChasterApiClient {
 }
 
 /**
+ * Factory function to create an API client instance
+ */
+export function createApiClient(options?: ApiClientOptions): ChasterApiClient {
+    return new ChasterApiClient(options);
+}
+
+/**
  * Singleton API client instance
  */
-export const apiClient = new ChasterApiClient();
+export const apiClient = createApiClient();
 
 /**
  * Helper: Convert File to Base64 string

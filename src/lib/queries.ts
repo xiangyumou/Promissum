@@ -32,6 +32,8 @@ export const queryKeys = {
 };
 
 import { useSettings } from '@/lib/stores/settings-store';
+import { apiService } from './services/api-service';
+import { timeService } from './services/time-service';
 
 /**
  * Hook: Fetch system statistics
@@ -42,13 +44,7 @@ export function useStats() {
 
     return useQuery({
         queryKey: queryKeys.stats,
-        queryFn: async (): Promise<SystemStats> => {
-            const response = await fetch('/api/stats');
-            if (!response.ok) {
-                throw new Error('Failed to fetch stats');
-            }
-            return response.json();
-        },
+        queryFn: () => apiService.getStats(),
         staleTime: cacheTime,
         gcTime: cacheTime,
     });
@@ -65,28 +61,7 @@ export function useItems(filters?: FilterParams) {
 
     return useQuery({
         queryKey: queryKeys.items.list(filters),
-        queryFn: async () => {
-            const params = new URLSearchParams();
-
-            if (filters?.status && filters.status !== 'all') {
-                params.set('status', filters.status);
-            }
-            if (filters?.type) {
-                params.set('type', filters.type);
-            }
-            params.set('sort', filters?.sort || 'created_desc');
-
-            const queryString = params.toString();
-            const url = `/api/items${queryString ? `?${queryString}` : ''}`;
-
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error('Failed to fetch items');
-            }
-
-            const data = await response.json();
-            return data.items || [];
-        },
+        queryFn: () => apiService.getItems(filters),
         staleTime: cacheTime,
         gcTime: cacheTime,
         // Refetch based on settings (convert seconds to ms)
@@ -106,11 +81,14 @@ export function useItem(id: string | null) {
     return useQuery({
         queryKey: queryKeys.items.detail(id!),
         queryFn: async () => {
-            const response = await fetch(`/api/items/${id}`);
-            if (!response.ok) {
-                throw new ApiError('Failed to fetch item', response.status);
+            try {
+                return await apiService.getItem(id!);
+            } catch (error: any) {
+                if (error.status) {
+                    throw new ApiError('Failed to fetch item', error.status);
+                }
+                throw error;
             }
-            return response.json() as Promise<ItemDetail>;
         },
         enabled: !!id, // Only fetch if id exists
         staleTime: cacheTime,
@@ -138,7 +116,7 @@ export function useItem(id: string | null) {
             }
 
             // Calculate time remaining
-            const now = Date.now();
+            const now = timeService.now();
             const timeRemaining = data.decrypt_at - now;
 
             // If time is up or close (within 1 minute), poll faster (5s) to catch unlock
@@ -158,19 +136,7 @@ export function useDeleteItem() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (id: string) => {
-            const response = await fetch(`/api/items/${id}`, {
-                method: 'DELETE',
-            });
-            if (!response.ok) {
-                // Ignore 404s during delete, treat as success (idempotent)
-                if (response.status === 404) {
-                    return { success: true };
-                }
-                throw new Error('Failed to delete item');
-            }
-            return response.json();
-        },
+        mutationFn: (id: string) => apiService.deleteItem(id),
         onSuccess: () => {
             // Invalidate items list to refetch
             queryClient.invalidateQueries({ queryKey: queryKeys.items.all });
@@ -187,20 +153,7 @@ export function useExtendItem(id: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (minutes: number) => {
-            const response = await fetch(`/api/items/${id}/extend`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ minutes }),
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Failed to extend lock');
-            }
-
-            return response.json();
-        },
+        mutationFn: (minutes: number) => apiService.extendItem(id, minutes),
         onSuccess: () => {
             // Invalidate this item's detail
             queryClient.invalidateQueries({ queryKey: queryKeys.items.detail(id) });
@@ -217,18 +170,7 @@ export function useCreateItem() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (formData: FormData) => {
-            const response = await fetch('/api/items', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to create item');
-            }
-
-            return response.json();
-        },
+        mutationFn: (formData: FormData) => apiService.createItem(formData),
         onSuccess: () => {
             // Invalidate items list
             queryClient.invalidateQueries({ queryKey: queryKeys.items.all });

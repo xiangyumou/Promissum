@@ -50,8 +50,8 @@ export interface ApiItemListView {
     id: string;
     type: 'text' | 'image';
     unlocked: boolean;
-    decryptAt: number;
-    createdAt?: number;
+    decrypt_at: number;
+    created_at?: number;
     metadata?: ItemMetadata;
 }
 
@@ -63,7 +63,7 @@ export interface ApiItemDetail {
     type: 'text' | 'image';
     unlocked: boolean;
     timeRemainingMs?: number;
-    decryptAt: number;
+    decrypt_at: number;
     content: string | null;
     metadata?: ItemMetadata;
 }
