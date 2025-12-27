@@ -4,6 +4,7 @@ import { useStats } from '@/lib/queries';
 import { Box, Lock, Unlock, FileText, Image as ImageIcon, Clock, Activity, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 export default function Dashboard() {
     const { data: stats, isLoading, error } = useStats();
@@ -26,6 +27,16 @@ export default function Dashboard() {
         );
     }
 
+    const typeChartData = [
+        { name: t('textNotes'), value: stats.byType.text, color: '#f97316' },
+        { name: t('images'), value: stats.byType.image, color: '#a855f7' },
+    ];
+
+    const statusChartData = [
+        { name: t('encrypted'), value: stats.lockedItems, color: '#f59e0b' },
+        { name: t('unlocked'), value: stats.unlockedItems, color: '#10b981' },
+    ];
+
     return (
         <div className="p-8 w-full space-y-8 animate-in fade-in duration-500">
             <div className="flex items-center gap-3 mb-8">
@@ -35,6 +46,7 @@ export default function Dashboard() {
                 <h2 className="text-2xl font-bold text-foreground tracking-tight">{t('systemOverview')}</h2>
             </div>
 
+            {/* Main Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatCard
                     label={t('totalItems')}
@@ -62,25 +74,72 @@ export default function Dashboard() {
                 />
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
-                <StatCard
-                    label={t('textNotes')}
-                    value={stats.byType.text}
-                    icon={<FileText size={24} />}
-                    color="text-orange-500"
-                    bg="bg-orange-500/10"
-                    border="border-orange-500/20"
-                />
-                <StatCard
-                    label={t('images')}
-                    value={stats.byType.image}
-                    icon={<ImageIcon size={24} />}
-                    color="text-purple-500"
-                    bg="bg-purple-500/10"
-                    border="border-purple-500/20"
-                />
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Type Distribution Chart */}
+                <div className="glass-card p-6 rounded-2xl border border-border">
+                    <h3 className="text-lg font-semibold text-foreground mb-4">Content Type Distribution</h3>
+                    <ResponsiveContainer width="100%" height={200}>
+                        <PieChart>
+                            <Pie
+                                data={typeChartData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={60}
+                                outerRadius={80}
+                                paddingAngle={5}
+                                dataKey="value"
+                            >
+                                {typeChartData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                            </Pie>
+                            <Tooltip />
+                        </PieChart>
+                    </ResponsiveContainer>
+                    <div className="flex justify-center gap-4 mt-4">
+                        {typeChartData.map((item, idx) => (
+                            <div key={idx} className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+                                <span className="text-sm text-muted-foreground">{item.name}: {item.value}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Status Distribution Chart */}
+                <div className="glass-card p-6 rounded-2xl border border-border">
+                    <h3 className="text-lg font-semibold text-foreground mb-4">Lock Status Distribution</h3>
+                    <ResponsiveContainer width="100%" height={200}>
+                        <PieChart>
+                            <Pie
+                                data={statusChartData}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={60}
+                                outerRadius={80}
+                                paddingAngle={5}
+                                dataKey="value"
+                            >
+                                {statusChartData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                            </Pie>
+                            <Tooltip />
+                        </PieChart>
+                    </ResponsiveContainer>
+                    <div className="flex justify-center gap-4 mt-4">
+                        {statusChartData.map((item, idx) => (
+                            <div key={idx} className="flex items-center gap-2">
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+                                <span className="text-sm text-muted-foreground">{item.name}: {item.value}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </div>
 
+            {/* Average Duration Card */}
             {stats.avgLockDurationMinutes !== undefined && (
                 <div className="glass-card p-6 rounded-2xl flex items-center justify-between">
                     <div className="flex items-center gap-4">
