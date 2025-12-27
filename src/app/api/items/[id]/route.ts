@@ -35,12 +35,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         return NextResponse.json(response);
     } catch (error) {
-        console.error('Error fetching item from API:', error);
-
         // Check if it's a 404 error
         if (error instanceof Error && error.message.includes('404')) {
             return NextResponse.json({ error: 'Item not found' }, { status: 404 });
         }
+
+        console.error('Error fetching item from API:', error);
 
         return NextResponse.json({
             error: 'Failed to fetch item',
@@ -59,12 +59,12 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error deleting item via API:', error);
-
         // Check if it's a 404 error
         if (error instanceof Error && error.message.includes('404')) {
             return NextResponse.json({ error: 'Item not found' }, { status: 404 });
         }
+
+        console.error('Error deleting item via API:', error);
 
         return NextResponse.json({
             error: 'Failed to delete item',
