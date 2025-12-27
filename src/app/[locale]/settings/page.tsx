@@ -813,7 +813,7 @@ export default function SettingsPage() {
                 </div>
                 {/* Dashboard Section */}
                 <section className="space-y-4 pt-8 border-t border-border">
-                    <Dashboard />
+                    {isMounted && <Dashboard />}
                 </section>
 
                 <ConfirmDialog
