@@ -4,13 +4,14 @@ import { ItemListView } from '@/lib/types';
 import { FilterParams } from '@/lib/api-client';
 import FilterBar from './FilterBar';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, LayoutDashboard } from 'lucide-react';
+import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, LayoutDashboard, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from './ui/Skeleton'; // Assuming Skeleton is theme-neutral or updated later
 import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
 import ApiStatusIndicator from './ApiStatusIndicator';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 
 interface SidebarProps {
     items: ItemListView[];
@@ -39,6 +40,7 @@ export default function Sidebar({
 }: SidebarProps) {
     const t = useTranslations('Sidebar');
     const tCommon = useTranslations('Common');
+    const tSettings = useTranslations('Settings');
 
     // Sidebar motion variants
     const sidebarVariants = {
