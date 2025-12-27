@@ -42,18 +42,18 @@ export default function Dashboard() {
 
     return (
         <div className={cn(
-            "p-8 w-full space-y-8 animate-in fade-in duration-500 transition-all duration-300",
+            "p-4 md:p-8 w-full space-y-4 md:space-y-8 animate-in fade-in duration-500 transition-all duration-300",
             privacyMode && "blur-md hover:blur-0"
         )}>
-            <div className="flex items-center gap-3 mb-8">
+            <div className="flex items-center gap-3 mb-4 md:mb-8">
                 <div className="p-2 bg-primary/10 rounded-lg">
                     <Activity className="text-primary" size={24} />
                 </div>
-                <h2 className="text-2xl font-bold text-foreground tracking-tight">{t('systemOverview')}</h2>
+                <h2 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">{t('systemOverview')}</h2>
             </div>
 
             {/* Main Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                 <StatCard
                     label={t('totalItems')}
                     value={stats.totalItems}
@@ -81,7 +81,7 @@ export default function Dashboard() {
             </div>
 
             {/* Charts Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 {/* Type Distribution Chart */}
                 <div className="glass-card p-6 rounded-2xl border border-border">
                     <h3 className="text-lg font-semibold text-foreground mb-4">{t('contentTypeDistribution')}</h3>

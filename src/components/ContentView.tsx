@@ -104,9 +104,9 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     return (
         <div className="h-full flex flex-col bg-background relative overflow-hidden flex-1 w-full">
             {/* Header / Meta Info */}
-            <div className="shrink-0 p-6 border-b border-border bg-card/30 backdrop-blur-xl z-20">
-                <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-center gap-4">
+            <div className="shrink-0 p-4 md:p-6 border-b border-border bg-card/30 backdrop-blur-xl z-20">
+                <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 md:gap-4">
+                    <div className="flex items-center gap-3 md:gap-4">
                         {/* Mobile Menu Button */}
                         <button
                             onClick={onMenuClick}
@@ -118,27 +118,28 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                         </button>
 
                         <div className={cn(
-                            "w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-lg",
+                            "w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-xl shadow-lg shrink-0",
                             item.type === 'text'
                                 ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
                                 : "bg-purple-500/10 text-purple-400 border border-purple-500/20"
                         )}>
-                            {item.type === 'text' ? <FileText size={24} /> : <ImageIcon size={24} />}
+                            {item.type === 'text' ? <FileText size={20} className="md:w-6 md:h-6" /> : <ImageIcon size={20} className="md:w-6 md:h-6" />}
                         </div>
-                        <div>
-                            <h2 className="text-xl font-bold text-foreground tracking-tight">
+                        <div className="min-w-0 flex-1">
+                            <h2 className="text-lg md:text-xl font-bold text-foreground tracking-tight truncate">
                                 {item.metadata?.title ||
                                     (item.type === 'text' ? tCommon('textNote') : (item.original_name || tCommon('image')))}
                             </h2>
-                            <div className="flex items-center gap-2 mt-1 text-sm">                                <span className={cn(
-                                "flex items-center gap-1.5 px-2 py-0.5 rounded-md font-medium text-xs border",
-                                isUnlocked
-                                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                                    : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                            )}>
-                                {isUnlocked ? <Unlock size={10} /> : <Lock size={10} />}
-                                {isUnlocked ? tCommon('unlocked') : tCommon('locked')}
-                            </span>
+                            <div className="flex flex-wrap items-center gap-2 mt-1 text-sm">
+                                <span className={cn(
+                                    "flex items-center gap-1.5 px-2 py-0.5 rounded-md font-medium text-xs border",
+                                    isUnlocked
+                                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                        : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                                )}>
+                                    {isUnlocked ? <Unlock size={10} /> : <Lock size={10} />}
+                                    {isUnlocked ? tCommon('unlocked') : tCommon('locked')}
+                                </span>
                                 <span className="text-muted-foreground flex items-center gap-1 text-xs">
                                     <Clock size={10} />
                                     {new Date(item.created_at).toLocaleString()}
@@ -147,7 +148,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 ml-auto md:ml-0 shrink-0">
                         <ExtendButton onExtend={(mins) => onExtend(item.id, mins)} />
                         <DeleteButton id={item.id} onDelete={onDelete} />
                     </div>

@@ -23,7 +23,8 @@ import {
     Lock,
     Key,
     CheckCircle2,
-    XCircle
+    XCircle,
+    ArrowLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
 import ExportButton from '@/components/ExportButton';
@@ -34,6 +35,7 @@ import { queryClient } from '@/lib/query-client';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { getCacheStats, clearPersistedCache, setCacheTTL } from '@/lib/cache-config';
+import { Link } from '@/i18n/routing';
 
 export default function SettingsPage() {
     const t = useTranslations('Settings');
@@ -313,11 +315,19 @@ export default function SettingsPage() {
 
     return (
         <div className="h-full overflow-y-auto bg-background custom-scrollbar">
-            <div className="max-w-4xl mx-auto p-6 space-y-8">
+            <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 md:space-y-8">
                 {/* Header */}
                 <div className="flex items-center gap-3 pb-4 border-b border-border">
-                    <SettingsIcon size={32} className="text-primary" />
-                    <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
+                    {/* Mobile Back Button */}
+                    <Link
+                        href="/"
+                        className="p-2 -ml-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors md:hidden"
+                    >
+                        <ArrowLeft size={20} />
+                    </Link>
+                    <SettingsIcon size={32} className="text-primary hidden md:block" />
+                    <SettingsIcon size={24} className="text-primary md:hidden" />
+                    <h1 className="text-2xl md:text-3xl font-bold text-foreground">{t('title')}</h1>
                 </div>
 
                 {/* Appearance Section */}
