@@ -2,16 +2,19 @@
 
 import { useState } from 'react';
 import { useItems } from '@/lib/queries';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Download, FileJson, FileText } from 'lucide-react';
 import { saveAs } from 'file-saver';
 import { ItemListView } from '@/lib/types';
 import { useHasMounted } from '@/hooks/useHasMounted';
+import { formatDateTime } from '@/lib/date-utils';
 
 export default function ExportButton() {
     const { data: items = [] } = useItems({ status: 'unlocked' });
     const t = useTranslations('Settings');
+    const locale = useLocale();
     const [isExporting, setIsExporting] = useState(false);
+    const hasMounted = useHasMounted();
     const hasMounted = useHasMounted();
 
     if (!hasMounted) return null;
@@ -41,7 +44,7 @@ export default function ExportButton() {
         setIsExporting(true);
         try {
             let markdown = `# Chaster Export\n\n`;
-            markdown += `Generated: ${new Date().toLocaleString()}\n\n`;
+            markdown += `Generated: ${formatDateTime(new Date(), locale)}\n\n`;
             markdown += `Total Unlocked Items: ${items.length}\n\n`;
             markdown += `---\n\n`;
 
@@ -49,8 +52,8 @@ export default function ExportButton() {
                 const title = item.metadata?.title || `${item.type} Item ${index + 1}`;
                 markdown += `## ${title}\n\n`;
                 markdown += `- **Type**: ${item.type}\n`;
-                markdown += `- **Created**: ${new Date(item.created_at).toLocaleString()}\n`;
-                markdown += `- **Unlocked**: ${new Date(item.decrypt_at).toLocaleString()}\n`;
+                markdown += `- **Created**: ${formatDateTime(item.created_at, locale)}\n`;
+                markdown += `- **Unlocked**: ${formatDateTime(item.decrypt_at, locale)}\n`;
                 if (item.original_name) {
                     markdown += `- **File**: ${item.original_name}\n`;
                 }

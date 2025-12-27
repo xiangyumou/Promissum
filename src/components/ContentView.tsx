@@ -5,7 +5,8 @@ import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Trash2, Maximize2, P
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { formatDateTime, formatUnlockTime } from '@/lib/date-utils';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
@@ -28,6 +29,7 @@ interface ContentViewProps {
 export default function ContentView({ selectedId, item, isLoading, onDelete, onExtend, onMenuClick }: ContentViewProps) {
     const t = useTranslations('ContentView');
     const tCommon = useTranslations('Common');
+    const locale = useLocale();
     const { sidebarOpen, setSidebarOpen } = useSettings();
 
     // Image lightbox state
@@ -134,7 +136,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                                 </span>
                                 <span className="text-muted-foreground flex items-center gap-1 text-xs">
                                     <Clock size={10} />
-                                    {new Date(item.created_at).toLocaleString()}
+                                    {formatDateTime(item.created_at, locale)}
                                 </span>
                             </div>
                         </div>
@@ -221,7 +223,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                                 </div>
                                 <div className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1.5 opacity-70">
                                     <Clock size={12} />
-                                    {new Date(item.decrypt_at).toLocaleString()}
+                                    {formatUnlockTime(item.decrypt_at, locale)}
                                 </div>
                             </div>
                         </div>
