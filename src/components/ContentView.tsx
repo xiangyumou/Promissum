@@ -80,12 +80,24 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     }
 
     const isUnlocked = Date.now() >= item.decrypt_at;
+    const [isZoomed, setIsZoomed] = useState(false);
 
     // Derive image source if type is image and item is unlocked
     // The API route already adds the data URL prefix if needed
     const imageSrc = item.type === 'image' && item.content
         ? (item.content.startsWith('data:') ? item.content : `data:image/png;base64,${item.content}`)
         : '';
+
+    // Close modal on ESC key
+    useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isZoomed) {
+                setIsZoomed(false);
+            }
+        };
+        window.addEventListener('keydown', handleEscape);
+        return () => window.removeEventListener('keydown', handleEscape);
+    }, [isZoomed]);
 
     return (
         <div className="h-full flex flex-col bg-background relative overflow-hidden flex-1 w-full">
@@ -161,19 +173,47 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                                             className="max-h-[70vh] w-auto object-contain"
                                         />
                                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-sm">
-                                            <a
-                                                href={imageSrc}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
+                                            <button
+                                                onClick={() => setIsZoomed(true)}
                                                 className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-transform hover:scale-110 backdrop-blur-md border border-white/10"
                                                 title={t('viewOriginal')}
                                             >
                                                 <Maximize2 size={24} />
-                                            </a>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                             )}
+
+                            {/* Image Zoom Modal */}
+                            <AnimatePresence>
+                                {isZoomed && imageSrc && (
+                                    <motion.div
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+                                        onClick={() => setIsZoomed(false)}
+                                    >
+                                        <button
+                                            onClick={() => setIsZoomed(false)}
+                                            className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all hover:scale-110 backdrop-blur-md border border-white/10 z-10"
+                                            title="Close"
+                                        >
+                                            <X size={24} />
+                                        </button>
+                                        <motion.img
+                                            initial={{ scale: 0.9 }}
+                                            animate={{ scale: 1 }}
+                                            exit={{ scale: 0.9 }}
+                                            src={imageSrc}
+                                            alt="Zoomed content"
+                                            className="max-w-full max-h-full object-contain"
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
                 ) : (
