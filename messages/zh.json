@@ -114,8 +114,6 @@
         "appearanceDesc": "自定义主题和语言偏好",
         "theme": "主题",
         "language": "语言",
-        "notifications": "通知",
-        "notificationsDesc": "启用系统通知",
         "privacySecurity": "隐私与安全",
         "privacyMode": "隐私模式",
         "privacyModeDesc": "默认模糊列表中的敏感内容",

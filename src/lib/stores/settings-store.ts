@@ -8,13 +8,13 @@ interface SettingsState {
     // Default Behavior
     defaultDurationMinutes: number;
     privacyMode: boolean;
-    notificationsEnabled: boolean;
+
     panicUrl: string;
 
     // Actions
     setDefaultDuration: (minutes: number) => void;
     setPrivacyMode: (enabled: boolean) => void;
-    setNotificationsEnabled: (enabled: boolean) => void;
+
     setPanicUrl: (url: string) => void;
     resetToDefaults: () => void;
 }
@@ -25,7 +25,7 @@ interface SettingsState {
 const DEFAULT_SETTINGS = {
     defaultDurationMinutes: 60,
     privacyMode: false,
-    notificationsEnabled: true,
+
     panicUrl: 'https://google.com',
 };
 
@@ -39,13 +39,12 @@ export const useSettings = create<SettingsState>()(
             // Default values
             ...DEFAULT_SETTINGS,
             privacyMode: false,
-            notificationsEnabled: true,
-            panicUrl: 'https://google.com',
+
 
             // Actions
             setDefaultDuration: (minutes) => set({ defaultDurationMinutes: minutes }),
             setPrivacyMode: (enabled) => set({ privacyMode: enabled }),
-            setNotificationsEnabled: (enabled) => set({ notificationsEnabled: enabled }),
+
             setPanicUrl: (url) => set({ panicUrl: url }),
 
             resetToDefaults: () => set(DEFAULT_SETTINGS),

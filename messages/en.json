@@ -114,8 +114,6 @@
         "appearanceDesc": "Customize theme and language preferences",
         "theme": "Theme",
         "language": "Language",
-        "notifications": "Notifications",
-        "notificationsDesc": "Enable system notifications",
         "privacySecurity": "Privacy & Security",
         "privacyMode": "Privacy Mode",
         "privacyModeDesc": "Blur sensitive content in lists by default",

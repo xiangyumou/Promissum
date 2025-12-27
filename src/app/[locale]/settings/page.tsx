@@ -3,7 +3,7 @@
 import { useSettings } from '@/lib/stores/settings-store';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { Settings as SettingsIcon, Save, RotateCcw, Palette, Languages, Shield, Eye, EyeOff, Bell, Trash2, ExternalLink } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Palette, Languages, Shield, Eye, EyeOff, Trash2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import ExportButton from '@/components/ExportButton';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -17,11 +17,11 @@ export default function SettingsPage() {
     const {
         defaultDurationMinutes,
         privacyMode,
-        notificationsEnabled,
+
         panicUrl,
         setDefaultDuration,
         setPrivacyMode,
-        setNotificationsEnabled,
+
         setPanicUrl,
         resetToDefaults,
     } = useSettings();
@@ -125,24 +125,7 @@ export default function SettingsPage() {
                             </div>
                         </div>
 
-                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
-                        {/* Notifications Toggle */}
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-1">
-                                <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                    <Bell size={16} />
-                                    {t('notifications')}
-                                </label>
-                                <p className="text-xs text-muted-foreground">{t('notificationsDesc')}</p>
-                            </div>
-                            <button
-                                onClick={() => setNotificationsEnabled(!notificationsEnabled)}
-                                className={`w-12 h-6 rounded-full transition-colors relative ${notificationsEnabled ? 'bg-primary' : 'bg-muted'}`}
-                            >
-                                <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${notificationsEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
-                            </button>
-                        </div>
                     </div>
                 </section>
 
