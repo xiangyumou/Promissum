@@ -20,23 +20,23 @@ export default function ThemeToggle() {
     }
 
     return (
-        <div className="flex bg-black/20 p-1 rounded-lg border border-white/5">
+        <div className="flex bg-muted p-1 rounded-lg border border-border">
             <button
-                className={`p-1.5 rounded-md transition-all ${theme === 'light' ? 'bg-white text-black shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                className={`flex-1 p-1.5 rounded-md transition-all flex items-center justify-center ${theme === 'light' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setTheme('light')}
                 title={t('light')}
             >
                 <Sun size={16} />
             </button>
             <button
-                className={`p-1.5 rounded-md transition-all ${theme === 'system' ? 'bg-white/10 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                className={`flex-1 p-1.5 rounded-md transition-all flex items-center justify-center ${theme === 'system' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setTheme('system')}
                 title={t('system')}
             >
                 <Monitor size={16} />
             </button>
             <button
-                className={`p-1.5 rounded-md transition-all ${theme === 'dark' ? 'bg-white/10 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'}`}
+                className={`flex-1 p-1.5 rounded-md transition-all flex items-center justify-center ${theme === 'dark' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setTheme('dark')}
                 title={t('dark')}
             >
