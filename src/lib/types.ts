@@ -4,6 +4,20 @@
  */
 
 // ============================================
+// Extended Metadata Types
+// ============================================
+
+/**
+ * Extended metadata for items
+ * Stored in the 'metadata' field of remote API
+ */
+export interface ItemMetadata {
+    title?: string;        // Custom title for the item
+    tags?: string[];       // Tags for categorization
+    [key: string]: unknown; // Allow additional custom fields
+}
+
+// ============================================
 // API Types (used by api-client and API routes)
 // ============================================
 
@@ -18,6 +32,7 @@ export interface ItemListView {
     created_at: number;
     layer_count: number;
     user_id: string;
+    metadata?: ItemMetadata; // Extended metadata
 }
 
 /**
@@ -37,7 +52,7 @@ export interface ApiItemListView {
     unlocked: boolean;
     decryptAt: number;
     createdAt?: number;
-    metadata?: Record<string, unknown>;
+    metadata?: ItemMetadata;
 }
 
 /**
@@ -50,7 +65,7 @@ export interface ApiItemDetail {
     timeRemainingMs?: number;
     decryptAt: number;
     content: string | null;
-    metadata?: Record<string, unknown>;
+    metadata?: ItemMetadata;
 }
 
 /**
@@ -61,7 +76,7 @@ export interface CreateItemRequest {
     content: string;
     durationMinutes?: number;
     decryptAt?: number;
-    metadata?: Record<string, unknown>;
+    metadata?: ItemMetadata;
 }
 
 /**
