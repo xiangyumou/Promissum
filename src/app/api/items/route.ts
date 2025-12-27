@@ -3,11 +3,19 @@ import { apiClient } from '@/lib/api-client';
 import { v4 as uuidv4 } from 'uuid';
 
 // GET /api/items - List all items
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
-        // Call remote API service
+        // Extract query parameters
+        const { searchParams } = new URL(request.url);
+        const status = searchParams.get('status') as 'all' | 'locked' | 'unlocked' | null;
+        const type = searchParams.get('type') as 'text' | 'image' | null;
+        const sort = searchParams.get('sort') as 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc' | null;
+
+        // Call remote API service with filters
         const apiResponse = await apiClient.getItems({
-            sort: 'created_desc', // Match original behavior: newest first
+            status: status || undefined,
+            type: type || undefined,
+            sort: sort || 'created_desc', // Default sort: newest first
         });
 
         console.log('API Response:', JSON.stringify(apiResponse, null, 2));
