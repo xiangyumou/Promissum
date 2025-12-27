@@ -1,8 +1,9 @@
 /**
- * Custom hook for countdown timer
+ * Custom hook for countdown timer using date-fns
  */
 
 import { useState, useEffect } from 'react';
+import { formatDuration, intervalToDuration } from 'date-fns';
 
 export function useCountdown(decryptAt: number | null, unlocked: boolean) {
     const [countdown, setCountdown] = useState<string>('');
@@ -22,12 +23,23 @@ export function useCountdown(decryptAt: number | null, unlocked: boolean) {
                 return;
             }
 
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            // Use date-fns to calculate duration
+            const duration = intervalToDuration({
+                start: 0,
+                end: diff
+            });
 
-            setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+            // Format duration with custom format
+            const formatted = formatDuration(duration, {
+                format: ['days', 'hours', 'minutes', 'seconds'],
+                delimiter: ' ',
+            }).replace(/(\d+) (\w+)/g, (match, num, unit) => {
+                // Shorten units: days→d, hours→h, minutes→m, seconds→s
+                const shortUnit = unit.charAt(0);
+                return `${num}${shortUnit}`;
+            });
+
+            setCountdown(formatted || '0s');
         };
 
         updateCountdown();
