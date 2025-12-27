@@ -70,8 +70,8 @@ export default function ExportButton() {
             <div className="flex items-center gap-3">
                 <Download size={20} className="text-primary" />
                 <div>
-                    <h3 className="text-lg font-semibold text-foreground">Export Data</h3>
-                    <p className="text-sm text-muted-foreground">Export {items.length} unlocked items</p>
+                    <h3 className="text-lg font-semibold text-foreground">{t('exportDataTitle')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('exportDataDesc', { count: items.length })}</p>
                 </div>
             </div>
 
@@ -82,7 +82,7 @@ export default function ExportButton() {
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg font-medium transition-colors disabled:opacity-50"
                 >
                     <FileJson size={18} />
-                    Export JSON
+                    {t('exportJSON')}
                 </button>
                 <button
                     onClick={exportAsMarkdown}
@@ -90,7 +90,7 @@ export default function ExportButton() {
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-muted hover:bg-muted/80 text-foreground rounded-lg font-medium transition-colors disabled:opacity-50"
                 >
                     <FileText size={18} />
-                    Export Markdown
+                    {t('exportMarkdown')}
                 </button>
             </div>
         </div>

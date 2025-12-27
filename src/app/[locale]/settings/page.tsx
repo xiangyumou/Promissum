@@ -12,7 +12,7 @@ import Dashboard from '@/components/Dashboard';
 
 export default function SettingsPage() {
     const t = useTranslations('Settings');
-    const tCommon = useTranslations('Common');
+
 
     const {
         defaultDurationMinutes,
@@ -47,7 +47,7 @@ export default function SettingsPage() {
     };
 
     const handleClearData = () => {
-        if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+        if (confirm(t('clearDataConfirm'))) {
             setIsClearing(true);
             try {
                 localStorage.clear();
@@ -132,9 +132,9 @@ export default function SettingsPage() {
                             <div className="space-y-1">
                                 <label className="text-sm font-medium text-foreground flex items-center gap-2">
                                     <Bell size={16} />
-                                    Notifications
+                                    {t('notifications')}
                                 </label>
-                                <p className="text-xs text-muted-foreground">Enable system notifications</p>
+                                <p className="text-xs text-muted-foreground">{t('notificationsDesc')}</p>
                             </div>
                             <button
                                 onClick={() => setNotificationsEnabled(!notificationsEnabled)}
@@ -150,7 +150,7 @@ export default function SettingsPage() {
                 <section className="space-y-4">
                     <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
                         <Shield size={20} className="text-primary" />
-                        Privacy & Security
+                        {t('privacySecurity')}
                     </h2>
 
                     <div className="glass-card rounded-xl p-6 space-y-6">
@@ -159,9 +159,9 @@ export default function SettingsPage() {
                             <div className="space-y-1">
                                 <label className="text-sm font-medium text-foreground flex items-center gap-2">
                                     {privacyMode ? <EyeOff size={16} /> : <Eye size={16} />}
-                                    Privacy Mode
+                                    {t('privacyMode')}
                                 </label>
-                                <p className="text-xs text-muted-foreground">Blur sensitive content in lists by default</p>
+                                <p className="text-xs text-muted-foreground">{t('privacyModeDesc')}</p>
                             </div>
                             <button
                                 onClick={() => setPrivacyMode(!privacyMode)}
@@ -178,9 +178,9 @@ export default function SettingsPage() {
                             <div className="space-y-1">
                                 <label className="text-sm font-medium text-foreground flex items-center gap-2">
                                     <ExternalLink size={16} />
-                                    Panic Button URL
+                                    {t('panicButtonUrl')}
                                 </label>
-                                <p className="text-xs text-muted-foreground">URL to open when panic button is pressed</p>
+                                <p className="text-xs text-muted-foreground">{t('panicButtonUrlDesc')}</p>
                             </div>
                             <input
                                 type="url"
@@ -197,7 +197,7 @@ export default function SettingsPage() {
                 <section className="space-y-4">
                     <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
                         <Save size={20} className="text-primary" />
-                        Data Management
+                        {t('dataManagement')}
                     </h2>
 
                     <div className="space-y-4">
@@ -208,16 +208,16 @@ export default function SettingsPage() {
                                 <div className="space-y-1">
                                     <h3 className="text-sm font-semibold text-red-500 flex items-center gap-2">
                                         <Trash2 size={16} />
-                                        Danger Zone
+                                        {t('dangerZone')}
                                     </h3>
-                                    <p className="text-xs text-muted-foreground">Clear all local data and reset application</p>
+                                    <p className="text-xs text-muted-foreground">{t('dangerZoneDesc')}</p>
                                 </div>
                                 <button
                                     onClick={handleClearData}
                                     disabled={isClearing}
                                     className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-lg text-sm font-medium transition-colors"
                                 >
-                                    Clear All Data
+                                    {t('clearAllData')}
                                 </button>
                             </div>
                         </div>
