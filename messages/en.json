@@ -45,7 +45,12 @@
         "resetFilters": "Reset all filters",
         "applyFilters": "Apply Filters",
         "settings": "Settings",
-        "collapseSidebar": "Collapse Sidebar"
+        "collapseSidebar": "Collapse Sidebar",
+        "sortBy": "Sort By",
+        "sortCreatedDesc": "Newest First",
+        "sortCreatedAsc": "Oldest First",
+        "sortDecryptDesc": "Unlock Last",
+        "sortDecryptAsc": "Unlock First"
     },
     "AddModal": {
         "title": "Create Encrypted Item",
