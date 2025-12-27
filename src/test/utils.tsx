@@ -20,7 +20,8 @@ const messages = {
         newEntry: 'New Entry',
         textNote: 'Text Note',
         image: 'Image',
-        unlocked: 'Unlocked'
+        unlocked: 'Unlocked',
+        locked: 'Locked'
     },
     Sidebar: {
         settings: 'Settings',
