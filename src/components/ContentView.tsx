@@ -123,9 +123,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {!isUnlocked && (
-                            <ExtendButton onExtend={(mins) => onExtend(item.id, mins)} />
-                        )}
+                        <ExtendButton onExtend={(mins) => onExtend(item.id, mins)} />
                         <DeleteButton id={item.id} onDelete={onDelete} />
                     </div>
                 </div>
