@@ -38,6 +38,11 @@ export default function Sidebar({
     const t = useTranslations('Sidebar');
     const tCommon = useTranslations('Common');
     const { compactMode, sidebarOpen, setSidebarOpen } = useSettings();
+    const [isMounted, setIsMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     // Sidebar motion variants
     const sidebarVariants = {
@@ -106,7 +111,7 @@ export default function Sidebar({
                 variants={sidebarVariants}
             >
                 {/* Desktop Edge Toggle Button */}
-                {isDesktop && (
+                {isMounted && isDesktop && (
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
                         className={cn(
@@ -128,24 +133,26 @@ export default function Sidebar({
                     </button>
                 )}
 
-                {/* Inner Content Wrapper for Opacity Animation */}
+                {/* Inner Content Wrapper for Opacity Animation - Guarded by isMounted */}
                 <motion.div
                     className="flex-1 flex flex-col overflow-hidden w-[var(--sidebar-width,320px)]"
-                    animate={sidebarOpen || !isDesktop ? "open" : "closed"}
+                    animate={(isMounted && (sidebarOpen || !isDesktop)) ? "open" : "closed"}
                     variants={contentVariants}
                 >
-                    <SidebarContent
-                        items={items}
-                        selectedId={selectedId}
-                        onSelectItem={onSelectItem}
-                        onAddClick={onAddClick}
-                        onClose={onClose}
-                        filters={filters}
-                        onFilterChange={onFilterChange}
-                        isLoading={isLoading}
-                        compactMode={compactMode}
-                        setSidebarOpen={setSidebarOpen}
-                    />
+                    {isMounted && (
+                        <SidebarContent
+                            items={items}
+                            selectedId={selectedId}
+                            onSelectItem={onSelectItem}
+                            onAddClick={onAddClick}
+                            onClose={onClose}
+                            filters={filters}
+                            onFilterChange={onFilterChange}
+                            isLoading={isLoading}
+                            compactMode={compactMode}
+                            setSidebarOpen={setSidebarOpen}
+                        />
+                    )}
                 </motion.div>
             </motion.div>
         </>
@@ -154,13 +161,13 @@ export default function Sidebar({
 
 // Simple useMediaQuery hook
 function useMediaQuery(query: string) {
-    const [matches, setMatches] = React.useState(() => {
-        // Safe check for window to support SSR
+    const [matches, setMatches] = React.useState(true); // Default to DESKTOP (true) to prevent layout shift/blank gap on desktop
+
+    React.useLayoutEffect(() => {
         if (typeof window !== 'undefined') {
-            return window.matchMedia(query).matches;
+            setMatches(window.matchMedia(query).matches);
         }
-        return true; // Default to DESKTOP (true) to prevent layout shift/blank gap on desktop
-    });
+    }, [query]);
 
     React.useEffect(() => {
         const media = window.matchMedia(query);
@@ -299,8 +306,14 @@ interface ItemCardProps {
 }
 
 function ItemCard({ item, isSelected, onClick, compactMode = false }: ItemCardProps) {
-    const isUnlocked = Date.now() >= item.decrypt_at;
-    const timeRemaining = getTimeRemaining(item.decrypt_at);
+    const [isMounted, setIsMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    const isUnlocked = isMounted ? Date.now() >= item.decrypt_at : false;
+    const timeRemaining = isMounted ? getTimeRemaining(item.decrypt_at) : '...';
     const tCommon = useTranslations('Common');
     const { privacyMode } = useSettings();
 
