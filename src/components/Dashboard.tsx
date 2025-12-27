@@ -14,6 +14,16 @@ export default function Dashboard() {
     const tCommon = useTranslations('Common');
     const { privacyMode } = useSettings();
 
+    const typeChartData = useMemo(() => [
+        { name: t('textNotes'), value: stats?.byType?.text || 0, color: 'var(--warning)' },
+        { name: t('images'), value: stats?.byType?.image || 0, color: 'var(--primary)' },
+    ], [stats?.byType?.text, stats?.byType?.image, t]);
+
+    const statusChartData = useMemo(() => [
+        { name: t('encrypted'), value: stats?.lockedItems || 0, color: 'var(--warning)' },
+        { name: t('unlocked'), value: stats?.unlockedItems || 0, color: 'var(--success)' },
+    ], [stats?.lockedItems, stats?.unlockedItems, t]);
+
     if (isLoading) {
         return (
             <div className="flex items-center justify-center h-full">
@@ -29,16 +39,6 @@ export default function Dashboard() {
             </div>
         );
     }
-
-    const typeChartData = useMemo(() => [
-        { name: t('textNotes'), value: stats.byType.text, color: 'var(--warning)' },
-        { name: t('images'), value: stats.byType.image, color: 'var(--primary)' },
-    ], [stats.byType.text, stats.byType.image, t]);
-
-    const statusChartData = useMemo(() => [
-        { name: t('encrypted'), value: stats.lockedItems, color: 'var(--warning)' },
-        { name: t('unlocked'), value: stats.unlockedItems, color: 'var(--success)' },
-    ], [stats.lockedItems, stats.unlockedItems, t]);
 
     return (
         <div className={cn(
