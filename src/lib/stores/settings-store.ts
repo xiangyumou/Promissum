@@ -32,6 +32,7 @@ interface SettingsState {
     autoPrivacyDelayMinutes: number; // 0 = disabled
     panicShortcut: string;
     apiToken: string; // Custom API token overrides env
+    apiUrl: string; // Custom API URL overrides env
 
     // Actions
     setDefaultDuration: (minutes: number) => void;
@@ -54,6 +55,7 @@ interface SettingsState {
     setAutoPrivacyDelayMinutes: (minutes: number) => void;
     setPanicShortcut: (shortcut: string) => void;
     setApiToken: (token: string) => void;
+    setApiUrl: (url: string) => void;
 
     resetToDefaults: () => void;
 }
@@ -61,7 +63,7 @@ interface SettingsState {
 /**
  * Default Settings Values
  */
-const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMode' | 'setPanicUrl' | 'setThemeConfig' | 'setDateTimeFormat' | 'setCompactMode' | 'setSidebarOpen' | 'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' | 'setDefaultSort' | 'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' | 'setPanicShortcut' | 'setApiToken' | 'resetToDefaults'> = {
+const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMode' | 'setPanicUrl' | 'setThemeConfig' | 'setDateTimeFormat' | 'setCompactMode' | 'setSidebarOpen' | 'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' | 'setDefaultSort' | 'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' | 'setPanicShortcut' | 'setApiToken' | 'setApiUrl' | 'resetToDefaults'> = {
     defaultDurationMinutes: 60,
     privacyMode: false,
     panicUrl: 'https://google.com',
@@ -82,6 +84,7 @@ const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMo
     autoPrivacyDelayMinutes: 5,
     panicShortcut: 'alt+p',
     apiToken: '',
+    apiUrl: '',
 };
 
 /**
@@ -118,6 +121,7 @@ export const useSettings = create<SettingsState>()(
             setAutoPrivacyDelayMinutes: (minutes) => set({ autoPrivacyDelayMinutes: minutes }),
             setPanicShortcut: (shortcut) => set({ panicShortcut: shortcut }),
             setApiToken: (token) => set({ apiToken: token }),
+            setApiUrl: (url) => set({ apiUrl: url }),
 
             resetToDefaults: () => set(DEFAULT_SETTINGS),
         }),

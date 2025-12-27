@@ -158,6 +158,8 @@
         "token": "API 令牌",
         "allowCustomToken": "使用自定义令牌",
         "tokenDesc": "覆盖系统默认 API 令牌 (可选)",
+        "apiUrl": "API 服务地址",
+        "apiUrlDesc": "覆盖系统默认 API 服务地址 (可选)",
         "checkConnection": "检查连接",
         "connectionOk": "连接成功",
         "connectionFailed": "连接失败",
