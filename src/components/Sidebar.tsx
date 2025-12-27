@@ -99,11 +99,15 @@ function getTimeRemaining(decryptAt: number): string {
 
     if (diff <= 0) return 'Unlocked';
 
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-    if (days > 0) return `${days}d ${hours}h left`;
+    if (hours > 24) {
+        const days = Math.floor(hours / 24);
+        const remainingHours = hours % 24;
+        return `${days}d ${remainingHours}h left`;
+    }
+
     if (hours > 0) return `${hours}h ${minutes}m left`;
     return `${minutes}m left`;
 }
