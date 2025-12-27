@@ -99,12 +99,33 @@ export function useItem(id: string | null) {
             }
             return failureCount < 3;
         },
-        // Stop refetching on 404 error
+        // Dynamic refetch polling
         refetchInterval: (query) => {
+            // Stop polling on 404
             if (query.state.error instanceof ApiError && query.state.error.status === 404) {
                 return false;
             }
-            return 1000;
+
+            const data = query.state.data;
+            if (!data) return 1000; // Poll faster if no data yet (maybe loading/error fallback)
+
+            // If already unlocked, no need to poll frequently
+            if (data.unlocked) {
+                return false;
+            }
+
+            // Calculate time remaining
+            const now = Date.now();
+            const timeRemaining = data.decryptAt - now;
+
+            // If time is up or close (within 1 minute), poll faster (5s) to catch unlock
+            if (timeRemaining <= 60000) {
+                return 5000;
+            }
+
+            // Otherwise poll slower (60s) to save resources
+            // The local countdown timer handles the visual updates
+            return 60000;
         }
     });
 }
