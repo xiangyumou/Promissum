@@ -1,33 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { SystemStats } from '@/lib/api-client';
+import { useStats } from '@/lib/queries';
 
 export default function Dashboard() {
-    const [stats, setStats] = useState<SystemStats | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { data: stats, isLoading, error } = useStats();
 
-    useEffect(() => {
-        const fetchStats = async () => {
-            try {
-                const response = await fetch('/api/stats');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch stats');
-                }
-                const data = await response.json();
-                setStats(data);
-            } catch (err) {
-                setError(err instanceof Error ? err.message : 'Unknown error');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchStats();
-    }, []);
-
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="dashboard-container">
                 <div className="spinner"></div>
