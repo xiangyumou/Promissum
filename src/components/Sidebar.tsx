@@ -43,24 +43,25 @@ export default function Sidebar({
     const sidebarVariants = {
         mobileClosed: {
             x: "-100%",
-            opacity: 0,
             transition: { type: "spring", stiffness: 300, damping: 30 } as const
         },
         mobileOpen: {
             x: 0,
-            opacity: 1,
             transition: { type: "spring", stiffness: 300, damping: 30 } as const
         },
         desktopClosed: {
             width: 0,
-            opacity: 0,
             transition: { type: "spring", stiffness: 300, damping: 30 } as const
         },
         desktopOpen: {
             width: "var(--sidebar-width, 320px)",
-            opacity: 1,
             transition: { type: "spring", stiffness: 300, damping: 30 } as const
         }
+    };
+
+    const contentVariants = {
+        closed: { opacity: 0, transition: { duration: 0.2 } },
+        open: { opacity: 1, transition: { duration: 0.2, delay: 0.1 } }
     };
 
     const overlayVariants = {
@@ -95,26 +96,57 @@ export default function Sidebar({
             {/* Sidebar Container */}
             <motion.div
                 className={cn(
-                    "fixed md:relative h-full z-50 md:z-auto bg-background/80 backdrop-blur-xl border-r border-border overflow-hidden flex flex-col",
+                    "fixed md:relative h-full z-50 md:z-30 bg-background/80 backdrop-blur-xl border-r border-border flex flex-col",
                     "hover:shadow-xl transition-shadow duration-300 shadow-2xl md:shadow-none"
+                    // Removed overflow-hidden to allow toggle button to protrude
                 )}
                 suppressHydrationWarning
                 initial={false}
                 animate={animateState}
                 variants={sidebarVariants}
             >
-                <SidebarContent
-                    items={items}
-                    selectedId={selectedId}
-                    onSelectItem={onSelectItem}
-                    onAddClick={onAddClick}
-                    onClose={onClose}
-                    filters={filters}
-                    onFilterChange={onFilterChange}
-                    isLoading={isLoading}
-                    compactMode={compactMode}
-                    setSidebarOpen={setSidebarOpen}
-                />
+                {/* Desktop Edge Toggle Button */}
+                {isDesktop && (
+                    <button
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        className={cn(
+                            "absolute md:flex hidden items-center justify-center",
+                            "right-[-12px] top-6 w-6 h-6 rounded-full",
+                            "bg-background border border-border shadow-md text-muted-foreground hover:text-foreground hover:bg-accent",
+                            "transition-all duration-200 z-50 focus:outline-none focus:ring-2 focus:ring-primary/20",
+                            !sidebarOpen && "right-[-32px] w-8 h-8 opacity-50 hover:opacity-100" // Make it slightly larger and further out when closed for easier hit target
+                        )}
+                        title={sidebarOpen ? t('collapseSidebar') : tCommon('open')}
+                    >
+                        <PanelLeftClose
+                            size={14}
+                            className={cn(
+                                "transition-transform duration-300",
+                                !sidebarOpen && "rotate-180"
+                            )}
+                        />
+                    </button>
+                )}
+
+                {/* Inner Content Wrapper for Opacity Animation */}
+                <motion.div
+                    className="flex-1 flex flex-col overflow-hidden w-[var(--sidebar-width,320px)]"
+                    animate={sidebarOpen || !isDesktop ? "open" : "closed"}
+                    variants={contentVariants}
+                >
+                    <SidebarContent
+                        items={items}
+                        selectedId={selectedId}
+                        onSelectItem={onSelectItem}
+                        onAddClick={onAddClick}
+                        onClose={onClose}
+                        filters={filters}
+                        onFilterChange={onFilterChange}
+                        isLoading={isLoading}
+                        compactMode={compactMode}
+                        setSidebarOpen={setSidebarOpen}
+                    />
+                </motion.div>
             </motion.div>
         </>
     );
@@ -185,14 +217,6 @@ function SidebarContent({
                 <X size={20} />
             </button>
 
-            {/* Desktop Collapse Button */}
-            <button
-                className="absolute top-3 right-3 p-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground hidden md:block transition-colors z-20"
-                onClick={() => setSidebarOpen(false)}
-                title={t('collapseSidebar')}
-            >
-                <PanelLeftClose size={18} />
-            </button>
 
             {/* Primary Actions Group */}
             <div className={cn("space-y-3", compactMode ? "p-3 pb-1" : "p-4 pb-2")}>
