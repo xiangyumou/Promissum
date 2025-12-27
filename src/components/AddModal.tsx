@@ -197,6 +197,30 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
         }
     };
 
+    // Paste event handler
+    useEffect(() => {
+        const handlePaste = (e: ClipboardEvent) => {
+            if (!isOpen || type !== 'image') return;
+
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const blob = items[i].getAsFile();
+                    if (blob) {
+                        setFile(blob);
+                        e.preventDefault(); // Prevent default paste behavior
+                        break;
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('paste', handlePaste);
+        return () => window.removeEventListener('paste', handlePaste);
+    }, [isOpen, type]);
+
     return (
         <Modal
             isOpen={isOpen}
