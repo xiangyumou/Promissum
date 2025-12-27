@@ -40,8 +40,8 @@ export async function GET(request: NextRequest) {
             id: item.id,
             type: item.type,
             original_name: null, // API doesn't return this in list view
-            decrypt_at: item.decrypt_at,
-            created_at: item.created_at || Date.now(),
+            decrypt_at: item.decryptAt,
+            created_at: item.createdAt || Date.now(),
             layer_count: 1, // API doesn't expose layer count in list view
             user_id: 'local', // Not needed but kept for compatibility
         }));
@@ -99,17 +99,17 @@ export async function POST(request: NextRequest) {
         const apiRequest: {
             type: 'text' | 'image';
             content: string;
-            duration_minutes?: number;
-            decrypt_at?: number;
+            durationMinutes?: number;
+            decryptAt?: number;
         } = {
             type,
             content,
         };
 
         if (decryptAtTimestamp) {
-            apiRequest.decrypt_at = decryptAtTimestamp;
+            apiRequest.decryptAt = decryptAtTimestamp;
         } else {
-            apiRequest.duration_minutes = durationMinutes!;
+            apiRequest.durationMinutes = durationMinutes!;
         }
 
         // Call remote API service
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
                 id: apiResponse.id,
                 type: apiResponse.type,
                 original_name: null, // API doesn't return this
-                decrypt_at: apiResponse.decrypt_at,
+                decrypt_at: apiResponse.decryptAt,
                 created_at: Date.now(),
                 layer_count: 1,
             }

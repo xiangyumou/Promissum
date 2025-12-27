@@ -15,3 +15,11 @@ export interface ItemListView {
     layer_count: number;
     user_id: string;
 }
+
+/**
+ * Full item detail view - used in content view
+ */
+export interface ItemDetail extends ItemListView {
+    unlocked: boolean;
+    content: string | null;
+}

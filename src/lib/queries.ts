@@ -5,7 +5,8 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { SystemStats, FilterParams, ApiItemListView, ApiItemDetail } from './api-client';
+import { SystemStats, FilterParams, ApiItemListView } from './api-client';
+import { ItemDetail } from './types';
 
 class ApiError extends Error {
     status: number;
@@ -89,7 +90,7 @@ export function useItem(id: string | null) {
             if (!response.ok) {
                 throw new ApiError('Failed to fetch item', response.status);
             }
-            return response.json() as Promise<ApiItemDetail>;
+            return response.json() as Promise<ItemDetail>;
         },
         enabled: !!id, // Only fetch if id exists
         // Don't retry specifically on 404s
