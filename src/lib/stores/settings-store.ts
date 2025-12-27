@@ -28,6 +28,7 @@ interface SettingsState {
     // Security
     autoPrivacyDelayMinutes: number; // 0 = disabled
     panicShortcut: string;
+    apiToken: string; // Custom API token overrides env
 
     // Actions
     setDefaultDuration: (minutes: number) => void;
@@ -48,6 +49,7 @@ interface SettingsState {
 
     setAutoPrivacyDelayMinutes: (minutes: number) => void;
     setPanicShortcut: (shortcut: string) => void;
+    setApiToken: (token: string) => void;
 
     resetToDefaults: () => void;
 }
@@ -55,7 +57,7 @@ interface SettingsState {
 /**
  * Default Settings Values
  */
-const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMode' | 'setPanicUrl' | 'setDateTimeFormat' | 'setCompactMode' | 'setSidebarOpen' | 'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' | 'setDefaultSort' | 'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' | 'setPanicShortcut' | 'resetToDefaults'> = {
+const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMode' | 'setPanicUrl' | 'setDateTimeFormat' | 'setCompactMode' | 'setSidebarOpen' | 'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' | 'setDefaultSort' | 'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' | 'setPanicShortcut' | 'setApiToken' | 'resetToDefaults'> = {
     defaultDurationMinutes: 60,
     privacyMode: false,
     panicUrl: 'https://google.com',
@@ -74,6 +76,7 @@ const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMo
 
     autoPrivacyDelayMinutes: 5,
     panicShortcut: 'alt+p',
+    apiToken: '',
 };
 
 /**
@@ -108,6 +111,7 @@ export const useSettings = create<SettingsState>()(
             // Security
             setAutoPrivacyDelayMinutes: (minutes) => set({ autoPrivacyDelayMinutes: minutes }),
             setPanicShortcut: (shortcut) => set({ panicShortcut: shortcut }),
+            setApiToken: (token) => set({ apiToken: token }),
 
             resetToDefaults: () => set(DEFAULT_SETTINGS),
         }),
