@@ -71,6 +71,12 @@
         "dark": "Dark",
         "system": "System"
     },
+    "ApiStatus": {
+        "checking": "Checking...",
+        "connected": "API Connected",
+        "offline": "API Offline",
+        "disconnected": "Disconnected"
+    },
     "Error": {
         "title": "Something went wrong",
         "description": "An unexpected error occurred. Please try again.",

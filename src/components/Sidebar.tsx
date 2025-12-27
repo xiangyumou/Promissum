@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from './ui/Skeleton'; // Assuming Skeleton is theme-neutral or updated later
 import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
+import ApiStatusIndicator from './ApiStatusIndicator';
 import { useTranslations } from 'next-intl';
 
 interface SidebarProps {
@@ -171,6 +172,10 @@ export default function Sidebar({
 
                 {/* Footer - Settings */}
                 <div className="p-4 border-t border-border space-y-3">
+                    {/* API Status */}
+                    <ApiStatusIndicator />
+
+                    {/* Theme & Language */}
                     <div className="flex items-center justify-between gap-2">
                         <ThemeToggle />
                         <LanguageSwitcher />
