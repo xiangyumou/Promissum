@@ -14,6 +14,7 @@ import {
     AlertCircle
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { timeService } from '@/lib/services/time-service';
 
 interface AddModalProps {
     isOpen: boolean;
@@ -57,7 +58,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
 
     // Absolute time state
     const getDefaultAbsoluteTime = () => {
-        const d = new Date(Date.now() + 60 * 60 * 1000);
+        const d = new Date(timeService.now() + 60 * 60 * 1000);
         return {
             year: d.getFullYear().toString().slice(-2),
             month: (d.getMonth() + 1).toString().padStart(2, '0'),
@@ -81,7 +82,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
             const minute = parseInt(absoluteTime.minute);
 
             const targetDate = new Date(year, month, day, hour, minute);
-            const now = new Date();
+            const now = new Date(timeService.now());
             const diffMs = targetDate.getTime() - now.getTime();
             return Math.ceil(diffMs / 60000);
         }
@@ -89,7 +90,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
 
     // Calculate and format the unlock time
     const unlockTimeInfo = useMemo(() => {
-        const now = new Date();
+        const now = new Date(timeService.now());
         let unlockDate: Date;
 
         if (timeMode === 'absolute') {

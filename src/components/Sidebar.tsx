@@ -12,6 +12,7 @@ import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { useSettings } from '@/lib/stores/settings-store';
 import { useHasMounted } from '@/hooks/useHasMounted';
+import { timeService } from '@/lib/services/time-service';
 
 interface SidebarProps {
     items: ItemListView[];
@@ -305,7 +306,7 @@ interface ItemCardProps {
 function ItemCard({ item, isSelected, onClick, compactMode = false }: ItemCardProps) {
     const hasMounted = useHasMounted();
 
-    const isUnlocked = hasMounted ? Date.now() >= item.decrypt_at : false;
+    const isUnlocked = hasMounted ? timeService.now() >= item.decrypt_at : false;
     const timeRemaining = hasMounted ? getTimeRemaining(item.decrypt_at) : '...';
     const tCommon = useTranslations('Common');
     const { privacyMode } = useSettings();

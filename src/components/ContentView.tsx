@@ -14,6 +14,7 @@ import 'yet-another-react-lightbox/styles.css';
 import { useSettings } from '@/lib/stores/settings-store';
 import { PanelLeftOpen } from 'lucide-react';
 import ConfirmDialog from './ConfirmDialog';
+import { timeService } from '@/lib/services/time-service';
 
 interface ContentViewProps {
     selectedId: string | null;
@@ -87,7 +88,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
         );
     }
 
-    const isUnlocked = Date.now() >= item.decrypt_at;
+    const isUnlocked = timeService.now() >= item.decrypt_at;
 
     // Derive image source if type is image and item is unlocked
     // The API route already adds the data URL prefix if needed
@@ -384,11 +385,11 @@ function ExtendButton({ onExtend }: { onExtend: (minutes: number) => void }) {
 }
 
 function Countdown({ targetDate }: { targetDate: number }) {
-    const [timeLeft, setTimeLeft] = useState(Math.max(0, targetDate - Date.now()));
+    const [timeLeft, setTimeLeft] = useState(Math.max(0, targetDate - timeService.now()));
 
     useEffect(() => {
         const interval = setInterval(() => {
-            const diff = targetDate - Date.now();
+            const diff = targetDate - timeService.now();
             setTimeLeft(Math.max(0, diff));
         }, 1000);
         return () => clearInterval(interval);
