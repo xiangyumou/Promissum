@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'sonner';
 import Dashboard from './Dashboard';
 import { useItem, useDeleteItem, useExtendItem } from '@/lib/queries';
 import { useCountdown } from '@/lib/use-countdown';
@@ -24,32 +25,43 @@ export default function ContentView({ selectedId, onDelete, onMenuClick }: Conte
     const extendMutation = useExtendItem(selectedId || '');
 
     // Countdown timer
-    const countdown = useCountdown(item?.decrypt_at || null, item?.unlocked || false);
+    const countdown = useCountdown(item?.decryptAt || null, item?.unlocked || false);
 
     const handleDelete = async () => {
         if (!item || deleteMutation.isPending) return;
 
-        if (!confirm('Are you sure you want to delete this item?')) return;
-
-        try {
-            await deleteMutation.mutateAsync(item.id);
-            onDelete(item.id);
-        } catch (error) {
-            console.error('Error deleting item:', error);
-        }
+        toast.promise(
+            deleteMutation.mutateAsync(item.id),
+            {
+                loading: 'Deleting...',
+                success: () => {
+                    onDelete(item.id);
+                    return 'Item deleted successfully';
+                },
+                error: 'Failed to delete item',
+            }
+        );
     };
 
     const handleExtend = async (minutes: number) => {
         if (!item || extendingMinutes !== null) return;
 
         setExtendingMinutes(minutes);
+
         try {
-            await extendMutation.mutateAsync(minutes);
-        } catch (error) {
-            console.error('Error extending lock:', error);
-            if (error instanceof Error && error.message.includes('conflict')) {
-                alert('操作冲突，数据已刷新，请重试');
-            }
+            await toast.promise(
+                extendMutation.mutateAsync(minutes),
+                {
+                    loading: 'Extending lock...',
+                    success: `Extended by ${minutes >= 60 ? `${minutes / 60}h` : `${minutes}m`}`,
+                    error: (err) => {
+                        if (err instanceof Error && err.message.includes('conflict')) {
+                            return '操作冲突，数据已刷新，请重试';
+                        }
+                        return 'Failed to extend lock';
+                    },
+                }
+            );
         } finally {
             setExtendingMinutes(null);
         }
@@ -127,10 +139,7 @@ export default function ContentView({ selectedId, onDelete, onMenuClick }: Conte
 
                 <div className="content-title">
                     <span className="content-icon">{item.type === 'text' ? '📝' : '🖼️'}</span>
-                    <span>{item.type === 'text' ? 'Text' : (item.original_name || 'Image')}</span>
-                    {item.layer_count > 1 && (
-                        <span className="layer-badge">×{item.layer_count}</span>
-                    )}
+                    <span>{item.type === 'text' ? 'Text' : 'Image'}</span>
                 </div>
                 <button
                     className="delete-button"
@@ -149,7 +158,7 @@ export default function ContentView({ selectedId, onDelete, onMenuClick }: Conte
                         ) : (
                             <img
                                 src={item.content || ''}
-                                alt={item.original_name || 'Decrypted image'}
+                                alt="Decrypted image"
                                 className="image-content"
                             />
                         )}
