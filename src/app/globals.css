@@ -206,8 +206,8 @@ body {
   box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.2);
 }
 
-@utility premium-button {
-  background-image: linear-gradient(to right, var(--color-primary), #9333ea);
+.premium-button {
+  background-image: linear-gradient(to right, var(--primary), #9333ea);
   color: white;
   font-weight: 700;
   box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.25);
@@ -221,6 +221,7 @@ body {
   &:hover {
     background-image: linear-gradient(to right, #4338ca, #7e22ce);
     box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.4);
+    opacity: 0.9;
   }
 
   &:active {
@@ -233,7 +234,7 @@ body {
   }
 }
 
-@utility premium-input {
+.premium-input {
   background-color: color-mix(in srgb, var(--muted), transparent 70%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -241,6 +242,12 @@ body {
   color: var(--foreground);
   width: 100%;
   padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+
+  &::placeholder {
+    color: var(--muted-foreground);
+    opacity: 0.7;
+  }
 
   &:focus {
     outline: none;
@@ -249,7 +256,7 @@ body {
   }
 }
 
-@utility premium-select {
+.premium-select {
   background-color: color-mix(in srgb, var(--muted), transparent 70%);
   border: 1px solid var(--border);
   border-radius: 0.5rem;
@@ -261,6 +268,7 @@ body {
   &:focus {
     outline: none;
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary), transparent 50%);
+    border-color: var(--primary);
   }
 }
 
