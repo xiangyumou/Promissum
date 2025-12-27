@@ -172,7 +172,11 @@
         "textColor": "文字颜色",
         "accentColor": "强调色",
         "warningStatus": "警告状态",
-        "successStatus": "成功状态"
+        "successStatus": "成功状态",
+        "cacheStats": "缓存统计",
+        "totalQueries": "缓存查询",
+        "cacheSize": "缓存大小",
+        "queries": "条"
     },
     "Error": {
         "title": "出了点问题",

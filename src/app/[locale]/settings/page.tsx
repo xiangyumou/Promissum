@@ -97,6 +97,41 @@ export default function SettingsPage() {
     const [showResetConfirm, setShowResetConfirm] = useState(false);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
 
+    // Cache Statistics State
+    const [cacheStats, setCacheStats] = useState({ queryCount: 0, sizeKB: 0 });
+
+    // Calculate cache statistics
+    useEffect(() => {
+        const updateCacheStats = () => {
+            const cache = queryClient.getQueryCache();
+            const queries = cache.getAll();
+            const queryCount = queries.length;
+
+            // Estimate cache size by serializing query data
+            let totalSize = 0;
+            queries.forEach(query => {
+                try {
+                    const data = query.state.data;
+                    if (data) {
+                        const serialized = JSON.stringify(data);
+                        totalSize += serialized.length;
+                    }
+                } catch (e) {
+                    // Skip queries that can't be serialized
+                }
+            });
+
+            // Convert bytes to KB
+            const sizeKB = Math.round(totalSize / 1024);
+            setCacheStats({ queryCount, sizeKB });
+        };
+
+        updateCacheStats();
+        // Update stats periodically
+        const interval = setInterval(updateCacheStats, 2000);
+        return () => clearInterval(interval);
+    }, []);
+
     // Computed Styles Logic
     const [computedStyles, setComputedStyles] = useState<Record<string, string>>({});
 
@@ -200,6 +235,8 @@ export default function SettingsPage() {
     const handleClearCache = () => {
         queryClient.removeQueries();
         toast.success(t('cacheCleared'));
+        // Refresh cache stats immediately
+        setCacheStats({ queryCount: 0, sizeKB: 0 });
     };
 
     const handleCheckConnection = async () => {
@@ -504,6 +541,36 @@ export default function SettingsPage() {
                                 <option value={30}>30 min</option>
                                 <option value={60}>60 min</option>
                             </select>
+                        </div>
+
+                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+                        {/* Cache Statistics */}
+                        <div className="space-y-3">
+                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <Database size={16} />
+                                {t('cacheStats')}
+                            </label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="p-3 rounded-lg border border-border bg-background/50">
+                                    <div className="flex flex-col">
+                                        <span className="text-xs text-muted-foreground">{t('totalQueries')}</span>
+                                        <span className="text-lg font-semibold text-foreground mt-1">
+                                            {cacheStats.queryCount} {t('queries')}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="p-3 rounded-lg border border-border bg-background/50">
+                                    <div className="flex flex-col">
+                                        <span className="text-xs text-muted-foreground">{t('cacheSize')}</span>
+                                        <span className="text-lg font-semibold text-foreground mt-1">
+                                            {cacheStats.sizeKB < 1024
+                                                ? `${cacheStats.sizeKB} KB`
+                                                : `${(cacheStats.sizeKB / 1024).toFixed(2)} MB`}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />

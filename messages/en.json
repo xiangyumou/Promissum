@@ -172,7 +172,11 @@
         "textColor": "Text",
         "accentColor": "Accent",
         "warningStatus": "Warning Status",
-        "successStatus": "Success Status"
+        "successStatus": "Success Status",
+        "cacheStats": "Cache Statistics",
+        "totalQueries": "Cached Queries",
+        "cacheSize": "Cache Size",
+        "queries": "queries"
     },
     "Error": {
         "title": "Something went wrong",
