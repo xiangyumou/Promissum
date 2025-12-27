@@ -116,7 +116,7 @@ export function useItem(id: string | null) {
 
             // Calculate time remaining
             const now = Date.now();
-            const timeRemaining = data.decryptAt - now;
+            const timeRemaining = data.decrypt_at - now;
 
             // If time is up or close (within 1 minute), poll faster (5s) to catch unlock
             if (timeRemaining <= 60000) {

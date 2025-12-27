@@ -25,7 +25,7 @@ export default function ContentView({ selectedId, onDelete, onMenuClick }: Conte
     const extendMutation = useExtendItem(selectedId || '');
 
     // Countdown timer
-    const countdown = useCountdown(item?.decryptAt || null, item?.unlocked || false);
+    const countdown = useCountdown(item?.decrypt_at || null, item?.unlocked || false);
 
     const handleDelete = async () => {
         if (!item || deleteMutation.isPending) return;
@@ -169,6 +169,9 @@ export default function ContentView({ selectedId, onDelete, onMenuClick }: Conte
                         <div className="lock-icon">🔒</div>
                         <h2>Content Locked</h2>
                         <div className="countdown">{countdown}</div>
+                        <div className="unlock-date" style={{ marginTop: '0.5rem', color: '#888', fontSize: '0.9rem' }}>
+                            Unlocks: {new Date(item.decrypt_at).toLocaleString()}
+                        </div>
                         <ExtendButtons />
                     </div>
                 )}

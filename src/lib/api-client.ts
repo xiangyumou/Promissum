@@ -17,8 +17,8 @@ export interface ApiItemListView {
     id: string;
     type: 'text' | 'image';
     unlocked: boolean;
-    decryptAt: number;
-    createdAt?: number;
+    decrypt_at: number;
+    created_at?: number;
     metadata?: Record<string, unknown>;
 }
 
@@ -26,8 +26,8 @@ export interface ApiItemDetail {
     id: string;
     type: 'text' | 'image';
     unlocked: boolean;
-    timeRemainingMs?: number;
-    decryptAt: number;
+    time_remaining_ms?: number;
+    decrypt_at: number;
     content: string | null;
     metadata?: Record<string, unknown>;
 }
@@ -35,8 +35,8 @@ export interface ApiItemDetail {
 export interface CreateItemRequest {
     type: 'text' | 'image';
     content: string; // Text string or Base64 for images
-    durationMinutes?: number;
-    decryptAt?: number; // Epoch timestamp in milliseconds
+    duration_minutes?: number;
+    decrypt_at?: number; // Epoch timestamp in milliseconds
     metadata?: Record<string, unknown>;
 }
 
