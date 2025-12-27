@@ -7,6 +7,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { SystemStats, FilterParams, ApiItemListView, ApiItemDetail } from './api-client';
 
+class ApiError extends Error {
+    status: number;
+
+    constructor(message: string, status: number) {
+        super(message);
+        this.status = status;
+    }
+}
+
 /**
  * Query Keys
  * Organized hierarchically for easy invalidation
@@ -78,13 +87,25 @@ export function useItem(id: string | null) {
         queryFn: async () => {
             const response = await fetch(`/api/items/${id}`);
             if (!response.ok) {
-                throw new Error('Failed to fetch item');
+                throw new ApiError('Failed to fetch item', response.status);
             }
             return response.json() as Promise<ApiItemDetail>;
         },
         enabled: !!id, // Only fetch if id exists
-        // Refetch every second for countdown updates
-        refetchInterval: 1000,
+        // Don't retry specifically on 404s
+        retry: (failureCount, error) => {
+            if (error instanceof ApiError && error.status === 404) {
+                return false;
+            }
+            return failureCount < 3;
+        },
+        // Stop refetching on 404 error
+        refetchInterval: (query) => {
+            if (query.state.error instanceof ApiError && query.state.error.status === 404) {
+                return false;
+            }
+            return 1000;
+        }
     });
 }
 
@@ -100,6 +121,10 @@ export function useDeleteItem() {
                 method: 'DELETE',
             });
             if (!response.ok) {
+                // Ignore 404s during delete, treat as success (idempotent)
+                if (response.status === 404) {
+                    return { success: true };
+                }
                 throw new Error('Failed to delete item');
             }
             return response.json();
