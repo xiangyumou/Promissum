@@ -7,6 +7,9 @@ import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 
+import { useSettings } from '@/lib/stores/settings-store';
+import { PanelLeftOpen } from 'lucide-react';
+
 interface ContentViewProps {
     selectedId: string | null;
     item?: ItemDetail;
@@ -16,21 +19,38 @@ interface ContentViewProps {
     onMenuClick?: () => void;
 }
 
+// ...
+
 export default function ContentView({ selectedId, item, isLoading, onDelete, onExtend, onMenuClick }: ContentViewProps) {
     const t = useTranslations('ContentView');
     const tCommon = useTranslations('Common');
+    const { sidebarOpen, setSidebarOpen } = useSettings();
 
     // No item selected state -> Show welcome message
     if (!selectedId) {
         return (
             <div className="h-full overflow-y-auto bg-background custom-scrollbar relative flex-1 w-full">
-                {/* Mobile Menu Button */}
-                <div className="md:hidden absolute top-4 left-4 z-50">
+                {/* Menu Button - Mobile & Desktop (when collapsed) */}
+                <div className="absolute top-4 left-4 z-50">
                     <button
-                        onClick={onMenuClick}
-                        className="p-2 bg-card/50 backdrop-blur-md rounded-lg border border-border text-foreground hover:bg-accent transition-colors"
+                        onClick={() => {
+                            if (window.innerWidth >= 768) {
+                                setSidebarOpen(true);
+                            } else {
+                                onMenuClick?.();
+                            }
+                        }}
+                        className={cn(
+                            "p-2 bg-card/50 backdrop-blur-md rounded-lg border border-border text-foreground hover:bg-accent transition-colors",
+                            // Show on mobile OR on desktop if sidebar is closed
+                            "md:opacity-100",
+                            // If sidebar is open on desktop, hide this button? 
+                            // Yes, usually.
+                            sidebarOpen && "md:opacity-0 md:pointer-events-none"
+                        )}
                     >
-                        <Menu size={20} />
+                        {sidebarOpen ? <Menu size={20} /> : <PanelLeftOpen size={20} />}
+                        {/* Actually on mobile it's always Menu/Open. On desktop if closed it's PanelLeftOpen. */}
                     </button>
                 </div>
                 <div className="flex items-center justify-center h-full p-6">
@@ -84,12 +104,23 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
             <div className="shrink-0 p-6 border-b border-border bg-card/30 backdrop-blur-xl z-20">
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-4">
-                        {/* Mobile Menu Button */}
+                        {/* Mobile & Desktop Menu Button */}
                         <button
-                            onClick={onMenuClick}
-                            className="md:hidden p-2 -ml-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                            onClick={() => {
+                                if (window.innerWidth >= 768) {
+                                    setSidebarOpen(true);
+                                } else {
+                                    onMenuClick?.();
+                                }
+                            }}
+                            className={cn(
+                                "p-2 -ml-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors",
+                                // Show on mobile OR on desktop if sidebar is closed
+                                "md:opacity-100",
+                                sidebarOpen && "md:opacity-0 md:pointer-events-none md:hidden"
+                            )}
                         >
-                            <Menu size={20} />
+                            {sidebarOpen ? <Menu size={20} /> : <PanelLeftOpen size={20} />}
                         </button>
 
                         <div className={cn(
