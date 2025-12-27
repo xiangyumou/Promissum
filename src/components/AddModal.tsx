@@ -421,7 +421,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                             </div>
                             <div>
                                 <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">
-                                    {unlockTimeInfo.isValid ? t('unlocksAt') : t('invalidTime')}
+                                    {unlockTimeInfo.isValid ? tCommon('unlocksAt') : t('invalidTime')}
                                 </p>
                                 <p className="text-lg font-bold font-mono tracking-tight">
                                     {unlockTimeInfo.isValid ? unlockTimeInfo.formatted : t('checkInput')}
