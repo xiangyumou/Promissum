@@ -26,7 +26,9 @@
         "averageLockDuration": "平均锁定时间",
         "hours": "小时",
         "basedOnHistory": "基于历史数据",
-        "failedToLoad": "加载统计失败"
+        "failedToLoad": "加载统计失败",
+        "contentTypeDistribution": "内容类型分布",
+        "lockStatusDistribution": "锁定状态分布"
     },
     "Sidebar": {
         "noItems": "暂无项目",
