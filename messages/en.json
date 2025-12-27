@@ -161,7 +161,18 @@
         "checkConnection": "Check Connection",
         "connectionOk": "Connection Successful",
         "connectionFailed": "Connection Failed",
-        "off": "Off"
+        "off": "Off",
+        "themeCustomization": "Theme Customization",
+        "themeCustomizationDesc": "Customize system color variables",
+        "resetTheme": "Reset Colors",
+        "primaryColor": "Primary Color",
+        "backgroundColor": "Background",
+        "surface1": "Surface 1",
+        "surface2": "Surface 2",
+        "textColor": "Text",
+        "accentColor": "Accent",
+        "warningStatus": "Warning Status",
+        "successStatus": "Success Status"
     },
     "Error": {
         "title": "Something went wrong",

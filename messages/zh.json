@@ -164,7 +164,15 @@
         "off": "关闭",
         "themeCustomization": "配色管理",
         "themeCustomizationDesc": "自定义系统颜色变量",
-        "resetTheme": "重置配色"
+        "resetTheme": "重置配色",
+        "primaryColor": "主色",
+        "backgroundColor": "背景色",
+        "surface1": "表面颜色 1",
+        "surface2": "表面颜色 2",
+        "textColor": "文字颜色",
+        "accentColor": "强调色",
+        "warningStatus": "警告状态",
+        "successStatus": "成功状态"
     },
     "Error": {
         "title": "出了点问题",
