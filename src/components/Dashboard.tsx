@@ -30,13 +30,13 @@ export default function Dashboard() {
     }
 
     const typeChartData = [
-        { name: t('textNotes'), value: stats.byType.text, color: '#f97316' },
-        { name: t('images'), value: stats.byType.image, color: '#a855f7' },
+        { name: t('textNotes'), value: stats.byType.text, color: 'var(--warning)' },
+        { name: t('images'), value: stats.byType.image, color: 'var(--primary)' },
     ];
 
     const statusChartData = [
-        { name: t('encrypted'), value: stats.lockedItems, color: '#f59e0b' },
-        { name: t('unlocked'), value: stats.unlockedItems, color: '#10b981' },
+        { name: t('encrypted'), value: stats.lockedItems, color: 'var(--warning)' },
+        { name: t('unlocked'), value: stats.unlockedItems, color: 'var(--success)' },
     ];
 
     return (
@@ -65,17 +65,17 @@ export default function Dashboard() {
                     label={t('encrypted')}
                     value={stats.lockedItems}
                     icon={<Lock size={24} />}
-                    color="text-amber-500"
-                    bg="bg-amber-500/10"
-                    border="border-amber-500/20"
+                    color="text-warning"
+                    bg="bg-warning/10"
+                    border="border-warning/20"
                 />
                 <StatCard
                     label={t('unlocked')}
                     value={stats.unlockedItems}
                     icon={<ShieldCheck size={24} />}
-                    color="text-emerald-500"
-                    bg="bg-emerald-500/10"
-                    border="border-emerald-500/20"
+                    color="text-success"
+                    bg="bg-success/10"
+                    border="border-success/20"
                 />
             </div>
 

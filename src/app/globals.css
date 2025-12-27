@@ -1,26 +1,37 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
+  /* Core Colors mapped to CSS variables */
   --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-foreground: var(--primary-contrast);
   --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
 
+  /* Semantic Status Colors */
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+
+  /* Surfaces */
+  --color-background: var(--bg);
+  --color-card: var(--surface-1);
+  --color-popover: var(--surface-2);
+  --color-hover: var(--state-hover-bg);
+
+  /* Typography */
+  --color-foreground: var(--text);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted);
+  /* Fallback for compatibility */
+
+  /* Borders & UI */
+  --color-border: var(--border);
+  --color-input: var(--surface-1);
+  /* Inputs often match cards or surface-1 */
+  --color-ring: var(--focus-ring);
+
+  /* Animation Utilities */
   --animate-float: float 6s ease-in-out infinite;
   --animate-pulse-glow: pulse-glow 3s ease-in-out infinite;
 
@@ -41,126 +52,144 @@
     0%,
     100% {
       opacity: 0.5;
-      box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+      box-shadow: 0 0 10px color-mix(in srgb, var(--primary), transparent 80%);
     }
 
     50% {
       opacity: 1;
-      box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+      box-shadow: 0 0 20px color-mix(in srgb, var(--primary), transparent 50%);
     }
   }
 }
 
-/* Base Variables */
 :root {
-  /* Light Mode (New "Premium Light") */
-  --background: #fafafa;
-  /* Zinc 50 */
-  --foreground: #18181b;
-  /* Zinc 950 */
+  /* =========================================
+     LIGHT THEME: "GPT Minimal" (AI Assistant)
+     ========================================= */
 
-  --card: #ffffff;
-  --card-foreground: #18181b;
+  /* Brand */
+  --primary: #10a37f;
+  /* OpenAI Green */
+  --primary-contrast: #ffffff;
+  --secondary: #f7f7f8;
+  /* GPT Sidebar/Surface */
+  --accent: #ececf1;
+  /* Input backgrounds */
 
-  --popover: #ffffff;
-  --popover-foreground: #18181b;
-
-  --primary: #4f46e5;
-  /* Indigo 600 */
-  --primary-foreground: #ffffff;
-
-  --secondary: #f4f4f5;
-  /* Zinc 100 */
-  --secondary-foreground: #18181b;
-
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  /* Zinc 500 */
-
-  --accent: #f4f4f5;
-  --accent-foreground: #18181b;
-
+  /* Semantic Status */
   --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
+  /* Red 500 */
+  --success: #10a37f;
+  /* Match Primary for success */
+  --warning: #f59e0b;
+  /* Amber 500 */
+  --info: #3b82f6;
+  /* Blue 500 */
 
-  --border: #e4e4e7;
-  /* Zinc 200 */
-  --input: #e4e4e7;
-  --ring: #4f46e5;
+  /* Surfaces */
+  --bg: #ffffff;
+  /* Pure White */
+  --surface-1: #ffffff;
+  /* Cards are white */
+  --surface-2: #f7f7f8;
+  /* Hover states / Secondary blocks */
+  --state-hover-bg: rgba(16, 163, 127, 0.1);
 
-  --radius: 0.75rem;
+  /* Typography */
+  --text: #343541;
+  /* GPT Dark Gray */
+  --text-strong: #202123;
+  /* Almost Black */
+  --muted: #8e8ea0;
+  /* GPT Muted Gray */
 
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: 1px solid rgba(0, 0, 0, 0.05);
-  --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  /* Borders & UI */
+  --border: #e5e5e5;
+  /* Subtle border */
+  --focus-ring: #10a37f;
 
-  --sidebar-bg: rgba(250, 250, 250, 0.8);
+  --radius: 0.5rem;
+  /* Slightly more squared like GPT inputs */
+
+  /* Glass Effects - Minimalist, less blur */
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: 1px solid #e5e5e5;
+  --glass-shadow: 0 0 0 0 transparent;
+  /* Flat design */
+
+  --sidebar-bg: #f7f7f8;
 }
 
 .dark {
-  /* Dark Mode (Existing "Premium Dark") */
-  --background: #09090b;
-  /* Zinc 950 */
-  --foreground: #f4f4f5;
-  /* Zinc 100 */
+  /* =========================================
+     DARK THEME: "GPT Dark"
+     ========================================= */
 
-  --card: #18181b;
-  /* Zinc 900 */
-  --card-foreground: #f4f4f5;
+  /* Brand */
+  --primary: #10a37f;
+  /* OpenAI Green */
+  --primary-contrast: #ffffff;
+  --secondary: #202123;
+  /* Sidebar Dark */
+  --accent: #444654;
+  /* Card/Input Dark */
 
-  --popover: #18181b;
-  --popover-foreground: #f4f4f5;
+  /* Semantic Status */
+  --destructive: #ef4444;
+  /* Red 500 */
+  --success: #10a37f;
+  /* Green */
+  --warning: #f59e0b;
+  /* Amber */
+  --info: #3b82f6;
+  /* Blue */
 
-  --primary: #6366f1;
-  /* Indigo 500 */
-  --primary-foreground: #ffffff;
+  /* Surfaces */
+  --bg: #343541;
+  /* GPT Main Background */
+  --surface-1: #444654;
+  /* GPT Card/Input */
+  --surface-2: #202123;
+  /* Darker contrast (Sidebar/Modals) */
+  --state-hover-bg: rgba(236, 236, 241, 0.1);
 
-  --secondary: #27272a;
-  /* Zinc 800 */
-  --secondary-foreground: #f4f4f5;
+  /* Typography */
+  --text: #ececf1;
+  /* GPT Text Light */
+  --text-strong: #ffffff;
+  --muted: #8e8ea0;
+  /* GPT Muted */
 
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  /* Zinc 400 */
+  /* Borders & UI */
+  --border: #565869;
+  /* Subtle dark border */
+  --input: #40414f;
+  --focus-ring: #10a37f;
 
-  --accent: #27272a;
-  --accent-foreground: #f4f4f5;
+  /* Glass Effects - Minimalist */
+  --glass-bg: rgba(52, 53, 65, 0.95);
+  --glass-border: 1px solid #565869;
+  --glass-shadow: 0 0 0 0 transparent;
 
-  --destructive: #7f1d1d;
-  --destructive-foreground: #f4f4f5;
-
-  --border: #27272a;
-  --input: #27272a;
-  --ring: #6366f1;
-
-  --glass-bg: rgba(24, 24, 27, 0.6);
-  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-
-  --sidebar-bg: rgba(9, 9, 11, 0.6);
+  --sidebar-bg: #202123;
 }
 
 /* Global Reset */
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--bg);
+  color: var(--text);
   font-family: 'Inter', system-ui, sans-serif;
   height: 100vh;
   overflow: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
+
+  /* Background Gradients */
+  /* Light Mode Gradient - Removed for flat GPT clean look */
+  background-image: none;
 }
 
-/* Background Gradients */
-/* Light Mode Gradient */
-body {
-  background-image: radial-gradient(circle at 50% 0%, #e0e7ff 0%, #fafafa 60%);
-}
-
-/* Dark Mode Gradient */
-.dark body {
-  background-image: radial-gradient(circle at 50% 0%, #17153b 0%, #09090b 50%);
-}
-
+/* Re-apply gradient for Dark Mode explicitly if needed, but the variables handle it above */
+/* The radial-gradient uses var(--secondary) and var(--bg), so it switches automatically! */
 
 /* Scrollbar */
 ::-webkit-scrollbar {
@@ -173,13 +202,13 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--muted-foreground);
+  background: var(--muted);
   border-radius: 3px;
   opacity: 0.5;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--foreground);
+  background: var(--text);
 }
 
 /* Utilities utilizing CSS Variables */
@@ -200,17 +229,19 @@ body {
 }
 
 .glass-card:hover {
-  background: var(--accent);
+  background: var(--surface-2);
+  /* Use surface-2 instead of generic accent for card hover */
   border-color: var(--primary);
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--primary), transparent 80%);
+  /* Derived shadow color */
 }
 
 .premium-button {
-  background-image: linear-gradient(to right, var(--primary), #9333ea);
-  color: white;
+  background-image: linear-gradient(to right, var(--primary), var(--accent));
+  color: var(--primary-contrast);
   font-weight: 700;
-  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.25);
+  box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--primary), transparent 75%);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
@@ -219,9 +250,9 @@ body {
   border-radius: var(--radius);
 
   &:hover {
-    background-image: linear-gradient(to right, #4338ca, #7e22ce);
-    box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.4);
+    /* Slightly lighter gradient logic manually or just opacity */
     opacity: 0.9;
+    box-shadow: 0 20px 25px -5px color-mix(in srgb, var(--primary), transparent 60%);
   }
 
   &:active {
@@ -235,17 +266,17 @@ body {
 }
 
 .premium-input {
-  background-color: color-mix(in srgb, var(--muted), transparent 70%);
+  background-color: color-mix(in srgb, var(--surface-1), transparent 50%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   transition: all 0.2s ease-in-out;
-  color: var(--foreground);
+  color: var(--text-strong);
   width: 100%;
   padding: 0.625rem 1rem;
   font-size: 0.875rem;
 
   &::placeholder {
-    color: var(--muted-foreground);
+    color: var(--muted);
     opacity: 0.7;
   }
 
@@ -257,10 +288,10 @@ body {
 }
 
 .premium-select {
-  background-color: color-mix(in srgb, var(--muted), transparent 70%);
+  background-color: color-mix(in srgb, var(--surface-1), transparent 50%);
   border: 1px solid var(--border);
   border-radius: 0.5rem;
-  color: var(--foreground);
+  color: var(--text-strong);
   padding: 0.375rem 0.75rem;
   font-size: 0.875rem;
   transition: all 0.2s;
@@ -308,7 +339,7 @@ body {
 }
 
 .modal-content {
-  background: var(--card);
+  background: var(--surface-1);
   border: 1px solid var(--border);
   border-radius: 16px;
   width: 90%;
@@ -316,5 +347,5 @@ body {
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-  color: var(--card-foreground);
+  color: var(--text);
 }

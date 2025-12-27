@@ -11,6 +11,9 @@ interface SettingsState {
     privacyMode: boolean;
     panicUrl: string;
 
+    // Theme Configuration
+    themeConfig: Record<string, string>;
+
     // Interface
     dateTimeFormat: string;
     compactMode: boolean;
@@ -34,6 +37,7 @@ interface SettingsState {
     setDefaultDuration: (minutes: number) => void;
     setPrivacyMode: (enabled: boolean) => void;
     setPanicUrl: (url: string) => void;
+    setThemeConfig: (config: Record<string, string>) => void;
 
     // New Actions
     setDateTimeFormat: (format: string) => void;
@@ -57,10 +61,11 @@ interface SettingsState {
 /**
  * Default Settings Values
  */
-const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMode' | 'setPanicUrl' | 'setDateTimeFormat' | 'setCompactMode' | 'setSidebarOpen' | 'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' | 'setDefaultSort' | 'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' | 'setPanicShortcut' | 'setApiToken' | 'resetToDefaults'> = {
+const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMode' | 'setPanicUrl' | 'setThemeConfig' | 'setDateTimeFormat' | 'setCompactMode' | 'setSidebarOpen' | 'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' | 'setDefaultSort' | 'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' | 'setPanicShortcut' | 'setApiToken' | 'resetToDefaults'> = {
     defaultDurationMinutes: 60,
     privacyMode: false,
     panicUrl: 'https://google.com',
+    themeConfig: {},
 
     // New Defaults
     dateTimeFormat: 'yyyy-MM-dd HH:mm',
@@ -93,6 +98,7 @@ export const useSettings = create<SettingsState>()(
             setDefaultDuration: (minutes) => set({ defaultDurationMinutes: minutes }),
             setPrivacyMode: (enabled) => set({ privacyMode: enabled }),
             setPanicUrl: (url) => set({ panicUrl: url }),
+            setThemeConfig: (config) => set({ themeConfig: config }),
 
             // Interface
             setDateTimeFormat: (format) => set({ dateTimeFormat: format }),
