@@ -107,10 +107,6 @@ export default function Home() {
         selectedId={selectedId}
         onSelectItem={handleSelectItem}
         onAddClick={() => setShowAddModal(true)}
-        onShowDashboard={() => {
-          setSelectedId(null);
-          setSidebarOpen(false);
-        }}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         filters={filters}

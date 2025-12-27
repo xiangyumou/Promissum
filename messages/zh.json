@@ -36,7 +36,14 @@
         "searchPlaceholder": "搜索...",
         "all": "全部",
         "locked": "锁定中",
-        "unlocked": "已解锁"
+        "unlocked": "已解锁",
+        "filters": "筛选",
+        "clearSearch": "清除搜索",
+        "clearType": "清除类型筛选",
+        "clearStatus": "清除状态筛选",
+        "resetFilters": "重置所有筛选",
+        "applyFilters": "应用筛选",
+        "settings": "设置"
     },
     "AddModal": {
         "title": "创建加密项目",
@@ -101,7 +108,11 @@
         "minutes": "分钟",
         "saveChanges": "保存更改",
         "resetDefaults": "恢复默认",
-        "changesSaved": "设置已保存"
+        "changesSaved": "设置已保存",
+        "appearance": "外观",
+        "appearanceDesc": "自定义主题和语言偏好",
+        "theme": "主题",
+        "language": "语言"
     },
     "Error": {
         "title": "出了点问题",

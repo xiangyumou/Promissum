@@ -3,9 +3,11 @@
 import { useSettings } from '@/lib/stores/settings-store';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
-import { Settings as SettingsIcon, Save, RotateCcw } from 'lucide-react';
+import { Settings as SettingsIcon, Save, RotateCcw, Palette, Languages } from 'lucide-react';
 import { toast } from 'sonner';
 import ExportButton from '@/components/ExportButton';
+import ThemeToggle from '@/components/ThemeToggle';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function SettingsPage() {
     const t = useTranslations('Settings');
@@ -41,6 +43,38 @@ export default function SettingsPage() {
                     <SettingsIcon size={32} className="text-primary" />
                     <h1 className="text-3xl font-bold text-foreground">{t('title')}</h1>
                 </div>
+
+                {/* Appearance Section */}
+                <section className="space-y-4">
+                    <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+                        <Palette size={20} className="text-primary" />
+                        {t('appearance')}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">{t('appearanceDesc')}</p>
+
+                    <div className="glass-card rounded-xl p-6 space-y-5">
+                        {/* Theme Section */}
+                        <div className="space-y-3">
+                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <Palette size={16} />
+                                {t('theme')}
+                            </label>
+                            <ThemeToggle />
+                        </div>
+
+                        {/* Divider */}
+                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+                        {/* Language Section */}
+                        <div className="space-y-3">
+                            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <Languages size={16} />
+                                {t('language')}
+                            </label>
+                            <LanguageSwitcher />
+                        </div>
+                    </div>
+                </section>
 
                 {/* Default Behavior Section */}
                 <section className="space-y-4">

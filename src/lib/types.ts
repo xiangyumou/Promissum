@@ -92,6 +92,7 @@ export interface ExtendItemRequest {
 export interface FilterParams {
     status?: 'all' | 'locked' | 'unlocked';
     type?: 'text' | 'image';
+    search?: string;
     limit?: number;
     offset?: number;
     sort?: 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc';

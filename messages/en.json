@@ -36,7 +36,14 @@
         "searchPlaceholder": "Search...",
         "all": "All",
         "locked": "Locked",
-        "unlocked": "Unlocked"
+        "unlocked": "Unlocked",
+        "filters": "Filters",
+        "clearSearch": "Clear search",
+        "clearType": "Clear type filter",
+        "clearStatus": "Clear status filter",
+        "resetFilters": "Reset all filters",
+        "applyFilters": "Apply Filters",
+        "settings": "Settings"
     },
     "AddModal": {
         "title": "Create Encrypted Item",
@@ -101,7 +108,11 @@
         "minutes": "minutes",
         "saveChanges": "Save Changes",
         "resetDefaults": "Reset to Defaults",
-        "changesSaved": "Settings saved successfully"
+        "changesSaved": "Settings saved successfully",
+        "appearance": "Appearance",
+        "appearanceDesc": "Customize theme and language preferences",
+        "theme": "Theme",
+        "language": "Language"
     },
     "Error": {
         "title": "Something went wrong",

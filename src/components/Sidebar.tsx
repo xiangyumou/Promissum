@@ -2,14 +2,11 @@
 
 import { ItemListView } from '@/lib/types';
 import { FilterParams } from '@/lib/api-client';
-import FilterBar from './FilterBar';
+import FilterPanel from './FilterPanel';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, LayoutDashboard, Settings } from 'lucide-react';
+import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Skeleton } from './ui/Skeleton'; // Assuming Skeleton is theme-neutral or updated later
-import ThemeToggle from './ThemeToggle';
-import LanguageSwitcher from './LanguageSwitcher';
-import ApiStatusIndicator from './ApiStatusIndicator';
+import { Skeleton } from './ui/Skeleton';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 
@@ -18,7 +15,6 @@ interface SidebarProps {
     selectedId: string | null;
     onSelectItem: (id: string) => void;
     onAddClick: () => void;
-    onShowDashboard: () => void;
     isOpen: boolean;
     onClose: () => void;
     filters: FilterParams;
@@ -31,7 +27,6 @@ export default function Sidebar({
     selectedId,
     onSelectItem,
     onAddClick,
-    onShowDashboard,
     isOpen,
     onClose,
     filters,
@@ -40,7 +35,6 @@ export default function Sidebar({
 }: SidebarProps) {
     const t = useTranslations('Sidebar');
     const tCommon = useTranslations('Common');
-    const tSettings = useTranslations('Settings');
 
     // Sidebar motion variants
     const sidebarVariants = {
@@ -68,8 +62,6 @@ export default function Sidebar({
         closed: { opacity: 0, pointerEvents: "none" as const },
         open: { opacity: 1, pointerEvents: "auto" as const }
     };
-
-    const isDashboardActive = selectedId === null;
 
     return (
         <>
@@ -116,27 +108,13 @@ export default function Sidebar({
                         <Plus size={18} />
                         {tCommon('newEntry')}
                     </button>
-
-                    {/* Dashboard Link */}
-                    <button
-                        className={cn(
-                            "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
-                            isDashboardActive
-                                ? "bg-accent text-accent-foreground shadow-sm border border-border"
-                                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                        )}
-                        onClick={onShowDashboard}
-                    >
-                        <LayoutDashboard size={18} className={isDashboardActive ? "text-primary" : ""} />
-                        {tCommon('dashboard')}
-                    </button>
                 </div>
 
                 {/* Divider - Subtle */}
                 <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mx-4 my-2" />
 
-                {/* Filter Bar */}
-                <FilterBar filters={filters} onFilterChange={onFilterChange} />
+                {/* Filter Panel */}
+                <FilterPanel filters={filters} onFilterChange={onFilterChange} />
 
                 {/* Items List */}
                 <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5 custom-scrollbar">
@@ -172,16 +150,14 @@ export default function Sidebar({
                     )}
                 </div>
 
-                {/* Footer - Settings */}
-                <div className="p-4 border-t border-border space-y-3">
-                    {/* API Status */}
-                    <ApiStatusIndicator />
-
-                    {/* Theme & Language */}
-                    <div className="flex items-center justify-between gap-2">
-                        <ThemeToggle />
-                        <LanguageSwitcher />
-                    </div>
+                {/* Footer - Settings Button */}
+                <div className="p-4 border-t border-border">
+                    <Link href="/settings">
+                        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200">
+                            <Settings size={18} />
+                            {t('settings')}
+                        </button>
+                    </Link>
                 </div>
 
             </motion.div>
