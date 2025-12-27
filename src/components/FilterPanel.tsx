@@ -2,7 +2,7 @@
 
 import { FilterParams } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
-import { FileText, Image as ImageIcon, Lock, Unlock, X, Search, SlidersHorizontal, RotateCcw } from 'lucide-react';
+import { FileText, Image as ImageIcon, Lock, Unlock, X, Search, ChevronDown, RotateCcw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,7 +15,7 @@ interface FilterPanelProps {
 export default function FilterPanel({ filters, onFilterChange }: FilterPanelProps) {
     const t = useTranslations('Sidebar');
     const tCommon = useTranslations('Common');
-    const [isOpen, setIsOpen] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
     const [searchInput, setSearchInput] = useState(filters.search || '');
 
     const handleStatusChange = (status: FilterParams['status']) => {
@@ -53,21 +53,21 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
     const hasActiveFilters = filters.status !== 'all' || !!filters.type || !!filters.search;
 
     return (
-        <>
+        <div className="px-3 py-2">
             {/* Filter Trigger Button */}
-            <div className="px-3 py-2">
-                <button
-                    onClick={() => setIsOpen(true)}
-                    className={cn(
-                        "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
-                        hasActiveFilters
-                            ? "bg-primary/20 text-primary border border-primary/30 shadow-sm shadow-primary/20"
-                            : "bg-accent text-muted-foreground hover:bg-accent/80 hover:text-accent-foreground border border-transparent"
-                    )}
-                    title={t('filters')}
-                >
-                    <SlidersHorizontal size={16} />
-                    {t('filters')}
+            <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className={cn(
+                    "w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                    hasActiveFilters
+                        ? "bg-primary/20 text-primary border border-primary/30 shadow-sm shadow-primary/20"
+                        : "bg-accent text-muted-foreground hover:bg-accent/80 hover:text-accent-foreground border border-transparent"
+                )}
+                title={t('filters')}
+            >
+                <div className="flex items-center gap-2">
+                    <Search size={16} />
+                    <span>{t('filters')}</span>
                     {hasActiveFilters && (
                         <motion.div
                             initial={{ scale: 0 }}
@@ -75,45 +75,26 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
                             className="w-2 h-2 bg-primary rounded-full"
                         />
                     )}
-                </button>
-            </div>
+                </div>
+                <motion.div
+                    animate={{ rotate: isExpanded ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                >
+                    <ChevronDown size={16} />
+                </motion.div>
+            </button>
 
-            {/* Filter Panel Modal */}
-            <AnimatePresence>
-                {isOpen && (
-                    <>
-                        {/* Backdrop */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsOpen(false)}
-                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
-                        />
-
-                        {/* Panel */}
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95, y: -20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                            className="fixed inset-x-4 top-20 md:left-[320px] md:right-auto md:w-[360px] z-[70] glass-card rounded-2xl p-6 space-y-5 max-h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar"
-                        >
-                            {/* Header */}
-                            <div className="flex items-center justify-between pb-4 border-b border-border">
-                                <div className="flex items-center gap-2">
-                                    <SlidersHorizontal size={20} className="text-primary" />
-                                    <h3 className="text-lg font-semibold text-foreground">{t('filters')}</h3>
-                                </div>
-                                <button
-                                    onClick={() => setIsOpen(false)}
-                                    className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-                                    title="Close"
-                                >
-                                    <X size={18} />
-                                </button>
-                            </div>
-
+            {/* Accordion Content */}
+            <AnimatePresence initial={false}>
+                {isExpanded && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                    >
+                        <div className="pt-3 space-y-4">
                             {/* Search Input */}
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
@@ -138,7 +119,7 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
                                         value={searchInput}
                                         onChange={handleSearchChange}
                                         placeholder={t('searchPlaceholder')}
-                                        className="w-full pl-9 pr-3 py-2.5 text-sm bg-muted/30 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground placeholder-muted-foreground transition-all"
+                                        className="w-full pl-9 pr-3 py-2 text-sm bg-muted/30 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground placeholder-muted-foreground transition-all"
                                     />
                                 </div>
                             </div>
@@ -226,7 +207,7 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
                                 <motion.button
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="w-full mt-2 py-2.5 flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors border border-border hover:border-primary/30"
+                                    className="w-full py-2 flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors border border-border hover:border-primary/30"
                                     onClick={resetAll}
                                     title={t('resetFilters')}
                                 >
@@ -234,11 +215,11 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
                                     {t('resetFilters')}
                                 </motion.button>
                             )}
-                        </motion.div>
-                    </>
+                        </div>
+                    </motion.div>
                 )}
             </AnimatePresence>
-        </>
+        </div>
     );
 }
 
