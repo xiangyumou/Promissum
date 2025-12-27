@@ -1,313 +1,352 @@
 'use client';
 
-import { useState } from 'react';
-import { toast } from 'sonner';
+import { ItemDetail } from '@/lib/types';
 import Dashboard from './Dashboard';
-import { useItem, useDeleteItem, useExtendItem } from '@/lib/queries';
-import { useCountdown } from '@/lib/use-countdown';
-import { motion } from 'framer-motion';
-import { Menu, Trash2, FileText, Image as ImageIcon, Lock, Unlock, Clock, AlertCircle, RefreshCw } from 'lucide-react';
+import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Trash2, Maximize2, X, Plus, Menu } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Skeleton } from './ui/Skeleton';
-import ConfirmationModal from './ui/ConfirmationModal';
+import { useTranslations } from 'next-intl';
 
 interface ContentViewProps {
     selectedId: string | null;
+    item?: ItemDetail;
+    isLoading: boolean;
     onDelete: (id: string) => void;
-    onMenuClick: () => void;
+    onExtend: (id: string, additionalMinutes: number) => void;
+    onMenuClick?: () => void;
 }
 
-export default function ContentView({ selectedId, onDelete, onMenuClick }: ContentViewProps) {
-    const [extendingMinutes, setExtendingMinutes] = useState<number | null>(null);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+export default function ContentView({ selectedId, item, isLoading, onDelete, onExtend, onMenuClick }: ContentViewProps) {
+    const t = useTranslations('ContentView');
+    const tCommon = useTranslations('Common');
 
-    // Fetch item with automatic refetching
-    const { data: item, isLoading: loading, error } = useItem(selectedId);
-
-    // Delete mutation
-    const deleteMutation = useDeleteItem();
-
-    // Extend mutation
-    const extendMutation = useExtendItem(selectedId || '');
-
-    // Countdown timer
-    const countdown = useCountdown(item?.decrypt_at || null, item?.unlocked || false);
-
-    const handleDelete = async () => {
-        if (!item || deleteMutation.isPending) return;
-
-        toast.promise(
-            deleteMutation.mutateAsync(item.id),
-            {
-                loading: 'Deleting...',
-                success: () => {
-                    onDelete(item.id);
-                    setShowDeleteConfirm(false);
-                    return 'Item deleted successfully';
-                },
-                error: 'Failed to delete item',
-            }
-        );
-    };
-
-    const handleExtend = async (minutes: number) => {
-        if (!item || extendingMinutes !== null) return;
-
-        setExtendingMinutes(minutes);
-
-        try {
-            await toast.promise(
-                extendMutation.mutateAsync(minutes),
-                {
-                    loading: 'Extending lock...',
-                    success: `Extended by ${minutes >= 60 ? `${minutes / 60}h` : `${minutes}m`}`,
-                    error: (err) => {
-                        if (err instanceof Error && err.message.includes('conflict')) {
-                            return 'Conflict detected, data refreshed. Please try again.';
-                        }
-                        return 'Failed to extend lock';
-                    },
-                }
-            );
-        } finally {
-            setExtendingMinutes(null);
-        }
-    };
-
-    // Mobile menu button
-    const MobileMenuButton = () => (
-        <button
-            className="md:hidden p-2 -ml-2 mr-2 text-zinc-400 hover:bg-white/10 hover:text-white rounded-lg transition-colors"
-            onClick={onMenuClick}
-            aria-label="Open menu"
-        >
-            <Menu size={20} />
-        </button>
-    );
-
-    // Extend buttons
-    const ExtendButtons = () => (
-        <div className={cn("flex flex-col gap-3", item?.unlocked ? "mt-6" : "mt-0")}>
-            <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest text-center">Add Time</span>
-            <div className="flex flex-wrap items-center justify-center gap-2">
-                {[1, 10, 60, 360, 1440].map((mins) => (
-                    <button
-                        key={mins}
-                        className={cn(
-                            "px-4 py-2 rounded-full text-xs font-medium transition-all duration-200",
-                            "bg-white/5 border border-white/5 text-zinc-300 hover:bg-white/10 hover:border-white/20 hover:text-white hover:scale-105 active:scale-95",
-                            "disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                        )}
-                        onClick={() => handleExtend(mins)}
-                        disabled={extendingMinutes !== null}
-                    >
-                        {extendingMinutes === mins ? (
-                            <RefreshCw size={12} className="animate-spin" />
-                        ) : (
-                            `+${mins >= 60 ? `${mins / 60}h` : `${mins}m`}`
-                        )}
-                    </button>
-                ))}
-            </div>
-        </div>
-    );
-
-    // Empty state (Dashboard wrapper)
+    // No item selected state -> Show Dashboard
     if (!selectedId) {
         return (
-            <div className="flex-1 flex flex-col h-full overflow-auto custom-scrollbar">
-                <div className="md:hidden flex items-center px-4 py-4 border-b border-white/5 bg-black/20 backdrop-blur-md sticky top-0 z-10">
-                    <MobileMenuButton />
-                    <span className="font-semibold text-white tracking-tight">Dashboard</span>
+            <div className="h-full overflow-y-auto bg-background custom-scrollbar relative flex-1 w-full">
+                {/* Mobile Menu Button for Dashboard */}
+                <div className="md:hidden absolute top-4 left-4 z-50">
+                    <button
+                        onClick={onMenuClick}
+                        className="p-2 bg-card/50 backdrop-blur-md rounded-lg border border-border text-foreground hover:bg-accent transition-colors"
+                    >
+                        <Menu size={20} />
+                    </button>
                 </div>
                 <Dashboard />
             </div>
         );
     }
 
-    // Loading State
-    if (loading) {
+    // Loading state
+    if (isLoading) {
         return (
-            <div className="flex-1 flex flex-col h-full">
-                <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
-                    <div className="flex items-center gap-3">
-                        <MobileMenuButton />
-                        <Skeleton className="h-8 w-8 rounded-full bg-white/5" />
-                        <Skeleton className="h-4 w-32 bg-white/5" />
-                    </div>
-                </div>
-                <div className="flex-1 flex items-center justify-center p-8">
-                    <div className="w-full max-w-md space-y-4 flex flex-col items-center">
-                        <Skeleton className="h-24 w-24 rounded-2xl bg-white/5" />
-                        <Skeleton className="h-6 w-48 bg-white/5" />
-                        <Skeleton className="h-12 w-40 bg-white/5" />
-                    </div>
-                </div>
+            <div className="flex flex-col items-center justify-center h-full space-y-4">
+                <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-muted-foreground animate-pulse">{t('decrypting')}</p>
             </div>
         );
     }
 
-    // Error State
-    if (!item || error) {
+    // Not found state
+    if (!item) {
         return (
-            <div className="flex-1 flex flex-col h-full">
-                <div className="flex items-center px-4 py-4 border-b border-white/5">
-                    <MobileMenuButton />
-                    <span className="font-medium text-red-400">Error</span>
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                <div className="p-4 bg-accent rounded-full mb-3">
+                    <FileText size={32} className="opacity-50" />
                 </div>
-                <div className="flex-1 flex flex-col items-center justify-center text-zinc-500">
-                    <AlertCircle size={48} className="text-zinc-700 mb-4" />
-                    <p>Item not found or failed to load</p>
-                    <button onClick={() => onDelete(selectedId)} className="mt-4 text-sm text-red-400 hover:text-red-300 transition-colors">
-                        Clear from list
-                    </button>
-                </div>
+                <p>{t('notFound')}</p>
             </div>
         );
     }
+
+    const isUnlocked = Date.now() >= item.decrypt_at;
+
+    // Derive image source if type is image and item is unlocked
+    const imageSrc = item.type === 'image' && item.content
+        ? `data:image/png;base64,${item.content}`
+        : '';
 
     return (
-        <>
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex-1 flex flex-col h-full relative"
-            >
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/20 backdrop-blur-sm sticky top-0 z-20">
+        <div className="h-full flex flex-col bg-background relative overflow-hidden flex-1 w-full">
+            {/* Header / Meta Info */}
+            <div className="shrink-0 p-6 border-b border-border bg-card/30 backdrop-blur-xl z-20">
+                <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-4">
-                        <MobileMenuButton />
+                        {/* Mobile Menu Button */}
+                        <button
+                            onClick={onMenuClick}
+                            className="md:hidden p-2 -ml-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                        >
+                            <Menu size={20} />
+                        </button>
 
-                        <div className="flex items-center gap-4">
-                            <div className={cn(
-                                "flex items-center justify-center w-10 h-10 rounded-xl shadow-lg border",
-                                item.type === 'text'
-                                    ? "bg-orange-500/10 text-orange-400 border-orange-500/20"
-                                    : "bg-purple-500/10 text-purple-400 border-purple-500/20"
-                            )}>
-                                {item.type === 'text' ? <FileText size={20} /> : <ImageIcon size={20} />}
-                            </div>
-                            <div>
-                                <h1 className="text-lg font-bold text-white leading-tight tracking-tight">
-                                    {item.type === 'text' ? 'Text Note' : 'Image Content'}
-                                </h1>
-                                <div className="text-xs text-zinc-400 flex items-center gap-2 mt-0.5">
-                                    {item.type === 'text' ? 'Encrypted Text' : 'Encrypted Image'}
-                                    {item.layer_count > 1 && (
-                                        <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 px-1.5 py-0.5 rounded text-[10px] font-bold">
-                                            ×{item.layer_count} layers
-                                        </span>
-                                    )}
-                                </div>
+                        <div className={cn(
+                            "w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-lg",
+                            item.type === 'text'
+                                ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+                                : "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                        )}>
+                            {item.type === 'text' ? <FileText size={24} /> : <ImageIcon size={24} />}
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-foreground tracking-tight">
+                                {item.type === 'text' ? tCommon('textNote') : (item.original_name || tCommon('image'))}
+                            </h2>
+                            <div className="flex items-center gap-2 mt-1 text-sm">
+                                <span className={cn(
+                                    "flex items-center gap-1.5 px-2 py-0.5 rounded-md font-medium text-xs border",
+                                    isUnlocked
+                                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                        : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                                )}>
+                                    {isUnlocked ? <Unlock size={10} /> : <Lock size={10} />}
+                                    {isUnlocked ? tCommon('unlocked') : tCommon('locked')}
+                                </span>
+                                <span className="text-muted-foreground flex items-center gap-1 text-xs">
+                                    <Clock size={10} />
+                                    {new Date(item.created_at).toLocaleString()}
+                                </span>
                             </div>
                         </div>
                     </div>
 
-                    <button
-                        className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                        onClick={() => setShowDeleteConfirm(true)}
-                        title="Delete Item"
-                    >
-                        <Trash2 size={18} />
-                    </button>
-                </div>
-
-                {/* Content Body */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
-                    <div className="max-w-3xl mx-auto h-full flex flex-col">
-                        {item.unlocked ? (
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="space-y-6"
-                            >
-                                <div className="bg-emerald-500/10 rounded-xl p-4 border border-emerald-500/20 flex items-center gap-3 text-emerald-400 shadow-lg shadow-emerald-500/5">
-                                    <Unlock size={20} className="text-emerald-400" />
-                                    <span className="font-semibold tracking-wide">Content Decrypted Successfully</span>
-                                </div>
-
-                                {item.type === 'text' ? (
-                                    <div className="relative group">
-                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
-                                        <div className="relative glass-card p-8 rounded-2xl min-h-[200px]">
-                                            <pre className="whitespace-pre-wrap font-sans text-zinc-200 leading-relaxed text-lg">{item.content}</pre>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="relative group flex justify-center">
-                                        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
-                                        <div className="relative glass-card p-4 rounded-2xl w-full flex justify-center">
-                                            <img
-                                                src={item.content || ''}
-                                                alt="Decrypted content"
-                                                className="max-h-[70vh] rounded-lg shadow-2xl"
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="pt-8 border-t border-white/5">
-                                    <ExtendButtons />
-                                </div>
-                            </motion.div>
-                        ) : (
-                            <div className="flex-1 flex flex-col items-center justify-center text-center space-y-10 pb-20">
-                                <motion.div
-                                    className="relative group"
-                                    animate={{
-                                        y: [0, -10, 0],
-                                    }}
-                                    transition={{
-                                        duration: 6,
-                                        repeat: Infinity,
-                                        ease: "easeInOut"
-                                    }}
-                                >
-                                    <div className="absolute inset-0 bg-indigo-500/30 blur-[60px] rounded-full opacity-50 group-hover:opacity-70 transition-opacity duration-700" />
-                                    <div className="w-40 h-40 glass-card rounded-[2.5rem] flex items-center justify-center shadow-2xl border border-white/10 relative z-10 bg-black/40">
-                                        <Lock size={64} className="text-indigo-400 drop-shadow-[0_0_15px_rgba(129,140,248,0.5)]" />
-                                    </div>
-                                    <div className="absolute -bottom-4 -right-4 bg-indigo-500 text-white p-3 rounded-2xl shadow-lg z-20 shadow-indigo-500/30">
-                                        <Clock size={24} />
-                                    </div>
-                                </motion.div>
-
-                                <div className="space-y-3">
-                                    <h2 className="text-3xl font-bold text-white tracking-tight">Time Locked</h2>
-                                    <p className="text-zinc-400 text-lg">This content is sealed in the vault</p>
-                                </div>
-
-                                <div className="glass-card px-10 py-8 rounded-3xl border border-white/10 min-w-[320px] bg-black/40 shadow-2xl">
-                                    <div className="text-5xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400 tracking-wider drop-shadow-sm">
-                                        {countdown}
-                                    </div>
-                                    <div className="text-xs text-center text-zinc-500 mt-3 font-bold uppercase tracking-[0.2em]">
-                                        Remaining Time
-                                    </div>
-                                </div>
-
-                                <div className="text-sm text-zinc-500 bg-white/5 px-4 py-2 rounded-full border border-white/5">
-                                    Unlocks on <span className="text-zinc-300 font-medium ml-1">{new Date(item.decrypt_at).toLocaleString()}</span>
-                                </div>
-
-                                <div className="pt-4 w-full max-w-md">
-                                    <ExtendButtons />
-                                </div>
-                            </div>
+                    <div className="flex items-center gap-2">
+                        {!isUnlocked && (
+                            <ExtendButton onExtend={(mins) => onExtend(item.id, mins)} />
                         )}
+                        <DeleteButton id={item.id} onDelete={onDelete} />
                     </div>
                 </div>
-            </motion.div>
+            </div>
 
-            <ConfirmationModal
-                isOpen={showDeleteConfirm}
-                onClose={() => setShowDeleteConfirm(false)}
-                onConfirm={handleDelete}
-                title="Delete Sealed Item"
-                description="Are you sure you want to delete this item? This action is permanent and the encrypted content will be lost forever."
-                confirmText="Delete Forever"
-                isLoading={deleteMutation.isPending}
-            />
-        </>
+            {/* Main Content Area */}
+            <div className="flex-1 overflow-hidden relative">
+                {isUnlocked ? (
+                    <div className="h-full overflow-y-auto custom-scrollbar p-6">
+                        <div className="max-w-4xl mx-auto space-y-6">
+                            {item.type === 'text' ? (
+                                <div className="glass-card rounded-2xl p-8 border border-border shadow-xl min-h-[50vh]">
+                                    <div className="prose prose-invert max-w-none text-foreground leading-relaxed whitespace-pre-wrap">
+                                        {item.content}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center gap-4">
+                                    <div className="relative group rounded-2xl overflow-hidden shadow-2xl border border-border bg-black/50">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={imageSrc}
+                                            alt="Decrypted content"
+                                            className="max-h-[70vh] w-auto object-contain"
+                                        />
+                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-sm">
+                                            <a
+                                                href={imageSrc}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-transform hover:scale-110 backdrop-blur-md border border-white/10"
+                                                title={t('viewOriginal')}
+                                            >
+                                                <Maximize2 size={24} />
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="absolute inset-0 flex items-center justify-center p-6">
+                        <div className="text-center space-y-6 max-w-md w-full animate-in fade-in zoom-in duration-500">
+                            <div className="relative mx-auto w-32 h-32 flex items-center justify-center">
+                                <div className="absolute inset-0 border-4 border-muted/20 rounded-full"></div>
+                                <div className="absolute inset-0 border-4 border-amber-500 rounded-full border-t-transparent animate-spin duration-[3s]"></div>
+                                <div className="bg-background rounded-full p-6 shadow-2xl z-10 border border-border">
+                                    <Lock size={48} className="text-amber-500" />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <h3 className="text-2xl font-bold text-foreground">{t('contentEncrypted')}</h3>
+                                <p className="text-muted-foreground">{t('timeLockActive')}</p>
+                            </div>
+
+                            <div className="p-4 bg-muted/30 rounded-xl border border-border backdrop-blur-md">
+                                <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1 font-bold">{t('unlocksIn')}</div>
+                                <div className="text-3xl font-mono font-bold text-amber-500 tabular-nums tracking-tight">
+                                    <Countdown targetDate={item.decrypt_at} />
+                                </div>
+                                <div className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1.5 opacity-70">
+                                    <Clock size={12} />
+                                    {new Date(item.decrypt_at).toLocaleString()}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
     );
+}
+
+function DeleteButton({ id, onDelete }: { id: string, onDelete: (id: string) => void }) {
+    const [isConfirming, setIsConfirming] = useState(false);
+    const timeoutRef = useRef<NodeJS.Timeout>(null);
+    const tCommon = useTranslations('Common');
+
+    const handleClick = () => {
+        if (isConfirming) {
+            onDelete(id);
+            setIsConfirming(false);
+        } else {
+            setIsConfirming(true);
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            timeoutRef.current = setTimeout(() => setIsConfirming(false), 3000);
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
+    }, []);
+
+    return (
+        <button
+            onClick={handleClick}
+            className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border",
+                isConfirming
+                    ? "bg-destructive text-destructive-foreground border-destructive hover:bg-destructive/90"
+                    : "bg-transparent text-muted-foreground border-transparent hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20"
+            )}
+            title={isConfirming ? tCommon('confirmDelete') : tCommon('delete')}
+        >
+            <Trash2 size={16} className={isConfirming ? "animate-pulse" : ""} />
+            <AnimatePresence>
+                {isConfirming && (
+                    <motion.span
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: "auto" }}
+                        exit={{ opacity: 0, width: 0 }}
+                        className="overflow-hidden whitespace-nowrap"
+                    >
+                        {tCommon('confirm')}
+                    </motion.span>
+                )}
+            </AnimatePresence>
+        </button>
+    );
+}
+
+function ExtendButton({ onExtend }: { onExtend: (minutes: number) => void }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const t = useTranslations('ContentView');
+    const tCommon = useTranslations('Common');
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const handleExtend = (minutes: number) => {
+        onExtend(minutes);
+        setIsOpen(false);
+    };
+
+    return (
+        <div className="relative" ref={dropdownRef}>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className={cn(
+                    "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border",
+                    isOpen
+                        ? "bg-accent text-accent-foreground border-border"
+                        : "bg-transparent text-muted-foreground border-transparent hover:bg-accent hover:text-foreground hover:border-border"
+                )}
+                title={t('extendLock')}
+            >
+                <Clock size={16} />
+                <span className="hidden sm:inline">{t('extend')}</span>
+            </button>
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                        className="absolute right-0 mt-2 w-48 bg-popover rounded-xl shadow-xl border border-border overflow-hidden z-50 p-1"
+                    >
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('addTime')}</div>
+                        {[
+                            { label: `+10 ${t('minutes')}`, val: 10 },
+                            { label: `+1 ${t('hour')}`, val: 60 },
+                            { label: `+6 ${t('hours')}`, val: 360 },
+                            { label: `+24 ${t('hours')}`, val: 1440 }
+                        ].map((opt) => (
+                            <button
+                                key={opt.val}
+                                onClick={() => handleExtend(opt.val)}
+                                className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-accent rounded-lg transition-colors flex items-center justify-between group"
+                            >
+                                <span>{opt.label}</span>
+                                <Plus size={12} className="opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
+                            </button>
+                        ))}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}
+
+function Countdown({ targetDate }: { targetDate: number }) {
+    const [timeLeft, setTimeLeft] = useState(Math.max(0, targetDate - Date.now()));
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const diff = targetDate - Date.now();
+            setTimeLeft(Math.max(0, diff));
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [targetDate]);
+
+    if (timeLeft <= 0) return <>00:00:00</>;
+
+    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
+
+    if (days > 0) return <>{days}d {pad(hours)}:{pad(minutes)}:{pad(seconds)}</>;
+    return <>{pad(hours)}:{pad(minutes)}:{pad(seconds)}</>;
+}
+
+function getTimeLeft(decryptAt: number): string {
+    const now = Date.now();
+    const diff = decryptAt - now;
+
+    if (diff <= 0) return 'Unlocked';
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (hours > 24) {
+        const days = Math.floor(hours / 24);
+        const remainingHours = hours % 24;
+        return `${days}d ${remainingHours}h`;
+    }
+
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
 }
