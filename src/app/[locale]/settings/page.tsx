@@ -34,8 +34,10 @@ import Dashboard from '@/components/Dashboard'; // Moved here as per previous re
 import { queryClient } from '@/lib/query-client';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { useHasMounted } from '@/hooks/useHasMounted';
-import { getCacheStats, clearPersistedCache, setCacheTTL } from '@/lib/cache-config';
+import { setCacheTTL } from '@/lib/cache-config';
 import { Link } from '@/i18n/routing';
+import { Bell } from 'lucide-react';
+import { notificationService } from '@/lib/services/notification-service';
 
 export default function SettingsPage() {
     const t = useTranslations('Settings');
@@ -79,6 +81,14 @@ export default function SettingsPage() {
         apiUrl,
         setApiUrl,
 
+        // Notifications
+        notificationEnabled,
+        setNotificationEnabled,
+        notificationTiming,
+        setNotificationTiming,
+        soundEnabled,
+        setSoundEnabled,
+
         // Actions
         resetToDefaults,
         themeConfig,
@@ -98,77 +108,20 @@ export default function SettingsPage() {
     // Clear Data State
     const [isClearing, setIsClearing] = useState(false);
 
+    // Notification Permission State
+    const [notificationPermission, setNotificationPermission] = useState<'default' | 'granted' | 'denied'>('default');
+
     // Confirmation Dialog States
     const [showResetConfirm, setShowResetConfirm] = useState(false);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-    // Cache Statistics State
-    const [cacheStats, setCacheStats] = useState({ queryCount: 0, sizeKB: 0 });
-    const [isPersisted, setIsPersisted] = useState(false);
     const hasMounted = useHasMounted();
 
-    // Calculate cache statistics and monitor persistence
+    // Check notification permission on mount
     useEffect(() => {
-        if (!hasMounted) return;
-
-        const updateCacheStats = () => {
-            const cache = queryClient.getQueryCache();
-            const queries = cache.getAll();
-
-            // Count all queries that have some state
-            const queryCount = queries.length;
-
-            // Estimate cache size by serializing query data
-            let totalSize = 0;
-            queries.forEach(query => {
-                try {
-                    const data = query.state.data;
-                    if (data) {
-                        const serialized = JSON.stringify(data);
-                        totalSize += serialized.length;
-                    }
-                } catch (e) {
-                    // Skip queries that can't be serialized
-                }
-            });
-
-            // Convert bytes to KB
-            const sizeKB = Math.round(totalSize / 1024);
-
-            // Get storage stats from cache-config
-            const storageStats = getCacheStats();
-
-            // Only update if values actually changed to prevent loops
-            setCacheStats(prev => {
-                if (prev.queryCount === queryCount && prev.sizeKB === sizeKB) {
-                    return prev;
-                }
-                return { queryCount, sizeKB };
-            });
-
-            // Check persistence using the actual cache key
-            if (typeof window !== 'undefined') {
-                const persistedData = localStorage.getItem('promissum-react-query-cache');
-                setIsPersisted(!!persistedData);
-            }
-        };
-
-        // Initial update
-        updateCacheStats();
-
-        // Subscribe to cache changes for real-time updates without polling
-        const unsubscribe = queryClient.getQueryCache().subscribe(() => {
-            updateCacheStats();
-        });
-
-        // Still keep a slow interval just in case of external storage changes 
-        // or edge cases not caught by subscription
-        const interval = setInterval(updateCacheStats, 10000);
-
-        return () => {
-            unsubscribe();
-            clearInterval(interval);
-        };
+        if (hasMounted) {
+            setNotificationPermission(notificationService.getPermissionStatus());
+        }
     }, [hasMounted]);
 
     // Sync TTL changes to cache config
@@ -265,8 +218,7 @@ export default function SettingsPage() {
                 queryClient.removeQueries()
             ]);
 
-            // Clear persisted cache
-            clearPersistedCache();
+            // Clear all storage
             localStorage.clear();
             sessionStorage.clear();
 
@@ -283,8 +235,6 @@ export default function SettingsPage() {
     const handleClearCache = () => {
         queryClient.removeQueries();
         toast.success(t('cacheCleared'));
-        // Refresh cache stats immediately
-        setCacheStats({ queryCount: 0, sizeKB: 0 });
     };
 
     const handleCheckConnection = async () => {
@@ -311,6 +261,42 @@ export default function SettingsPage() {
         setApiToken(e.target.value);
         // Reset status on change
         setApiStatus('idle');
+    };
+
+    // Notification handlers
+    const handleRequestNotificationPermission = async () => {
+        const permission = await notificationService.requestPermission();
+        setNotificationPermission(permission);
+
+        if (permission === 'granted') {
+            setNotificationEnabled(true);
+            toast.success(t('permissionGranted'));
+        } else if (permission === 'denied') {
+            toast.error(t('permissionDenied'));
+        }
+    };
+
+    const handleTestNotification = () => {
+        if (notificationService.isEnabled()) {
+            notificationService.showNotification(
+                'Test Notification',
+                'This is a test notification from Chaster',
+                { requireInteraction: false }
+            );
+            toast.success(t('testNotificationSent'));
+        } else {
+            toast.error(t('permissionDenied'));
+        }
+    };
+
+    const handleNotificationTimingChange = (checked: boolean, minutes: number) => {
+        if (checked) {
+            if (!notificationTiming.includes(minutes)) {
+                setNotificationTiming([...notificationTiming, minutes].sort((a, b) => a - b));
+            }
+        } else {
+            setNotificationTiming(notificationTiming.filter(m => m !== minutes));
+        }
     };
 
     return (
@@ -549,6 +535,116 @@ export default function SettingsPage() {
                     </div>
                 </section>
 
+                {/* Notifications Section */}
+                <section className="space-y-4">
+                    <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+                        <Bell size={20} className="text-primary" />
+                        {t('notificationsTitle')}
+                    </h2>
+
+                    <div className="glass-card rounded-xl p-6 space-y-6">
+                        {/* Enable Notifications */}
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                    <Bell size={16} />
+                                    {t('enableNotifications')}
+                                </label>
+                                <p className="text-xs text-muted-foreground">{t('enableNotificationsDesc')}</p>
+                                {notificationPermission !== 'granted' && (
+                                    <button
+                                        onClick={handleRequestNotificationPermission}
+                                        className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors"
+                                    >
+                                        {t('requestPermission')}
+                                    </button>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {notificationPermission === 'granted' && (
+                                    <span className="text-xs text-green-500">{t('permissionGranted')}</span>
+                                )}
+                                {notificationPermission === 'denied' && (
+                                    <span className="text-xs text-red-500">{t('permissionDenied')}</span>
+                                )}
+                                <button
+                                    onClick={() => setNotificationEnabled(!notificationEnabled)}
+                                    disabled={notificationPermission !== 'granted'}
+                                    className={`w-12 h-6 rounded-full transition-colors relative ${notificationEnabled && notificationPermission === 'granted' ? 'bg-primary' : 'bg-muted'
+                                        } ${notificationPermission !== 'granted' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
+                                    <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${notificationEnabled && notificationPermission === 'granted' ? 'translate-x-6' : 'translate-x-0'
+                                        }`} />
+                                </button>
+                            </div>
+                        </div>
+
+                        {notificationEnabled && notificationPermission === 'granted' && (
+                            <>
+                                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+                                {/* Notification Timing */}
+                                <div className="space-y-3">
+                                    <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                        <Clock size={16} />
+                                        {t('notificationTiming')}
+                                    </label>
+                                    <p className="text-xs text-muted-foreground">{t('notificationTimingDesc')}</p>
+
+                                    <div className="space-y-2 pl-6">
+                                        {[
+                                            { value: 5, label: t('minutesBefore', { minutes: 5 }) },
+                                            { value: 60, label: t('hourBefore') },
+                                        ].map((option) => (
+                                            <label key={option.value} className="flex items-center gap-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={notificationTiming.includes(option.value)}
+                                                    onChange={(e) => handleNotificationTimingChange(e.target.checked, option.value)}
+                                                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary/50"
+                                                />
+                                                <span className="text-sm text-foreground">{option.label}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+                                {/* Sound Enabled */}
+                                <div className="flex items-center justify-between">
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-medium text-foreground">
+                                            {t('soundEnabled')}
+                                        </label>
+                                        <p className="text-xs text-muted-foreground">{t('soundEnabledDesc')}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => setSoundEnabled(!soundEnabled)}
+                                        className={`w-10 h-5 rounded-full transition-colors relative ${soundEnabled ? 'bg-primary' : 'bg-muted'}`}
+                                    >
+                                        <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${soundEnabled ? 'translate-x-5' : 'translate-x-0'
+                                            }`} />
+                                    </button>
+                                </div>
+
+                                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+                                {/* Test Notification */}
+                                <div className="flex justify-end">
+                                    <button
+                                        onClick={handleTestNotification}
+                                        className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-lg text-sm font-medium transition-colors"
+                                    >
+                                        <Bell size={16} />
+                                        {t('testNotification')}
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </section>
+
                 {/* Caching Section */}
                 <section className="space-y-4">
                     <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
@@ -576,47 +672,6 @@ export default function SettingsPage() {
                                 <option value={30}>30 min</option>
                                 <option value={60}>60 min</option>
                             </select>
-                        </div>
-
-                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
-                        {/* Cache Statistics */}
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                    <Database size={16} />
-                                    {t('cacheStats')}
-                                </label>
-                                <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
-                                    ${isPersisted ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-muted text-muted-foreground border border-border'}`}>
-                                    <div className={`w-1.5 h-1.5 rounded-full ${isPersisted ? 'bg-green-500' : 'bg-muted-foreground'}`} />
-                                    {isPersisted ? t('persistenceActive') : t('persistenceInactive')}
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="p-3 rounded-lg border border-border bg-background/50 hover:border-primary/30 transition-colors">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">{t('totalQueries')}</span>
-                                        <span className="text-xl font-mono text-foreground mt-1">
-                                            {cacheStats.queryCount}
-                                            <span className="text-xs font-sans text-muted-foreground ml-1.5">{t('queries')}</span>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="p-3 rounded-lg border border-border bg-background/50 hover:border-primary/30 transition-colors">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">{t('cacheSize')}</span>
-                                        <span className="text-xl font-mono text-foreground mt-1">
-                                            {cacheStats.sizeKB < 1024
-                                                ? cacheStats.sizeKB
-                                                : (cacheStats.sizeKB / 1024).toFixed(1)}
-                                            <span className="text-xs font-sans text-muted-foreground ml-1.5">
-                                                {cacheStats.sizeKB < 1024 ? 'KB' : 'MB'}
-                                            </span>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
