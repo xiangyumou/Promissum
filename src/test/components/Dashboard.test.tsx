@@ -17,6 +17,13 @@ vi.mock('recharts', () => ({
     Tooltip: () => <div />
 }));
 
+// Mock next-intl routing
+vi.mock('@/i18n/routing', () => ({
+    useRouter: () => ({
+        push: vi.fn()
+    })
+}));
+
 import { useStats } from '@/lib/queries';
 
 describe('Dashboard', () => {
