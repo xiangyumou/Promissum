@@ -73,6 +73,43 @@ npm run build
 npm start
 ```
 
+## 🧪 Testing
+
+The project has comprehensive unit test coverage using Vitest.
+
+### Run Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run tests in watch mode
+npm test -- --watch
+```
+
+### Test Coverage
+
+- **Overall Coverage**: ~66% code coverage
+- **97 Unit Tests** covering:
+  - ✅ All lib utilities and services
+  - ✅ All custom React hooks
+  - ✅ Major UI components
+  - ✅ Edge cases and error handling
+
+### Test Structure
+
+```
+src/test/
+├── components/        # Component tests (AddModal, Dashboard, etc.)
+├── unit/
+│   ├── hooks/         # Custom hooks tests
+│   └── lib/           # Utility library tests
+└── utils.tsx          # Test utilities and providers
+```
+
 ## 📚 技术栈
 
 - **前端框架**：Next.js 16 + React 19
