@@ -21,12 +21,28 @@ const messages = {
         textNote: 'Text Note',
         image: 'Image',
         unlocked: 'Unlocked',
-        locked: 'Locked'
+        locked: 'Locked',
+        unlocksAt: 'Unlocks At'
     },
     Sidebar: {
         settings: 'Settings',
         noItems: 'No items found',
-        collapseSidebar: 'Collapse Sidebar'
+        collapseSidebar: 'Collapse Sidebar',
+        filters: 'Filters',
+        search: 'Search',
+        clearSearch: 'Clear search',
+        searchPlaceholder: 'Search...',
+        clearStatus: 'Clear status',
+        all: 'All',
+        locked: 'Locked',
+        unlocked: 'Unlocked',
+        sortBy: 'Sort by',
+        sortCreatedDesc: 'Newest',
+        sortCreatedAsc: 'Oldest',
+        sortDecryptDesc: 'Unlock soon',
+        sortDecryptAsc: 'Unlock late',
+        resetFilters: 'Reset filters',
+        clearType: 'Clear type'
     },
     ContentView: {
         delete: 'Delete',
@@ -38,7 +54,15 @@ const messages = {
         contentEncrypted: 'Content Encrypted',
         timeLockActive: 'Time Lock Active',
         unlocksIn: 'Unlocks in',
-        extendLock: 'Extend Lock'
+        extendLock: 'Extend Lock',
+        selectItem: 'Select an item',
+        decrypting: 'Decrypting...',
+        notFound: 'Item not found',
+        viewOriginal: 'View Original',
+        minutes: 'minutes',
+        hour: 'hour',
+        hours: 'hours',
+        addTime: 'Add time'
     },
     AddModal: {
         title: 'Add New Item',
@@ -47,7 +71,46 @@ const messages = {
         image: 'Image',
         duration: 'Duration',
         absoluteTime: 'Absolute Time',
-        invalidTime: 'Invalid time'
+        invalidTime: 'Invalid time',
+        itemTitle: 'Item Title',
+        titlePlaceholder: 'Title (optional)',
+        enterContent: 'Write your thought...',
+        changeImage: 'Change Image',
+        uploadImage: 'Upload Image',
+        uploadHint: 'Or paste image',
+        lockDuration: 'Lock Duration',
+        customDate: 'Custom Date',
+        reset: 'Reset',
+        checkInput: 'Check Input',
+        unlocksAt: 'Unlocks At',
+        remaining: 'Remaining',
+        encrypting: 'Encrypting...',
+        encryptAndSave: 'Encrypt & Save'
+    },
+    Theme: {
+        light: 'Light',
+        dark: 'Dark',
+        system: 'System'
+    },
+    Settings: {
+        exportDataTitle: 'Export Data',
+        exportDataDesc: 'Export your data as JSON or Markdown.',
+        exportJSON: 'JSON',
+        exportMarkdown: 'Markdown'
+    },
+    Dashboard: {
+        textNotes: 'Text Notes',
+        images: 'Images',
+        encrypted: 'Encrypted',
+        unlocked: 'Unlocked',
+        failedToLoad: 'Failed to load data',
+        systemOverview: 'System Overview',
+        totalItems: 'Total Items',
+        contentTypeDistribution: 'Content Type Distribution',
+        lockStatusDistribution: 'Lock Status Distribution',
+        averageLockDuration: 'Average Lock Duration',
+        basedOnHistory: 'Based on history',
+        hours: 'hours'
     }
 };
 
@@ -74,20 +137,25 @@ export function renderWithProviders(
 
     const queryClient = createTestQueryClient();
 
-    function Wrapper({ children }: { children: React.ReactNode }) {
-        return (
-            <QueryClientProvider client={queryClient}>
-                <NextIntlClientProvider locale="en" messages={messages}>
-                    {children}
-                </NextIntlClientProvider>
-            </QueryClientProvider>
-        );
-    }
-
     return {
         user: undefined, // userEvent.setup() can be added here if needed
-        ...render(ui, { wrapper: Wrapper, ...renderOptions }),
+        ...render(ui, { wrapper: TestWrapper, ...renderOptions }),
     };
+}
+
+export function TestWrapper({ children }: { children: React.ReactNode }) {
+    const queryClient = createTestQueryClient();
+    return (
+        <QueryClientProvider client={queryClient}>
+            <NextIntlClientProvider locale="en" messages={messages}>
+                {children}
+            </NextIntlClientProvider>
+        </QueryClientProvider>
+    );
+}
+
+export function createWrapper() {
+    return TestWrapper;
 }
 
 // Re-export everything
