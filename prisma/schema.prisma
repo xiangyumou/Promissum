@@ -83,6 +83,7 @@ model ActiveSession {
   @@index([lastActive])
 }
 
+
 // Optional: Shared decrypt cache across devices
 // Can be populated when one device decrypts content
 // Other devices can read from cache instead of re-decrypting
@@ -94,5 +95,21 @@ model DecryptCache {
   expiresAt DateTime // Cache expiration based on TTL
   createdAt DateTime @default(now())
 
+  @@index([expiresAt])
+}
+
+// Shared items for collaboration and access control
+model SharedItem {
+  id             String    @id @default(cuid())
+  itemId         String    // Item being shared
+  shareToken     String    @unique // Unique token for share URL
+  permission     String    // 'view' | 'view-extend' | 'full'
+  createdBy      String    // Device ID that created share
+  expiresAt      DateTime? // Optional expiration
+  createdAt      DateTime  @default(now())
+  lastAccessedAt DateTime? // Track when last accessed
+
+  @@index([itemId])
+  @@index([shareToken])
   @@index([expiresAt])
 }

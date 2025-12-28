@@ -1,7 +1,7 @@
 'use client';
 
 import { ApiItemDetail } from '@/lib/types';
-import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Trash2, Plus, Menu } from 'lucide-react';
+import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Trash2, Plus, Menu, Share2, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -20,6 +20,8 @@ import { useActiveSession } from '@/hooks/useActiveSession';
 import { useSessions } from '@/hooks/useSessions';
 import { Users } from 'lucide-react';
 import CountdownVisuals from './CountdownVisuals';
+import ShareDialog from './ShareDialog';
+import ShareManagementDialog from './ShareManagementDialog';
 
 interface ContentViewProps {
     selectedId: string | null;
@@ -66,6 +68,11 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
 
     // Image lightbox state
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+    // Share dialogs state
+    const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+    const [isShareManagementOpen, setIsShareManagementOpen] = useState(false);
+
 
     // No item selected state -> Show welcome message
     if (!selectedId) {
@@ -176,6 +183,8 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                     </div>
 
                     <div className="flex items-center gap-2 ml-auto md:ml-0 shrink-0">
+                        <ShareButton onClick={() => setIsShareDialogOpen(true)} />
+                        <ManageSharesButton onClick={() => setIsShareManagementOpen(true)} />
                         <ExtendButton onExtend={(mins) => onExtend(item.id, mins)} />
                         <DeleteButton id={item.id} onDelete={onDelete} />
                     </div>
@@ -262,7 +271,59 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                     </div>
                 )}
             </div>
+
+            {/* Share Dialogs */}
+            {item && (
+                <>
+                    <ShareDialog
+                        isOpen={isShareDialogOpen}
+                        onClose={() => setIsShareDialogOpen(false)}
+                        itemId={item.id}
+                    />
+                    <ShareManagementDialog
+                        isOpen={isShareManagementOpen}
+                        onClose={() => setIsShareManagementOpen(false)}
+                        itemId={item.id}
+                    />
+                </>
+            )}
         </div>
+    );
+}
+
+function ShareButton({ onClick }: { onClick: () => void }) {
+    const t = useTranslations('Share');
+
+    return (
+        <button
+            onClick={onClick}
+            className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border",
+                "bg-transparent text-muted-foreground border-transparent hover:bg-primary/10 hover:text-primary hover:border-primary/20"
+            )}
+            title={t('shareItem')}
+        >
+            <Share2 size={16} />
+            <span className="hidden sm:inline">{t('createShare')}</span>
+        </button>
+    );
+}
+
+function ManageSharesButton({ onClick }: { onClick: () => void }) {
+    const t = useTranslations('Share');
+
+    return (
+        <button
+            onClick={onClick}
+            className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border",
+                "bg-transparent text-muted-foreground border-transparent hover:bg-accent hover:text-foreground hover:border-border"
+            )}
+            title={t('manageShares')}
+        >
+            <Shield size={16} />
+            <span className="hidden md:inline">{t('manageShares')}</span>
+        </button>
     );
 }
 
