@@ -33,6 +33,11 @@ interface SettingsState {
     apiToken: string; // Custom API token overrides env
     apiUrl: string; // Custom API URL overrides env
 
+    // Notifications
+    notificationEnabled: boolean;
+    notificationTiming: number[]; // Minutes before unlock, e.g. [5, 60]
+    soundEnabled: boolean;
+
     // Actions
     setDefaultDuration: (minutes: number) => void;
     setPrivacyMode: (enabled: boolean) => void;
@@ -55,13 +60,17 @@ interface SettingsState {
     setApiToken: (token: string) => void;
     setApiUrl: (url: string) => void;
 
+    setNotificationEnabled: (enabled: boolean) => void;
+    setNotificationTiming: (timing: number[]) => void;
+    setSoundEnabled: (enabled: boolean) => void;
+
     resetToDefaults: () => void;
 }
 
 /**
  * Default Settings Values
  */
-const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMode' | 'setPanicUrl' | 'setThemeConfig' | 'setDateTimeFormat' | 'setCompactMode' | 'setSidebarOpen' | 'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' | 'setDefaultSort' | 'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' | 'setPanicShortcut' | 'setApiToken' | 'setApiUrl' | 'resetToDefaults'> = {
+const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMode' | 'setPanicUrl' | 'setThemeConfig' | 'setDateTimeFormat' | 'setCompactMode' | 'setSidebarOpen' | 'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' | 'setDefaultSort' | 'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' | 'setPanicShortcut' | 'setApiToken' | 'setApiUrl' | 'setNotificationEnabled' | 'setNotificationTiming' | 'setSoundEnabled' | 'resetToDefaults'> = {
     defaultDurationMinutes: 60,
     privacyMode: false,
     panicUrl: 'https://google.com',
@@ -82,6 +91,11 @@ const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMo
     panicShortcut: 'alt+p',
     apiToken: '',
     apiUrl: '',
+
+    // Notification Defaults
+    notificationEnabled: false,
+    notificationTiming: [5, 60], // 5 min and 1 hour before
+    soundEnabled: true,
 };
 
 /**
@@ -129,6 +143,11 @@ export const createSettingsStore = (
                 setPanicShortcut: (shortcut) => set({ panicShortcut: shortcut }),
                 setApiToken: (token) => set({ apiToken: token }),
                 setApiUrl: (url) => set({ apiUrl: url }),
+
+                // Notifications
+                setNotificationEnabled: (enabled) => set({ notificationEnabled: enabled }),
+                setNotificationTiming: (timing) => set({ notificationTiming: timing }),
+                setSoundEnabled: (enabled) => set({ soundEnabled: enabled }),
 
                 resetToDefaults: () => set(DEFAULT_SETTINGS),
             }),
