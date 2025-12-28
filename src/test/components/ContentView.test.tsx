@@ -1,66 +1,165 @@
-import { describe, it, expect, vi } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { screen, waitFor, fireEvent } from '@testing-library/react';
 import { renderWithProviders } from '../utils';
 import ContentView from '@/components/ContentView';
 import { ItemDetail } from '@/lib/types';
+import { timeService } from '@/lib/services/time-service';
 
-// Mock item for props
-const mockItem: ItemDetail = {
-    id: 'test-item-1',
-    type: 'text',
-    original_name: null,
-    decrypt_at: Date.now() + 100000,
-    created_at: Date.now(),
-    layer_count: 0,
-    user_id: 'user-1',
-    metadata: { title: 'Test Item' },
-    unlocked: false,
-    content: null
-};
+// Mock timeService
+vi.mock('@/lib/services/time-service', () => ({
+    timeService: {
+        now: vi.fn()
+    }
+}));
+
+// Mock framer-motion to avoid animation issues
+vi.mock('framer-motion', async () => {
+    const actual = await vi.importActual('framer-motion');
+    return {
+        ...actual,
+        AnimatePresence: ({ children }: any) => <>{children}</>,
+        motion: {
+            div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+            button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+        }
+    };
+});
+
+// Mock Lightbox
+vi.mock('yet-another-react-lightbox', () => ({
+    default: () => null
+}));
+vi.mock('yet-another-react-lightbox/plugins/zoom', () => ({
+    default: () => null
+}));
 
 describe('ContentView', () => {
-    it('renders loading state initially', () => {
-        renderWithProviders(
-            <ContentView
-                selectedId="test-item-1"
-                item={mockItem}
-                isLoading={false}
-                onDelete={vi.fn()}
-                onExtend={vi.fn()}
-                onMenuClick={vi.fn()}
-            />
-        );
+    const mockOnDelete = vi.fn();
+    const mockOnExtend = vi.fn();
+    const mockOnMenuClick = vi.fn();
 
-        // Should verify skeleton or initial render
-        // Since useItem is fetching, it might show loading state if implemented
-        // But ContentView also uses passed `item` prop for basic info
-        expect(screen.getByText('Test Item')).toBeInTheDocument();
+    // Locked item (unlock in future)
+    const lockedItem: ItemDetail = {
+        id: 'test-item-1',
+        type: 'text',
+        original_name: null,
+        decrypt_at: Date.now() + 3600000, // 1 hour from now
+        created_at: Date.now() - 86400000, // 1 day ago
+        layer_count: 0,
+        user_id: 'user-1',
+        metadata: { title: 'Locked Item' },
+        unlocked: false,
+        content: null
+    };
+
+    // Unlocked item
+    const unlockedItem: ItemDetail = {
+        id: 'test-item-2',
+        type: 'text',
+        original_name: null,
+        decrypt_at: Date.now() - 3600000, // 1 hour ago
+        created_at: Date.now() - 86400000,
+        layer_count: 0,
+        user_id: 'user-1',
+        metadata: { title: 'Unlocked Item' },
+        unlocked: true,
+        content: 'This is the secret content!'
+    };
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        (timeService.now as any).mockReturnValue(Date.now());
     });
 
-    it('fetches and displays detail content', async () => {
-        // MSW mocks GET /api/items/:id to return unlocked content if ID is 'test-item-1' (or based on handlers)
-        // Let's check handlers.ts to see what it returns.
-        // Assuming handlers return generic data.
+    describe('Rendering', () => {
+        it('should render item title', () => {
+            renderWithProviders(
+                <ContentView
+                    selectedId="test-item-1"
+                    item={lockedItem}
+                    isLoading={false}
+                    onDelete={mockOnDelete}
+                    onExtend={mockOnExtend}
+                    onMenuClick={mockOnMenuClick}
+                />
+            );
 
-        renderWithProviders(
-            <ContentView
-                selectedId="test-item-1"
-                item={mockItem}
-                isLoading={false}
-                onDelete={vi.fn()}
-                onExtend={vi.fn()}
-                onMenuClick={vi.fn()}
-            />
-        );
+            expect(screen.getByText('Locked Item')).toBeInTheDocument();
+        });
 
-        // Wait for detail to load
-        // Note: handlers.ts needs to be checked to know expected content
-        // If handler returns { unlocked: true, content: 'Secret Content' }
-        // We expect 'Secret Content' to appear.
+        it('should show empty state when no item selected', () => {
+            renderWithProviders(
+                <ContentView
+                    selectedId={null}
+                    item={undefined}
+                    isLoading={false}
+                    onDelete={mockOnDelete}
+                    onExtend={mockOnExtend}
+                    onMenuClick={mockOnMenuClick}
+                />
+            );
 
-        // Since I don't recall exact handlers, I'll check if title is stable
-        await waitFor(() => {
-            expect(screen.getByText('Test Item')).toBeInTheDocument();
+            expect(screen.getByText('Select an item')).toBeInTheDocument();
+        });
+    });
+
+    describe('Locked Item State', () => {
+        it('should show encrypted indicator for locked item', () => {
+            renderWithProviders(
+                <ContentView
+                    selectedId="test-item-1"
+                    item={lockedItem}
+                    isLoading={false}
+                    onDelete={mockOnDelete}
+                    onExtend={mockOnExtend}
+                    onMenuClick={mockOnMenuClick}
+                />
+            );
+
+            expect(screen.getByText('Content Encrypted')).toBeInTheDocument();
+            expect(screen.getByText('Time Lock Active')).toBeInTheDocument();
+        });
+    });
+
+    describe('Unlocked Item State', () => {
+        it('should show content for unlocked item', () => {
+            renderWithProviders(
+                <ContentView
+                    selectedId="test-item-2"
+                    item={unlockedItem}
+                    isLoading={false}
+                    onDelete={mockOnDelete}
+                    onExtend={mockOnExtend}
+                    onMenuClick={mockOnMenuClick}
+                />
+            );
+
+            expect(screen.getByText('This is the secret content!')).toBeInTheDocument();
+        });
+    });
+
+    describe('Image Type', () => {
+        it('should render image content correctly', () => {
+            const imageItem: ItemDetail = {
+                ...unlockedItem,
+                id: 'image-1',
+                type: 'image',
+                content: 'data:image/png;base64,iVBORw0KGgo=',
+                metadata: { title: 'Test Image' }
+            };
+
+            renderWithProviders(
+                <ContentView
+                    selectedId="image-1"
+                    item={imageItem}
+                    isLoading={false}
+                    onDelete={mockOnDelete}
+                    onExtend={mockOnExtend}
+                    onMenuClick={mockOnMenuClick}
+                />
+            );
+
+            expect(screen.getByText('Test Image')).toBeInTheDocument();
         });
     });
 });
