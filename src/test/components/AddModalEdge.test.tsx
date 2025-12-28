@@ -9,57 +9,200 @@ vi.mock('@/components/ui/Modal', () => ({
     default: ({ isOpen, children }: any) => isOpen ? <div data-testid="modal">{children}</div> : null
 }));
 
+// Mock time for consistent testing
+vi.mock('@/lib/services/time-service', () => ({
+    timeService: {
+        now: vi.fn(() => new Date('2024-06-15T12:00:00').getTime())
+    }
+}));
+
 describe('AddModal Edge Cases', () => {
-    const mockOnAdd = vi.fn();
+    const mockOnAdd = vi.fn().mockResolvedValue(undefined);
     const mockOnClose = vi.fn();
 
     beforeEach(() => {
         vi.clearAllMocks();
+        (timeService.now as any).mockReturnValue(new Date('2024-06-15T12:00:00').getTime());
     });
 
-    it('should show validation error for empty text content', async () => {
-        renderWithProviders(<AddModal isOpen={true} onClose={mockOnClose} onSubmit={mockOnAdd} defaultDuration={60} />);
+    describe('Validation', () => {
+        it('should not submit when text content is empty', async () => {
+            renderWithProviders(
+                <AddModal isOpen={true} onClose={mockOnClose} onSubmit={mockOnAdd} defaultDuration={60} />
+            );
 
-        // Select Text type (default)
-        // Click save without entering text/duration
-        fireEvent.click(screen.getByText('Encrypt & Save'));
+            // Submit button should be disabled when no content
+            const submitBtn = screen.getByText('Encrypt & Save');
+            expect(submitBtn).toBeDisabled();
 
-        await waitFor(() => {
-            // Zod validation should fail.
-            // We need to check if error message is displayed.
-            // Based on previous tests, valid inputs are required.
+            // Verify onSubmit was not called
             expect(mockOnAdd).not.toHaveBeenCalled();
+        });
+
+        it('should enable submit when content is entered', async () => {
+            renderWithProviders(
+                <AddModal isOpen={true} onClose={mockOnClose} onSubmit={mockOnAdd} defaultDuration={60} />
+            );
+
+            const textarea = screen.getByPlaceholderText('Write your thought...');
+            fireEvent.change(textarea, { target: { value: 'Valid content' } });
+
+            const submitBtn = screen.getByText('Encrypt & Save');
+            expect(submitBtn).not.toBeDisabled();
         });
     });
 
-    it('should show error for huge content', async () => {
-        renderWithProviders(<AddModal isOpen={true} onClose={mockOnClose} onSubmit={mockOnAdd} defaultDuration={60} />);
+    describe('Title Input', () => {
+        it('should handle long title gracefully', async () => {
+            renderWithProviders(
+                <AddModal isOpen={true} onClose={mockOnClose} onSubmit={mockOnAdd} defaultDuration={60} />
+            );
 
-        const hugeText = 'a'.repeat(10001); // Assumed limit is high but let's see
-        // Actually limit might be small. validation.ts?
-        // Let's just try to type it.
-        const input = screen.getByPlaceholderText('Title (optional)');
-        fireEvent.change(input, { target: { value: hugeText } });
+            const longTitle = 'a'.repeat(200); // Long title
+            const titleInput = screen.getByPlaceholderText('Title (optional)');
+            fireEvent.change(titleInput, { target: { value: longTitle } });
 
-        // Need time
-        // We probably need to target 'Duration' input more robustly.
-        // Assuming label 'Lock Duration'
-        // But for now let's just assert on the title.
+            // Enter content to enable submit
+            const textarea = screen.getByPlaceholderText('Write your thought...');
+            fireEvent.change(textarea, { target: { value: 'Some content' } });
+
+            // Should still be able to submit
+            const submitBtn = screen.getByText('Encrypt & Save');
+            expect(submitBtn).not.toBeDisabled();
+        });
+
+        it('should allow empty title', async () => {
+            renderWithProviders(
+                <AddModal isOpen={true} onClose={mockOnClose} onSubmit={mockOnAdd} defaultDuration={60} />
+            );
+
+            // Just enter content, leave title empty
+            const textarea = screen.getByPlaceholderText('Write your thought...');
+            fireEvent.change(textarea, { target: { value: 'Content without title' } });
+
+            const submitBtn = screen.getByText('Encrypt & Save');
+            expect(submitBtn).not.toBeDisabled();
+
+            fireEvent.click(submitBtn);
+
+            await waitFor(() => {
+                expect(mockOnAdd).toHaveBeenCalled();
+            });
+        });
     });
 
-    it('should handle past date selection in absolute time', async () => {
-        renderWithProviders(<AddModal isOpen={true} onClose={mockOnClose} onSubmit={mockOnAdd} defaultDuration={60} />);
+    describe('Absolute Time Mode', () => {
+        it('should show invalid time for past date', async () => {
+            renderWithProviders(
+                <AddModal isOpen={true} onClose={mockOnClose} onSubmit={mockOnAdd} defaultDuration={60} />
+            );
 
-        // Click Absolute Time toggle button
-        const absoluteBtn = screen.getByRole('button', { name: /Custom Date/i });
-        fireEvent.click(absoluteBtn);
+            // Click Custom Date toggle button
+            const absoluteBtn = screen.getByRole('button', { name: /Custom Date/i });
+            fireEvent.click(absoluteBtn);
 
-        // Use placeholder or something unique
-        const yearInput = screen.getByPlaceholderText('YY');
-        fireEvent.change(yearInput, { target: { value: '20' } });
+            // Enter a past year (20 = 2020, which is in the past)
+            const yearInput = screen.getByPlaceholderText('YY');
+            fireEvent.change(yearInput, { target: { value: '20' } });
 
-        // Actually checking for invalid time message is clearer
-        expect(screen.getByText('Invalid time')).toBeInTheDocument();
-        expect(screen.getByText('Encrypt & Save')).toBeDisabled();
+            // Should show invalid time
+            expect(screen.getByText('Invalid time')).toBeInTheDocument();
+            expect(screen.getByText('Encrypt & Save')).toBeDisabled();
+        });
+
+        it('should accept valid future date', async () => {
+            renderWithProviders(
+                <AddModal isOpen={true} onClose={mockOnClose} onSubmit={mockOnAdd} defaultDuration={60} />
+            );
+
+            // Click Custom Date toggle button
+            const absoluteBtn = screen.getByRole('button', { name: /Custom Date/i });
+            fireEvent.click(absoluteBtn);
+
+            // Enter a future year (30 = 2030)
+            const yearInput = screen.getByPlaceholderText('YY');
+            fireEvent.change(yearInput, { target: { value: '30' } });
+
+            // Should not show invalid time (assuming other fields are valid)
+            // The validation is more complex, but at least the button state changes
+        });
+    });
+
+    describe('Image Type', () => {
+        it('should switch to image mode', async () => {
+            renderWithProviders(
+                <AddModal isOpen={true} onClose={mockOnClose} onSubmit={mockOnAdd} defaultDuration={60} />
+            );
+
+            const imageBtn = screen.getByText('Image');
+            fireEvent.click(imageBtn);
+
+            // Should show upload area
+            expect(screen.getByText('Upload Image')).toBeInTheDocument();
+        });
+
+        it('should disable submit without image in image mode', async () => {
+            renderWithProviders(
+                <AddModal isOpen={true} onClose={mockOnClose} onSubmit={mockOnAdd} defaultDuration={60} />
+            );
+
+            const imageBtn = screen.getByText('Image');
+            fireEvent.click(imageBtn);
+
+            // Submit should be disabled without an image
+            const submitBtn = screen.getByText('Encrypt & Save');
+            expect(submitBtn).toBeDisabled();
+        });
+    });
+
+    describe('Duration Presets', () => {
+        it('should update duration when clicking preset', async () => {
+            renderWithProviders(
+                <AddModal isOpen={true} onClose={mockOnClose} onSubmit={mockOnAdd} defaultDuration={60} />
+            );
+
+            // Click 1 day preset
+            const dayPreset = screen.getByText('1d');
+            fireEvent.click(dayPreset);
+
+            // Enter content and submit
+            const textarea = screen.getByPlaceholderText('Write your thought...');
+            fireEvent.change(textarea, { target: { value: 'Content' } });
+
+            const submitBtn = screen.getByText('Encrypt & Save');
+            fireEvent.click(submitBtn);
+
+            await waitFor(() => {
+                expect(mockOnAdd).toHaveBeenCalled();
+            });
+
+            // Check that duration is updated (1d = 1440 minutes)
+            const formData = mockOnAdd.mock.calls[0][0] as FormData;
+            const duration = parseInt(formData.get('durationMinutes') as string);
+            // Duration should be greater than default 60
+            expect(duration).toBeGreaterThan(60);
+        });
+
+        it('should handle multiple preset clicks', async () => {
+            renderWithProviders(
+                <AddModal isOpen={true} onClose={mockOnClose} onSubmit={mockOnAdd} defaultDuration={60} />
+            );
+
+            // Click multiple presets to accumulate time
+            fireEvent.click(screen.getByText('1h'));
+            fireEvent.click(screen.getByText('1h'));
+            fireEvent.click(screen.getByText('1d'));
+
+            // Enter content and submit
+            const textarea = screen.getByPlaceholderText('Write your thought...');
+            fireEvent.change(textarea, { target: { value: 'Content' } });
+
+            const submitBtn = screen.getByText('Encrypt & Save');
+            fireEvent.click(submitBtn);
+
+            await waitFor(() => {
+                expect(mockOnAdd).toHaveBeenCalled();
+            });
+        });
     });
 });

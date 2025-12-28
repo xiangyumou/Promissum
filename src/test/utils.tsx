@@ -111,6 +111,12 @@ const messages = {
         averageLockDuration: 'Average Lock Duration',
         basedOnHistory: 'Based on history',
         hours: 'hours'
+    },
+    ApiStatus: {
+        checking: 'Checking...',
+        connected: 'Connected',
+        disconnected: 'Disconnected',
+        offline: 'Offline'
     }
 };
 
