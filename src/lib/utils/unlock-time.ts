@@ -5,6 +5,8 @@
  * Extracted from AddModal.tsx to enable unit testing without UI dependencies.
  */
 
+import { timeService } from '@/lib/services/time-service';
+
 export interface AbsoluteTime {
     year: string;
     month: string;
@@ -26,13 +28,13 @@ export interface UnlockTimeInfo {
  * @param timeMode 'duration' (relative minutes) or 'absolute' (specific date)
  * @param accumulatedDuration Current relative duration in minutes
  * @param absoluteTime The target absolute time object
- * @param currentTime Optional specific current time (defaults to Date.now())
+ * @param currentTime Optional specific current time (defaults to timeService.now())
  */
 export function calculateDurationMinutes(
     timeMode: 'duration' | 'absolute',
     accumulatedDuration: number,
     absoluteTime: AbsoluteTime,
-    currentTime: number = Date.now()
+    currentTime: number = timeService.now()
 ): number {
     if (timeMode === 'duration') {
         return Math.max(1, accumulatedDuration);
@@ -58,7 +60,7 @@ export function calculateUnlockTimeInfo(
     calculatedDuration: number,
     timeMode: 'duration' | 'absolute',
     absoluteTime: AbsoluteTime,
-    currentTime: number = Date.now()
+    currentTime: number = timeService.now()
 ): UnlockTimeInfo {
     let unlockDate: Date;
     let diffMs: number;
