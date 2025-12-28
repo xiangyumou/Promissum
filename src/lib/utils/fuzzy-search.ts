@@ -5,13 +5,13 @@
  * for searching across item metadata (title, tags, content preview)
  */
 
-import Fuse from 'fuse.js';
+import Fuse, { IFuseOptions } from 'fuse.js';
 import { ApiItemListView } from '../types';
 
 /**
  * Fuse.js configuration for item search
  */
-const FUSE_OPTIONS: Fuse.IFuseOptions<ApiItemListView> = {
+const FUSE_OPTIONS: IFuseOptions<ApiItemListView> = {
     keys: [
         { name: 'metadata.title', weight: 2 },      // Higher weight for titles
         { name: 'metadata.tags', weight: 1.5 },     // Tags also important
