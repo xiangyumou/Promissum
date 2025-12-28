@@ -2,10 +2,14 @@
 
 import { FilterParams } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
-import { FileText, Image as ImageIcon, Lock, Unlock, X, Search, ChevronDown, RotateCcw } from 'lucide-react';
+import {
+    FileText, Image as ImageIcon, Lock, Unlock, X, Search,
+    ChevronDown, RotateCcw, Calendar, Clock, Zap
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getDateRange, QUICK_FILTERS, TimeRangePreset } from '@/lib/utils/date-range';
 
 interface FilterPanelProps {
     filters: FilterParams;
@@ -51,10 +55,20 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
 
     const resetAll = () => {
         setSearchInput('');
-        onFilterChange({ status: 'all', sort: filters.sort || 'created_desc' });
+        onFilterChange({
+            status: 'all',
+            sort: filters.sort || 'created_desc',
+            dateRange: undefined,
+            quickFilter: undefined,
+        });
     };
 
-    const hasActiveFilters = filters.status !== 'all' || !!filters.type || !!filters.search;
+    const hasActiveFilters =
+        filters.status !== 'all' ||
+        !!filters.type ||
+        !!filters.search ||
+        !!filters.dateRange ||
+        !!filters.quickFilter;
 
     return (
         <div className="px-3 py-2">
@@ -203,6 +217,87 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
                                         icon={<ImageIcon size={14} />}
                                         label={tCommon('image')}
                                     />
+                                </div>
+                            </div>
+
+                            {/* Quick Filters */}
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                    <Zap size={12} className="inline mr-1" />
+                                    {t('quickFilters')}
+                                </label>
+                                <div className="grid grid-cols-1 gap-2">
+                                    <button
+                                        onClick={() => onFilterChange({
+                                            ...filters,
+                                            quickFilter: filters.quickFilter === 'unlocking-soon' ? undefined : 'unlocking-soon'
+                                        })}
+                                        className={cn(
+                                            "flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-all",
+                                            filters.quickFilter === 'unlocking-soon'
+                                                ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                                                : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <Clock size={14} />
+                                            <div className="text-left">
+                                                <div className="font-medium">{t('unlockingSoon')}</div>
+                                                <div className="text-xs opacity-70">{t('unlockingSoonDesc')}</div>
+                                            </div>
+                                        </div>
+                                        {filters.quickFilter === 'unlocking-soon' && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />
+                                        )}
+                                    </button>
+
+                                    <button
+                                        onClick={() => onFilterChange({
+                                            ...filters,
+                                            quickFilter: filters.quickFilter === 'long-locked' ? undefined : 'long-locked'
+                                        })}
+                                        className={cn(
+                                            "flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-all",
+                                            filters.quickFilter === 'long-locked'
+                                                ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                                                : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <Lock size={14} />
+                                            <div className="text-left">
+                                                <div className="font-medium">{t('longLocked')}</div>
+                                                <div className="text-xs opacity-70">{t('longLockedDesc')}</div>
+                                            </div>
+                                        </div>
+                                        {filters.quickFilter === 'long-locked' && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />
+                                        )}
+                                    </button>
+
+                                    <button
+                                        onClick={() => onFilterChange({
+                                            ...filters,
+                                            quickFilter: filters.quickFilter === 'recent' ? undefined : 'recent'
+                                        })}
+                                        className={cn(
+                                            "flex items-center justify-between px-3 py-2 text-sm rounded-lg transition-all",
+                                            filters.quickFilter === 'recent'
+                                                ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                                                : "bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                                        )}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <Calendar size={14} />
+                                            <div className="text-left">
+                                                <div className="font-medium">{t('recentlyCreated')}</div>
+                                                <div className="text-xs opacity-70">{t('recentlyCreatedDesc')}</div>
+                                            </div>
+                                        </div>
+                                        {filters.quickFilter === 'recent' && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />
+                                        )}
+                                    </button>
                                 </div>
                             </div>
 
