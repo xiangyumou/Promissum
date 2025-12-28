@@ -38,11 +38,9 @@ export async function GET(request: NextRequest) {
         const mappedItems = itemsArray.map(item => ({
             id: item.id,
             type: item.type,
-            original_name: null, // API doesn't return this in list view
-            decrypt_at: item.decryptAt,
-            created_at: item.createdAt || Date.now(),
-            layer_count: 1, // API doesn't expose layer count in list view
-            user_id: 'local', // Not needed but kept for compatibility
+            decrypt_at: item.decrypt_at,
+            created_at: item.created_at || Date.now(),
+            unlocked: item.unlocked,
             metadata: item.metadata,
         }));
 
@@ -125,10 +123,8 @@ export async function POST(request: NextRequest) {
             item: {
                 id: apiResponse.id,
                 type: apiResponse.type,
-                original_name: null, // API doesn't return this
-                decrypt_at: apiResponse.decryptAt,
-                created_at: Date.now(),
-                layer_count: 1,
+                decrypt_at: apiResponse.decrypt_at,
+                unlocked: apiResponse.unlocked,
                 metadata: apiResponse.metadata,
             }
         });

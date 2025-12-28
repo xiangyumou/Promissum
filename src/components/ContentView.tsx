@@ -1,6 +1,6 @@
 'use client';
 
-import { ItemDetail } from '@/lib/types';
+import { ApiItemDetail } from '@/lib/types';
 import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Trash2, Maximize2, Plus, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
@@ -19,7 +19,7 @@ import { useCountdown } from '@/hooks/useCountdown';
 
 interface ContentViewProps {
     selectedId: string | null;
-    item?: ItemDetail;
+    item?: ApiItemDetail;
     isLoading: boolean;
     onDelete: (id: string) => void;
     onExtend: (id: string, additionalMinutes: number) => void;
@@ -124,7 +124,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                         <div className="min-w-0 flex-1">
                             <h2 className="text-lg md:text-xl font-bold text-foreground tracking-tight truncate">
                                 {item.metadata?.title ||
-                                    (item.type === 'text' ? tCommon('textNote') : (item.original_name || tCommon('image')))}
+                                    (item.type === 'text' ? tCommon('textNote') : tCommon('image'))}
                             </h2>
                             <div className="flex flex-wrap items-center gap-2 mt-1 text-sm">
                                 <span className={cn(
@@ -138,7 +138,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                                 </span>
                                 <span className="text-muted-foreground flex items-center gap-1 text-xs">
                                     <Clock size={10} />
-                                    {formatDateTime(item.created_at, locale)}
+                                    {formatUnlockTime(item.decrypt_at, locale)}
                                 </span>
                             </div>
                         </div>

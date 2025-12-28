@@ -36,8 +36,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
         // If item is already unlocked (time in past), we need to add enough minutes
         // to cover the gap between now and decrypt_at, plus the requested minutes.
-        if (item.decryptAt < now) {
-            const gapMs = now - item.decryptAt;
+        if (item.decrypt_at < now) {
+            const gapMs = now - item.decrypt_at;
             // gapMinutes needs to be rounded up to ensure we are definitely in the future
             const gapMinutes = Math.ceil(gapMs / (1000 * 60));
             effectiveMinutes = minutes + gapMinutes;
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
         return NextResponse.json({
             success: true,
-            decrypt_at: apiResponse.decryptAt,
+            decrypt_at: apiResponse.decrypt_at,
             layer_count: 1, // API doesn't expose this, use default
         });
     } catch (error) {

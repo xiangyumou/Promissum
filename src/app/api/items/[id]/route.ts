@@ -17,10 +17,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         const response = {
             id: apiResponse.id,
             type: apiResponse.type,
-            original_name: null, // API doesn't return this
-            decrypt_at: apiResponse.decryptAt,
-            created_at: Date.now(), // API doesn't return this
-            layer_count: 1, // API doesn't expose this
+            decrypt_at: apiResponse.decrypt_at,
             unlocked: apiResponse.unlocked,
             content: apiResponse.content,
             metadata: apiResponse.metadata,

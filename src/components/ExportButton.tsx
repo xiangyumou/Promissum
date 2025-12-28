@@ -5,7 +5,7 @@ import { useItems } from '@/lib/queries';
 import { useTranslations, useLocale } from 'next-intl';
 import { Download, FileJson, FileText } from 'lucide-react';
 import { saveAs } from 'file-saver';
-import { ItemListView } from '@/lib/types';
+import { ApiItemListView } from '@/lib/types';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { formatDateTime } from '@/lib/date-utils';
 
@@ -21,13 +21,12 @@ export default function ExportButton() {
     const exportAsJSON = () => {
         setIsExporting(true);
         try {
-            const exportData = (items as ItemListView[]).map((item: ItemListView) => ({
+            const exportData = items.map((item: ApiItemListView) => ({
                 id: item.id,
                 type: item.type,
                 title: item.metadata?.title || `${item.type} item`,
-                created_at: new Date(item.created_at).toISOString(),
                 decrypt_at: new Date(item.decrypt_at).toISOString(),
-                original_name: item.original_name,
+                unlocked: item.unlocked,
                 metadata: item.metadata,
             }));
 
@@ -47,15 +46,11 @@ export default function ExportButton() {
             markdown += `Total Unlocked Items: ${items.length}\n\n`;
             markdown += `---\n\n`;
 
-            (items as ItemListView[]).forEach((item: ItemListView, index: number) => {
+            items.forEach((item: ApiItemListView, index: number) => {
                 const title = item.metadata?.title || `${item.type} Item ${index + 1}`;
                 markdown += `## ${title}\n\n`;
                 markdown += `- **Type**: ${item.type}\n`;
-                markdown += `- **Created**: ${formatDateTime(item.created_at, locale)}\n`;
                 markdown += `- **Unlocked**: ${formatDateTime(item.decrypt_at, locale)}\n`;
-                if (item.original_name) {
-                    markdown += `- **File**: ${item.original_name}\n`;
-                }
                 markdown += `\n---\n\n`;
             });
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ItemListView } from '@/lib/types';
+import { ApiItemListView } from '@/lib/types';
 import { FilterParams } from '@/lib/api-client';
 import FilterPanel from './FilterPanel';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,7 +16,7 @@ import { timeService } from '@/lib/services/time-service';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface SidebarProps {
-    items: ItemListView[];
+    items: ApiItemListView[];
     selectedId: string | null;
     onSelectItem: (id: string) => void;
     onAddClick: () => void;
@@ -160,7 +160,7 @@ export default function Sidebar({
 
 
 interface SidebarContentProps {
-    items: ItemListView[];
+    items: ApiItemListView[];
     selectedId: string | null;
     onSelectItem: (id: string) => void;
     onAddClick: () => void;
@@ -273,7 +273,7 @@ function SidebarContent({
 
 
 interface ItemCardProps {
-    item: ItemListView;
+    item: ApiItemListView;
     isSelected: boolean;
     onClick: () => void;
     compactMode?: boolean;
@@ -321,7 +321,7 @@ function ItemCard({ item, isSelected, onClick, compactMode = false }: ItemCardPr
                     privacyMode && !isSelected && "blur-sm group-hover:blur-0"
                 )}>
                     {item.metadata?.title ||
-                        (item.type === 'text' ? tCommon('textNote') : (item.original_name || tCommon('image')))}
+                        (item.type === 'text' ? tCommon('textNote') : tCommon('image'))}
                 </div>
                 <div className={cn(
                     "text-xs flex items-center gap-1.5 mt-1 font-medium truncate",
