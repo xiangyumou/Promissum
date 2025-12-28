@@ -1,0 +1,97 @@
+// This is your Prisma schema file for the Promissum frontend database
+// It manages user preferences, device sessions, and sync state
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Device represents a unique browser/client
+model Device {
+  id          String   @id @default(cuid())
+  fingerprint String   @unique // Browser fingerprint from @fingerprintjs
+  name        String? // Optional user-friendly name like "Chrome on MacBook"
+  lastSeenAt  DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  // Relations
+  preferences UserPreferences?
+  sessions    ActiveSession[]
+
+  @@index([fingerprint])
+}
+
+// UserPreferences stores all settings from SettingsStore
+// Synced across devices with the same fingerprint (or linked account in future)
+model UserPreferences {
+  id       String @id @default(cuid())
+  deviceId String @unique
+  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  // Default Behavior
+  defaultDurationMinutes Int     @default(60)
+  privacyMode            Boolean @default(false)
+  panicUrl               String  @default("https://google.com")
+
+  // Theme Configuration (JSON string of CSS variables)
+  themeConfig String @default("{}")
+
+  // Interface
+  dateTimeFormat String  @default("yyyy-MM-dd HH:mm")
+  compactMode    Boolean @default(false)
+  sidebarOpen    Boolean @default(true)
+
+  // Behavior
+  confirmDelete       Boolean @default(true)
+  confirmExtend       Boolean @default(true)
+  autoRefreshInterval Int     @default(60) // seconds
+
+  // Caching
+  cacheTTLMinutes Int @default(5)
+
+  // Security
+  autoPrivacyDelayMinutes Int    @default(5)
+  panicShortcut           String @default("alt+p")
+  apiToken                String @default("")
+  apiUrl                  String @default("")
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@index([deviceId])
+}
+
+// ActiveSession tracks which devices are currently viewing which items
+// Used for presence awareness and real-time state sync
+model ActiveSession {
+  id       String @id @default(cuid())
+  deviceId String
+  device   Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  itemId     String // Item being viewed
+  startedAt  DateTime @default(now())
+  lastActive DateTime @updatedAt
+
+  @@index([deviceId])
+  @@index([itemId])
+  @@index([lastActive])
+}
+
+// Optional: Shared decrypt cache across devices
+// Can be populated when one device decrypts content
+// Other devices can read from cache instead of re-decrypting
+model DecryptCache {
+  id        String   @id // Same as item ID
+  content   String // Decrypted content (text or base64 image)
+  type      String // 'text' or 'image'
+  decryptAt BigInt // Timestamp when decrypted
+  expiresAt DateTime // Cache expiration based on TTL
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+}
