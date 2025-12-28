@@ -5,10 +5,10 @@ import type { ShareData, UpdateShareRequest } from '@/lib/types';
 // GET /api/shares/[token] - Get share details and validate access
 export async function GET(
     request: NextRequest,
-    { params }: { params: { token: string } }
+    { params }: { params: Promise<{ token: string }> }
 ) {
     try {
-        const { token } = params;
+        const { token } = await params;
 
         const share = await prisma.sharedItem.findUnique({
             where: { shareToken: token }
@@ -59,10 +59,10 @@ export async function GET(
 // PATCH /api/shares/[token] - Update share permissions or expiration
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { token: string } }
+    { params }: { params: Promise<{ token: string }> }
 ) {
     try {
-        const { token } = params;
+        const { token } = await params;
         const body: UpdateShareRequest = await request.json();
 
         const share = await prisma.sharedItem.findUnique({
@@ -124,10 +124,10 @@ export async function PATCH(
 // DELETE /api/shares/[token] - Revoke a share
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { token: string } }
+    { params }: { params: Promise<{ token: string }> }
 ) {
     try {
-        const { token } = params;
+        const { token } = await params;
 
         const share = await prisma.sharedItem.findUnique({
             where: { shareToken: token }
