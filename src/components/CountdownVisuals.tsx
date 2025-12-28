@@ -98,7 +98,7 @@ export default function CountdownVisuals({
                     }
                     className={cn('flex-shrink-0', getColorClass())}
                 >
-                    <Clock size={16} />
+                    <Clock className="w-[1em] h-[1em]" />
                 </motion.div>
             )}
 
@@ -121,8 +121,8 @@ export default function CountdownVisuals({
                         : {}
                 }
                 className={cn(
-                    'text-sm font-mono font-medium tabular-nums transition-colors duration-300',
-                    getColorClass()
+                    'font-mono font-bold tabular-nums transition-colors duration-300',
+                    isLastHour && timeLeft > 0 ? '' : getColorClass()
                 )}
                 style={
                     isLastHour && timeLeft > 0
