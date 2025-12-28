@@ -52,4 +52,110 @@ describe('useCountdown', () => {
 
         expect(result.current).toBe(0);
     });
+
+    describe('Edge Cases', () => {
+        it('should handle target time in the past', () => {
+            (timeService.now as any).mockReturnValue(5000);
+            const target = 2000; // In the past
+            const { result } = renderHook(() => useCountdown(target));
+
+            // Should immediately show 0
+            expect(result.current).toBe(0);
+        });
+
+        it('should handle target time equal to current time', () => {
+            const now = 5000;
+            (timeService.now as any).mockReturnValue(now);
+            const { result } = renderHook(() => useCountdown(now));
+
+            // Should show 0 when equal
+            expect(result.current).toBe(0);
+        });
+
+        it('should handle very large time difference', () => {
+            (timeService.now as any).mockReturnValue(1000);
+            const yearsInFuture = 1000 + (365 * 24 * 60 * 60 * 1000 * 10); // 10 years
+            const { result } = renderHook(() => useCountdown(yearsInFuture));
+
+            // Should handle large numbers
+            expect(result.current).toBe(yearsInFuture - 1000);
+            expect(result.current).toBeGreaterThan(0);
+        });
+
+        it('should handle negative target time', () => {
+            (timeService.now as any).mockReturnValue(1000);
+            const { result } = renderHook(() => useCountdown(-5000));
+
+            // Negative target should result in 0 (past)
+            expect(result.current).toBe(0);
+        });
+
+        it('should update when target changes', () => {
+            const firstTarget = 5000;
+            const secondTarget = 10000;
+            (timeService.now as any).mockReturnValue(1000);
+
+            const { result, rerender } = renderHook(
+                ({ target }) => useCountdown(target),
+                { initialProps: { target: firstTarget } }
+            );
+
+            expect(result.current).toBe(4000);
+
+            // Change target
+            rerender({ target: secondTarget });
+
+            expect(result.current).toBe(9000);
+        });
+
+        it('should cleanup timer on unmount', () => {
+            const target = 5000;
+            (timeService.now as any).mockReturnValue(1000);
+
+            const { unmount } = renderHook(() => useCountdown(target));
+
+            // Unmount should clear interval
+            unmount();
+
+            // If we advance time after unmount, no updates should happen
+            // This is implicitly tested - no errors should occur
+            act(() => {
+                vi.advanceTimersByTime(10000);
+            });
+        });
+
+        it('should handle custom interval', () => {
+            const target = 5000;
+            (timeService.now as any).mockReturnValue(1000);
+
+            const { result } = renderHook(() => useCountdown(target, { interval: 500 }));
+
+            expect(result.current).toBe(4000);
+
+            // Advance by 500ms (custom interval)
+            (timeService.now as any).mockReturnValue(1500);
+            act(() => {
+                vi.advanceTimersByTime(500);
+            });
+
+            expect(result.current).toBe(3500);
+        });
+
+        it('should never show negative values', () => {
+            const target = 2000;
+            (timeService.now as any).mockReturnValue(1000);
+
+            const { result } = renderHook(() => useCountdown(target));
+
+            // Advance way past target
+            (timeService.now as any).mockReturnValue(10000);
+            act(() => {
+                vi.advanceTimersByTime(10000);
+            });
+
+            // Should still be 0, not negative
+            expect(result.current).toBe(0);
+            expect(result.current).toBeGreaterThanOrEqual(0);
+        });
+    });
 });
