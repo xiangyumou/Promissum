@@ -82,16 +82,34 @@ describe('env', () => {
     });
 
     describe('validateEnv', () => {
-        it('should throw when CHASTER_API_TOKEN is not set', () => {
-            // env.ts reads from process.env at import time,
-            // so we need to handle this differently
-            // For now, just verify the function exists and has correct signature
-            expect(typeof validateEnv).toBe('function');
+        it('should throw when CHASTER_API_TOKEN is not set', async () => {
+            delete process.env.CHASTER_API_TOKEN;
+            process.env.CHASTER_API_URL = 'http://test.com'; // Valid URL
+
+            vi.resetModules();
+            const { validateEnv } = await import('@/lib/env');
+
+            expect(() => validateEnv()).toThrow(/CHASTER_API_TOKEN is not set/);
         });
 
-        it('should not throw when both env vars are set', () => {
-            // This depends on the actual env values at runtime
-            // In a test env, we mock these values
+        it('should throw when CHASTER_API_URL is not set', async () => {
+            process.env.CHASTER_API_TOKEN = 'test-token'; // Valid Token
+            delete process.env.CHASTER_API_URL;
+
+            vi.resetModules();
+            const { validateEnv } = await import('@/lib/env');
+
+            expect(() => validateEnv()).not.toThrow();
+        });
+
+        it('should not throw when both env vars are set', async () => {
+            process.env.CHASTER_API_TOKEN = 'valid-token';
+            process.env.CHASTER_API_URL = 'http://valid-url.com';
+
+            vi.resetModules();
+            const { validateEnv } = await import('@/lib/env');
+
+            expect(() => validateEnv()).not.toThrow();
         });
     });
 
