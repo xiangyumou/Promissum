@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2025-12-28
+
+### Added
+- **New Tests**: Added tests for `ApiStatusIndicator`, `LanguageSwitcher`, `time-service`, and `Modal` components.
+- **Edge Case Tests**: Enhanced test coverage for `ContentView`, `Dashboard`, and `AddModal` edge cases.
+
+### Changed
+- **Type Consistency**: Unified component types to use `ApiItemListView`/`ApiItemDetail` throughout.
+- **Time Service**: Centralized time access via `timeService` for better testability.
+
+### Removed
+- Removed unused files: `ConfirmationModal.tsx`, `user-context.ts`, `use-countdown.ts`.
+- Removed unused dependencies: `react-hook-form`, `uuid`, `prettier`.
+
+### Metrics
+- Test coverage: 272 tests across 28 test files (all passing).
+
 ## [0.3.0] - 2025-12-28
 
 ### Added
