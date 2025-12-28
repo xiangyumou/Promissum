@@ -291,6 +291,13 @@ function SidebarContent({
                             {selectedIds.size > 0 && (
                                 <>
                                     <button
+                                        className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors"
+                                        title={t('batchExtend')}
+                                        onClick={() => setShowExtendDialog(true)}
+                                    >
+                                        <Clock size={18} />
+                                    </button>
+                                    <button
                                         className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                                         title={t('batchDelete')}
                                         onClick={() => setShowDeleteConfirm(true)}
@@ -309,95 +316,101 @@ function SidebarContent({
                         </div>
                     </div>
                 )}
-            </div>
+            </div >
 
             {/* Selection Status Banner */}
             <AnimatePresence>
-                {isBatchMode && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="px-4 overflow-hidden"
-                    >
-                        <div className="text-xs font-medium text-primary pb-2 flex justify-between items-center">
-                            <span>{t('itemsSelected', { count: selectedIds.size })}</span>
-                            {selectedIds.size > 0 && (
-                                <button
-                                    onClick={() => setSelectedIds(new Set())}
-                                    className="text-muted-foreground hover:text-foreground"
-                                >
-                                    {t('clearSelection')}
-                                </button>
-                            )}
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                {
+                    isBatchMode && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="px-4 overflow-hidden"
+                        >
+                            <div className="text-xs font-medium text-primary pb-2 flex justify-between items-center">
+                                <span>{t('itemsSelected', { count: selectedIds.size })}</span>
+                                {selectedIds.size > 0 && (
+                                    <button
+                                        onClick={() => setSelectedIds(new Set())}
+                                        className="text-muted-foreground hover:text-foreground"
+                                    >
+                                        {t('clearSelection')}
+                                    </button>
+                                )}
+                            </div>
+                        </motion.div>
+                    )
+                }
+            </AnimatePresence >
 
             {/* Divider */}
-            <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mx-4 my-2" />
+            < div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mx-4 my-2" />
 
             {/* Filter Panel (Disabled in batch mode?) - keeping enabled for filtering selection candidates */}
-            <FilterPanel filters={filters} onFilterChange={onFilterChange} />
+            < FilterPanel filters={filters} onFilterChange={onFilterChange} />
 
             {/* Items List */}
-            <div className={cn("flex-1 overflow-y-auto space-y-1.5 custom-scrollbar", compactMode ? "px-2 py-1" : "px-3 py-2")}>
-                {isLoading ? (
-                    // Loading Skeletons
-                    Array.from({ length: 5 }).map((_, i) => (
-                        <div key={i} className={cn("flex items-center gap-3 rounded-xl bg-accent/50 animate-pulse", compactMode ? "p-2" : "p-3")}>
-                            <div className={cn("rounded-full bg-accent", compactMode ? "h-6 w-6" : "h-8 w-8")} />
-                            <div className="space-y-2 flex-1">
-                                <div className="h-3 w-3/4 bg-accent rounded" />
-                                <div className="h-2 w-1/2 bg-accent/50 rounded" />
+            < div className={cn("flex-1 overflow-y-auto space-y-1.5 custom-scrollbar", compactMode ? "px-2 py-1" : "px-3 py-2")} >
+                {
+                    isLoading ? (
+                        // Loading Skeletons
+                        Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className={cn("flex items-center gap-3 rounded-xl bg-accent/50 animate-pulse", compactMode ? "p-2" : "p-3")}>
+                                <div className={cn("rounded-full bg-accent", compactMode ? "h-6 w-6" : "h-8 w-8")} />
+                                <div className="space-y-2 flex-1">
+                                    <div className="h-3 w-3/4 bg-accent rounded" />
+                                    <div className="h-2 w-1/2 bg-accent/50 rounded" />
+                                </div>
                             </div>
+                        ))
+                    ) : items.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                            <div className="p-4 rounded-full bg-accent mb-3">
+                                <Lock size={24} className="opacity-40" />
+                            </div>
+                            <p className="text-sm">{t('noItems')}</p>
                         </div>
-                    ))
-                ) : items.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-                        <div className="p-4 rounded-full bg-accent mb-3">
-                            <Lock size={24} className="opacity-40" />
-                        </div>
-                        <p className="text-sm">{t('noItems')}</p>
-                    </div>
-                ) : (
-                    <AnimatePresence initial={false} mode="popLayout">
-                        {items.map((item) => (
-                            <ItemCard
-                                key={item.id}
-                                item={item}
-                                isSelected={!isBatchMode && item.id === selectedId}
-                                onClick={() => {
-                                    if (isBatchMode) {
-                                        toggleItemSelection(item.id);
-                                    } else {
-                                        onSelectItem(item.id);
-                                    }
-                                }}
-                                compactMode={compactMode}
-                                isBatchMode={isBatchMode}
-                                isChecked={selectedIds.has(item.id)}
-                            />
-                        ))}
-                    </AnimatePresence>
-                )}
-            </div>
+                    ) : (
+                        <AnimatePresence initial={false} mode="popLayout">
+                            {items.map((item) => (
+                                <ItemCard
+                                    key={item.id}
+                                    item={item}
+                                    isSelected={!isBatchMode && item.id === selectedId}
+                                    onClick={() => {
+                                        if (isBatchMode) {
+                                            toggleItemSelection(item.id);
+                                        } else {
+                                            onSelectItem(item.id);
+                                        }
+                                    }}
+                                    compactMode={compactMode}
+                                    isBatchMode={isBatchMode}
+                                    isChecked={selectedIds.has(item.id)}
+                                />
+                            ))}
+                        </AnimatePresence>
+                    )
+                }
+            </div >
 
             {/* Footer - Settings Button */}
-            {!isBatchMode && (
-                <div className={cn("border-t border-border", compactMode ? "p-2" : "p-4")}>
-                    <Link href="/settings">
-                        <button className={cn(
-                            "w-full flex items-center gap-3 rounded-xl font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200",
-                            compactMode ? "px-3 py-2 text-xs" : "px-4 py-3 text-sm"
-                        )}>
-                            <Settings size={compactMode ? 16 : 18} />
-                            {t('settings')}
-                        </button>
-                    </Link>
-                </div>
-            )}
+            {
+                !isBatchMode && (
+                    <div className={cn("border-t border-border", compactMode ? "p-2" : "p-4")}>
+                        <Link href="/settings">
+                            <button className={cn(
+                                "w-full flex items-center gap-3 rounded-xl font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200",
+                                compactMode ? "px-3 py-2 text-xs" : "px-4 py-3 text-sm"
+                            )}>
+                                <Settings size={compactMode ? 16 : 18} />
+                                {t('settings')}
+                            </button>
+                        </Link>
+                    </div>
+                )
+            }
 
             {/* Batch Action Confirmation Dialogs */}
             <ConfirmDialog
@@ -408,6 +421,19 @@ function SidebarContent({
                 variant="danger"
                 onConfirm={handleBatchDelete}
                 onCancel={() => setShowDeleteConfirm(false)}
+            />
+
+            <BatchExtendDialog
+                isOpen={showExtendDialog}
+                onClose={() => setShowExtendDialog(false)}
+                onConfirm={(minutes) => {
+                    if (onBatchExtend) {
+                        onBatchExtend(Array.from(selectedIds), minutes);
+                        setSelectedIds(new Set());
+                        // setIsBatchMode(false); 
+                    }
+                }}
+                itemCount={selectedIds.size}
             />
         </>
     );
