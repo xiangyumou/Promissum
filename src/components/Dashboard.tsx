@@ -8,6 +8,7 @@ import { useSettings } from '@/lib/stores/settings-store';
 import { useTranslations } from 'next-intl';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import UpcomingUnlocks from './UpcomingUnlocks';
+import TrendChart from './TrendChart';
 import { useRouter } from '@/i18n/routing';
 
 export default function Dashboard() {
@@ -173,6 +174,11 @@ export default function Dashboard() {
             {/* Upcoming Unlocks Section */}
             {stats.upcomingUnlocks && stats.upcomingUnlocks.length > 0 && (
                 <UpcomingUnlocks items={stats.upcomingUnlocks} onView={handleViewItem} />
+            )}
+
+            {/* Trend Chart Section */}
+            {stats.weeklyTrend && stats.weeklyTrend.length > 0 && (
+                <TrendChart data={stats.weeklyTrend} variant="area" />
             )}
         </div>
     );
