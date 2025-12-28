@@ -128,12 +128,14 @@ export default function CountdownVisuals({
                     isLastHour && timeLeft > 0
                         ? {
                             // Gradient from yellow to green
-                            background: `linear-gradient(90deg, 
+                            backgroundImage: `linear-gradient(90deg, 
                                   hsl(${progressPercent * 1.2}, 80%, 50%) 0%, 
                                   hsl(${120 - progressPercent * 1.2}, 70%, 45%) 100%)`,
                             WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            color: 'transparent',
+                            display: 'inline-block'
                         }
                         : undefined
                 }
