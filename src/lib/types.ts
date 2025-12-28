@@ -111,3 +111,28 @@ export interface SystemStats {
     };
     avgLockDurationMinutes?: number;
 }
+
+export interface ApiActiveSession {
+    id: string;
+    deviceId: string;
+    itemId: string;
+    lastActive: string;
+}
+
+export interface ApiUserPreferences {
+    defaultDurationMinutes?: number;
+    privacyMode?: boolean;
+    panicUrl?: string;
+    themeConfig?: string;
+    dateTimeFormat?: string;
+    compactMode?: boolean;
+    sidebarOpen?: boolean;
+    confirmDelete?: boolean;
+    confirmExtend?: boolean;
+    autoRefreshInterval?: number;
+    cacheTTLMinutes?: number;
+    autoPrivacyDelayMinutes?: number;
+    panicShortcut?: string;
+    apiToken?: string;
+    apiUrl?: string;
+}

@@ -16,6 +16,9 @@ import { PanelLeftOpen } from 'lucide-react';
 import ConfirmDialog from './ConfirmDialog';
 import { timeService } from '@/lib/services/time-service';
 import { useCountdown } from '@/hooks/useCountdown';
+import { useActiveSession } from '@/hooks/useActiveSession';
+import { useSessions } from '@/hooks/useSessions';
+import { Users } from 'lucide-react';
 
 interface ContentViewProps {
     selectedId: string | null;
@@ -33,6 +36,10 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     const tCommon = useTranslations('Common');
     const locale = useLocale();
     const { sidebarOpen, setSidebarOpen } = useSettings();
+
+    // Track active session
+    useActiveSession(selectedId);
+
 
     // Image lightbox state
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -140,6 +147,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                                     <Clock size={10} />
                                     {formatUnlockTime(item.decrypt_at, locale)}
                                 </span>
+                                <ViewerCount itemId={item.id} />
                             </div>
                         </div>
                     </div>
@@ -394,5 +402,21 @@ function Countdown({ targetDate }: { targetDate: number }) {
 
     if (days > 0) return <>{days}d {pad(hours)}:{pad(minutes)}:{pad(seconds)}</>;
     return <>{pad(hours)}:{pad(minutes)}:{pad(seconds)}</>;
+}
+
+
+function ViewerCount({ itemId }: { itemId: string }) {
+    const { data: sessions } = useSessions(itemId);
+
+    // Only show if there are other viewers (count > 1) or just show total?
+    // Let's show total for verification.
+    if (!sessions || sessions.length === 0) return null;
+
+    return (
+        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-md font-medium text-xs border bg-blue-500/10 text-blue-500 border-blue-500/20" title="Active viewers on this device">
+            <Users size={10} />
+            {sessions.length} {sessions.length === 1 ? 'viewer' : 'viewers'}
+        </span>
+    );
 }
 
