@@ -16,16 +16,20 @@ describe('ShareManagementDialog', () => {
             shareToken: 'token123',
             itemId: mockItemId,
             permission: 'view',
+            createdBy: 'user-123',
             createdAt: Date.now() - 2 * 24 * 60 * 60 * 1000, // 2 days ago
             expiresAt: Date.now() + 22 * 60 * 60 * 1000, // 22 hours from now
+            lastAccessedAt: Date.now() - 1 * 60 * 60 * 1000, // 1 hour ago
         },
         {
             id: '2',
             shareToken: 'token456',
             itemId: mockItemId,
             permission: 'view-extend',
+            createdBy: 'user-123',
             createdAt: Date.now() - 5 * 24 * 60 * 60 * 1000, // 5 days ago
             expiresAt: Date.now() - 1 * 60 * 60 * 1000, // Expired 1 hour ago
+            lastAccessedAt: null,
         },
     ];
 
@@ -146,7 +150,7 @@ describe('ShareManagementDialog', () => {
     });
 
     it('should revoke share when delete button clicked', async () => {
-        let revokeCall edOnce = false;
+        let revokeCalledOnce = false;
 
         server.use(
             http.get('/api/shares', () => {
@@ -241,8 +245,18 @@ describe('ShareManagementDialog', () => {
         server.use(
             http.get('/api/shares', () => {
                 return HttpResponse.json([
-                    { ...mockShares[0], permission: 'view' },
-                    { ...mockShares[1], permission: 'full' },
+                    {
+                        ...mockShares[0],
+                        permission: 'view',
+                        createdBy: 'user-123',
+                        lastAccessedAt: Date.now() - 1000,
+                    },
+                    {
+                        ...mockShares[1],
+                        permission: 'full',
+                        createdBy: 'user-123',
+                        lastAccessedAt: null,
+                    },
                 ]);
             })
         );

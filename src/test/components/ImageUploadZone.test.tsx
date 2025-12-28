@@ -130,12 +130,25 @@ describe('ImageUploadZone', () => {
 
         const dropzone = container.querySelector('[role="presentation"]') as HTMLElement;
 
+        // Create a complete DataTransfer mock
+        const mockFile = createMockFile('test.png', 1024, 'image/png');
+        const dataTransfer = {
+            dropEffect: 'none',
+            effectAllowed: 'all',
+            files: [mockFile] as unknown as FileList,
+            items: {
+                length: 1,
+                0: { kind: 'file', type: 'image/png' },
+            } as unknown as DataTransferItemList,
+            types: ['Files'],
+            getData: () => '',
+            setData: () => { },
+            clearData: () => { },
+            setDragImage: () => { },
+        };
+
         // Simulate drag enter
-        fireEvent.dragEnter(dropzone, {
-            dataTransfer: {
-                items: [{ kind: 'file', type: 'image/png' }]
-            }
-        });
+        fireEvent.dragEnter(dropzone, { dataTransfer });
 
         await waitFor(() => {
             expect(screen.getByText(/drop image here/i)).toBeInTheDocument();
