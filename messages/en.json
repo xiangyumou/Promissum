@@ -86,6 +86,7 @@
         "itemsSelected": "{count} items selected",
         "batchDelete": "Batch Delete",
         "batchExtend": "Batch Extend",
+        "batchExtendDesc": "Extend unlock time for all selected items",
         "batchExport": "Batch Export"
     },
     "AddModal": {

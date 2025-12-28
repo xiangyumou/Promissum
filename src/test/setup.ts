@@ -93,5 +93,10 @@ vi.mock('next/navigation', () => ({
     useParams: () => ({}),
 }));
 
+// Mock canvas-confetti to prevent canvas errors in jsdom
+vi.mock('canvas-confetti', () => ({
+    default: vi.fn(() => Promise.resolve())
+}));
+
 // Stop MSW server after all tests
 afterAll(() => server.close());
