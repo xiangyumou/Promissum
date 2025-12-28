@@ -98,7 +98,7 @@ export default function CountdownVisuals({
                     }
                     className={cn('flex-shrink-0', getColorClass())}
                 >
-                    <Clock size={16} />
+                    <Clock className="w-[1em] h-[1em]" />
                 </motion.div>
             )}
 
@@ -121,19 +121,21 @@ export default function CountdownVisuals({
                         : {}
                 }
                 className={cn(
-                    'text-sm font-mono font-medium tabular-nums transition-colors duration-300',
-                    getColorClass()
+                    'font-mono font-bold tabular-nums transition-colors duration-300',
+                    isLastHour && timeLeft > 0 ? '' : getColorClass()
                 )}
                 style={
                     isLastHour && timeLeft > 0
                         ? {
                             // Gradient from yellow to green
-                            background: `linear-gradient(90deg, 
+                            backgroundImage: `linear-gradient(90deg, 
                                   hsl(${progressPercent * 1.2}, 80%, 50%) 0%, 
                                   hsl(${120 - progressPercent * 1.2}, 70%, 45%) 100%)`,
                             WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            color: 'transparent',
+                            display: 'inline-block'
                         }
                         : undefined
                 }

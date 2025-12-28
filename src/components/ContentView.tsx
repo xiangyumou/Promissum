@@ -19,6 +19,7 @@ import { useCountdown } from '@/hooks/useCountdown';
 import { useActiveSession } from '@/hooks/useActiveSession';
 import { useSessions } from '@/hooks/useSessions';
 import { Users } from 'lucide-react';
+import CountdownVisuals from './CountdownVisuals';
 
 interface ContentViewProps {
     selectedId: string | null;
@@ -35,10 +36,32 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     const t = useTranslations('ContentView');
     const tCommon = useTranslations('Common');
     const locale = useLocale();
-    const { sidebarOpen, setSidebarOpen } = useSettings();
+    const { sidebarOpen, setSidebarOpen, enableUnlockSound, enableUnlockConfetti } = useSettings();
 
     // Track active session
     useActiveSession(selectedId);
+
+    // Track unlock status and trigger celebration
+    const [wasLocked, setWasLocked] = useState(true);
+
+    useEffect(() => {
+        if (!item) return;
+
+        const isNowUnlocked = timeService.now() >= item.decrypt_at;
+
+        // Trigger unlock effects when transitioning from locked to unlocked
+        if (wasLocked && isNowUnlocked) {
+            // Dynamic import to avoid SSR issues
+            import('@/lib/utils/unlock-effects').then(({ celebrateUnlock }) => {
+                celebrateUnlock({
+                    sound: enableUnlockSound,
+                    confetti: enableUnlockConfetti,
+                });
+            });
+        }
+
+        setWasLocked(!isNowUnlocked);
+    }, [item, wasLocked, enableUnlockSound, enableUnlockConfetti]);
 
 
     // Image lightbox state
@@ -223,8 +246,12 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
 
                             <div className="p-4 bg-muted/30 rounded-xl border border-border backdrop-blur-md">
                                 <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1 font-bold">{t('unlocksIn')}</div>
-                                <div className="text-3xl font-mono font-bold text-amber-500 tabular-nums tracking-tight">
-                                    <Countdown targetDate={item.decrypt_at} />
+                                <div className="flex justify-center">
+                                    <CountdownVisuals
+                                        targetDate={item.decrypt_at}
+                                        className="text-3xl"
+                                        showIcon={false}
+                                    />
                                 </div>
                                 <div className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1.5 opacity-70">
                                     <Clock size={12} />
@@ -388,21 +415,6 @@ function ExtendButton({ onExtend }: { onExtend: (minutes: number) => void }) {
     );
 }
 
-function Countdown({ targetDate }: { targetDate: number }) {
-    const timeLeft = useCountdown(targetDate);
-
-    if (timeLeft <= 0) return <>00:00:00</>;
-
-    const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-    const pad = (n: number) => n.toString().padStart(2, '0');
-
-    if (days > 0) return <>{days}d {pad(hours)}:{pad(minutes)}:{pad(seconds)}</>;
-    return <>{pad(hours)}:{pad(minutes)}:{pad(seconds)}</>;
-}
 
 
 function ViewerCount({ itemId }: { itemId: string }) {
