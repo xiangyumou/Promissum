@@ -86,7 +86,17 @@ interface SettingsState {
 /**
  * Default Settings Values
  */
-const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMode' | 'setPanicUrl' | 'setThemeConfig' | 'setDateTimeFormat' | 'setCompactMode' | 'setSidebarOpen' | 'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' | 'setDefaultSort' | 'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' | 'setPanicShortcut' | 'setApiToken' | 'setApiUrl' | 'setNotificationEnabled' | 'setNotificationTiming' | 'setSoundEnabled' | 'resetToDefaults'> = {
+const DEFAULT_SETTINGS: Omit<SettingsState,
+    'setDefaultDuration' | 'setPrivacyMode' | 'setPanicUrl' | 'setThemeConfig' |
+    'setDateTimeFormat' | 'setCompactMode' | 'setSidebarOpen' |
+    'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' | 'setDefaultSort' |
+    'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' | 'setPanicShortcut' |
+    'setApiToken' | 'setApiUrl' |
+    'setNotificationEnabled' | 'setNotificationTiming' | 'setSoundEnabled' |
+    'setFilterPresets' | 'addFilterPreset' | 'removeFilterPreset' |
+    'setEnableUnlockSound' | 'setEnableUnlockConfetti' |
+    'resetToDefaults'
+> = {
     defaultDurationMinutes: 60,
     privacyMode: false,
     panicUrl: 'https://google.com',
