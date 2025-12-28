@@ -2,7 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.4.0] - 2025-12-28
+## [0.5.0] - 2025-12-28
+
+### Added
+- **Time-Range Filters**: Ability to filter items by Today, This Week, This Month, or Custom Range in the Filter Panel.
+- **Filter Presets**: Save and load custom filter configurations (including dates, types, and statuses).
+- **Quick Filters**: Added presets for "Unlocking Soon", "Long-term Locked", and "Recently Created".
+- **Countdown Visuals**: Enhanced visual indicators for items unlocking soon (gradient colors, pulse, jump animations).
+- **Unlock Effects**: Celebration effects (Confetti and Sound) when items unlock.
+- **Fuzzy Search**: Implemented fuzzy search algorithm for better item discovery.
+
+### Fixed
+- **Batch Extend**: Relaxed API validation to allow custom minute durations.
+- **Preset ID Generation**: Fixed potential crash with `crypto.randomUUID` by adding a fallback generator.
+
 
 ### Added
 - **Multi-Device Synchronization**: Complete state sync across devices using a centralized database.

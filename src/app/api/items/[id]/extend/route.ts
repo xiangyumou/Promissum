@@ -21,11 +21,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
         const { minutes } = validation.data;
 
-        // Valid presets: 1m, 10m, 1h, 6h, 1d
-        const validMinutes = [1, 10, 60, 360, 1440];
-        if (!validMinutes.includes(minutes)) {
+        // Allow any positive number of minutes
+        if (minutes <= 0) {
             return NextResponse.json({
-                error: 'Invalid minutes, must be 1, 10, 60, 360, or 1440'
+                error: 'Invalid minutes, must be greater than 0'
             }, { status: 400 });
         }
 

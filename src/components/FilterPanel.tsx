@@ -4,12 +4,14 @@ import { FilterParams } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import {
     FileText, Image as ImageIcon, Lock, Unlock, X, Search,
-    ChevronDown, RotateCcw, Calendar, Clock, Zap
+    ChevronDown, RotateCcw, Calendar, Clock, Zap,
+    Bookmark, Save, Trash2
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getDateRange, QUICK_FILTERS, TimeRangePreset } from '@/lib/utils/date-range';
+import { useSettings } from '@/lib/stores/settings-store';
+import PresetSaveDialog from './PresetSaveDialog';
 
 interface FilterPanelProps {
     filters: FilterParams;
@@ -21,6 +23,10 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
     const tCommon = useTranslations('Common');
     const [isExpanded, setIsExpanded] = useState(false);
     const [searchInput, setSearchInput] = useState(filters.search || '');
+    const [showSaveDialog, setShowSaveDialog] = useState(false);
+
+    // Store hooks
+    const { filterPresets, addFilterPreset, removeFilterPreset } = useSettings();
 
     const handleStatusChange = (status: FilterParams['status']) => {
         onFilterChange({ ...filters, status });
@@ -61,6 +67,42 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
             dateRange: undefined,
             quickFilter: undefined,
         });
+    };
+
+    const generateId = () => {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            return crypto.randomUUID();
+        }
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    };
+
+    const handleSavePreset = (name: string) => {
+        const preset = {
+            id: generateId(),
+            name,
+            filters: {
+                status: filters.status,
+                type: filters.type,
+                search: filters.search,
+                dateRange: filters.dateRange,
+                quickFilter: filters.quickFilter,
+                sort: filters.sort
+            },
+            createdAt: Date.now()
+        };
+        addFilterPreset(preset);
+    };
+
+    const handleLoadPreset = (presetId: string) => {
+        const preset = filterPresets.find(p => p.id === presetId);
+        if (preset) {
+            setSearchInput(preset.filters.search || '');
+            onFilterChange({
+                limit: filters.limit,
+                offset: filters.offset,
+                ...preset.filters
+            });
+        }
     };
 
     const hasActiveFilters =
@@ -113,6 +155,52 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
                         className="overflow-hidden"
                     >
                         <div className="pt-3 space-y-4">
+                            {/* Filter Presets Section */}
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                        <Bookmark size={12} className="inline mr-1" />
+                                        {t('presets')}
+                                    </label>
+                                    <button
+                                        onClick={() => setShowSaveDialog(true)}
+                                        disabled={!hasActiveFilters}
+                                        className="text-xs font-medium text-primary hover:text-primary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+                                    >
+                                        <Save size={12} />
+                                        {t('savePreset')}
+                                    </button>
+                                </div>
+
+                                {filterPresets.length > 0 ? (
+                                    <div className="grid grid-cols-1 gap-1.5">
+                                        {filterPresets.map(preset => (
+                                            <div key={preset.id} className="group flex items-center gap-2 bg-muted/30 hover:bg-muted/50 rounded-lg p-2 transition-colors border border-transparent hover:border-border">
+                                                <button
+                                                    onClick={() => handleLoadPreset(preset.id)}
+                                                    className="flex-1 text-left text-sm truncate font-medium text-muted-foreground group-hover:text-foreground"
+                                                >
+                                                    {preset.name}
+                                                </button>
+                                                <button
+                                                    onClick={() => removeFilterPreset(preset.id)}
+                                                    className="p-1 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-all rounded hover:bg-background/50"
+                                                    title={t('deletePreset')}
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-xs text-muted-foreground italic px-2">
+                                        {t('noPresets')}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="h-px bg-border/50 mx-2" />
+
                             {/* Search Input */}
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
@@ -139,6 +227,119 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
                                         placeholder={t('searchPlaceholder')}
                                         className="w-full pl-9 pr-3 py-2 text-sm bg-muted/30 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground placeholder-muted-foreground transition-all"
                                     />
+                                </div>
+                            </div>
+
+                            {/* Date Range Filter */}
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                        <Calendar size={12} className="inline mr-1" />
+                                        {t('timeRange')}
+                                    </label>
+                                    {filters.dateRange && (
+                                        <button
+                                            onClick={() => onFilterChange({ ...filters, dateRange: undefined })}
+                                            className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                                            title="Clear date range"
+                                        >
+                                            <X size={12} />
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="grid grid-cols-3 gap-1">
+                                    <button
+                                        onClick={() => {
+                                            const now = new Date();
+                                            const start = new Date(now.setHours(0, 0, 0, 0)).getTime();
+                                            const end = new Date(now.setHours(23, 59, 59, 999)).getTime();
+                                            onFilterChange({ ...filters, dateRange: { start, end } });
+                                        }}
+                                        className={cn(
+                                            "px-2 py-1.5 text-xs font-medium rounded-lg transition-all border border-transparent",
+                                            filters.dateRange && Math.abs(filters.dateRange.end - filters.dateRange.start) < 86400000
+                                                ? "bg-primary text-primary-foreground shadow-sm"
+                                                : "bg-muted/30 text-muted-foreground hover:bg-accent hover:text-foreground"
+                                        )}
+                                    >
+                                        {t('today')}
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const now = new Date();
+                                            const end = now.getTime();
+                                            const start = new Date(now.setDate(now.getDate() - 7)).getTime();
+                                            onFilterChange({ ...filters, dateRange: { start, end } });
+                                        }}
+                                        className={cn(
+                                            "px-2 py-1.5 text-xs font-medium rounded-lg transition-all border border-transparent",
+                                            filters.dateRange && Math.abs(filters.dateRange.end - filters.dateRange.start) > 86400000 && Math.abs(filters.dateRange.end - filters.dateRange.start) < 604800000 * 1.1
+                                                ? "bg-primary text-primary-foreground shadow-sm"
+                                                : "bg-muted/30 text-muted-foreground hover:bg-accent hover:text-foreground"
+                                        )}
+                                    >
+                                        {t('thisWeek')}
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            const now = new Date();
+                                            const end = now.getTime();
+                                            const start = new Date(now.setDate(now.getDate() - 30)).getTime();
+                                            onFilterChange({ ...filters, dateRange: { start, end } });
+                                        }}
+                                        className={cn(
+                                            "px-2 py-1.5 text-xs font-medium rounded-lg transition-all border border-transparent",
+                                            filters.dateRange && Math.abs(filters.dateRange.end - filters.dateRange.start) > 604800000 * 1.1
+                                                ? "bg-primary text-primary-foreground shadow-sm"
+                                                : "bg-muted/30 text-muted-foreground hover:bg-accent hover:text-foreground"
+                                        )}
+                                    >
+                                        {t('thisMonth')}
+                                    </button>
+                                </div>
+                                <div className="mt-2 grid grid-cols-2 gap-2">
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] text-muted-foreground uppercase tracking-wider pl-1">Start</label>
+                                        <input
+                                            type="date"
+                                            className="w-full px-2 py-1.5 text-xs bg-muted/30 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
+                                            value={filters.dateRange?.start ? new Date(filters.dateRange.start).toISOString().split('T')[0] : ''}
+                                            onChange={(e) => {
+                                                const date = e.target.value ? new Date(e.target.value).getTime() : undefined;
+                                                const currentEnd = filters.dateRange?.end;
+                                                if (date) {
+                                                    onFilterChange({
+                                                        ...filters,
+                                                        dateRange: {
+                                                            start: date,
+                                                            end: currentEnd || date + 86400000 // Default to 1 day if no end
+                                                        }
+                                                    });
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] text-muted-foreground uppercase tracking-wider pl-1">End</label>
+                                        <input
+                                            type="date"
+                                            className="w-full px-2 py-1.5 text-xs bg-muted/30 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground"
+                                            value={filters.dateRange?.end ? new Date(filters.dateRange.end).toISOString().split('T')[0] : ''}
+                                            onChange={(e) => {
+                                                const date = e.target.value ? new Date(e.target.value).setHours(23, 59, 59, 999) : undefined;
+                                                const currentStart = filters.dateRange?.start;
+                                                if (date) {
+                                                    onFilterChange({
+                                                        ...filters,
+                                                        dateRange: {
+                                                            start: currentStart || date - 86400000, // Default to 1 day before if no start
+                                                            end: date
+                                                        }
+                                                    });
+                                                }
+                                            }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
@@ -383,6 +584,13 @@ export default function FilterPanel({ filters, onFilterChange }: FilterPanelProp
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Preset Save Dialog */}
+            <PresetSaveDialog
+                isOpen={showSaveDialog}
+                onClose={() => setShowSaveDialog(false)}
+                onConfirm={handleSavePreset}
+            />
         </div>
     );
 }

@@ -144,6 +144,33 @@ describe('FilterPanel', () => {
         expect(mockOnFilterChange).toHaveBeenCalledWith({
             status: 'all',
             sort: 'decrypt_asc',
+            dateRange: undefined,
+            quickFilter: undefined,
         });
     });
+
+    // Preset Tests
+    it('should show save preset dialog when save button clicked', () => {
+        renderExpanded({ ...defaultFilters, search: 'test' }); // Needs active filters to enable button
+
+        // Find Save Preset button (it has text "Save Preset" or Icon)
+        // Adjust selector based on implementation. Button has text "Save Preset"
+        const saveBtn = screen.getByRole('button', { name: /save preset/i });
+        fireEvent.click(saveBtn);
+
+        expect(screen.getByText('Preset Name')).toBeInTheDocument(); // Dialog content
+    });
+
+    it('should not show save preset button enabled if no active filters', () => {
+        renderExpanded(defaultFilters); // No active filters
+
+        const saveBtn = screen.getByRole('button', { name: /save preset/i });
+        expect(saveBtn).toBeDisabled();
+    });
+
+    // Note: We need to mock useSettings to test loading/deleting presets effectively.
+    // Since we are using renderWithProviders which uses a real store (or mocked store),
+    // we might need to rely on the store's initial state or mock the hook.
+    // For now, let's assume the store is empty or we can spy on it.
+    // A more robust approach would be to spy on useSettings or pass initial state if supported.
 });
