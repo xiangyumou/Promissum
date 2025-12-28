@@ -15,6 +15,7 @@ import { useHasMounted } from '@/hooks/useHasMounted';
 import { timeService } from '@/lib/services/time-service';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import ConfirmDialog from './ConfirmDialog';
+import BatchExtendDialog from './BatchExtendDialog';
 
 interface SidebarProps {
     items: ApiItemListView[];
