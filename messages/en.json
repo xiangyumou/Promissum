@@ -29,7 +29,17 @@
         "basedOnHistory": "Based on historical data",
         "failedToLoad": "Failed to load statistics",
         "contentTypeDistribution": "Content Type Distribution",
-        "lockStatusDistribution": "Lock Status Distribution"
+        "lockStatusDistribution": "Lock Status Distribution",
+        "upcomingUnlocks": "Upcoming Unlocks",
+        "upcomingUnlocksDesc": "Items unlocking within 24 hours",
+        "noUpcomingUnlocks": "No items unlocking soon",
+        "creationTrend": "Creation Trend",
+        "creationTrendDesc": "Items created in the last 7 days",
+        "thisMonth": "This Month",
+        "lastMonth": "Last Month",
+        "itemsCreated": "items created",
+        "viewItem": "View",
+        "extendItem": "Extend"
     },
     "Sidebar": {
         "noItems": "No items yet",
@@ -184,7 +194,29 @@
         "cacheSize": "Cache Size",
         "queries": "queries",
         "persistenceActive": "Persistence Active",
-        "persistenceInactive": "Memory Only"
+        "persistenceInactive": "Memory Only",
+        "notificationsTitle": "Notifications",
+        "enableNotifications": "Enable Notifications",
+        "enableNotificationsDesc": "Receive browser notifications when items unlock",
+        "requestPermission": "Request Permission",
+        "permissionGranted": "Notifications Enabled",
+        "permissionDenied": "Notifications Blocked",
+        "permissionDefault": "Not Configured",
+        "notificationTiming": "Notification Timing",
+        "notificationTimingDesc": "When to send unlock reminders",
+        "minutesBefore": "{minutes} minutes before",
+        "hourBefore": "1 hour before",
+        "hoursBefore": "{hours} hours before",
+        "soundEnabled": "Sound Enabled",
+        "soundEnabledDesc": "Play sound with notifications",
+        "testNotification": "Test Notification",
+        "testNotificationSent": "Test notification sent"
+    },
+    "Notifications": {
+        "unlockingSoon": "{title} unlocking soon!",
+        "unlocksIn": "Will unlock in {time}",
+        "unlocked": "{title} unlocked! 🎉",
+        "nowAvailable": "Your content is now available to view"
     },
     "Error": {
         "title": "Something went wrong",
