@@ -96,7 +96,25 @@ export interface FilterParams {
     limit?: number;
     offset?: number;
     sort?: 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc';
+
+    // Phase 3: Enhanced filtering
+    dateRange?: {
+        start: number; // Timestamp in ms
+        end: number;   // Timestamp in ms
+    };
+    quickFilter?: 'unlocking-soon' | 'long-locked' | 'recent';
 }
+
+/**
+ * Saved filter preset
+ */
+export interface FilterPreset {
+    id: string;
+    name: string;
+    filters: Omit<FilterParams, 'limit' | 'offset'>;
+    createdAt: number;
+}
+
 
 /**
  * System statistics response
