@@ -35,11 +35,12 @@ export async function GET(request: NextRequest) {
         }
 
         // Map API response to match original format expected by frontend
+        // Note: Remote API returns camelCase, we convert to snake_case for frontend
         const mappedItems = itemsArray.map(item => ({
             id: item.id,
             type: item.type,
-            decrypt_at: item.decrypt_at,
-            created_at: item.created_at || Date.now(),
+            decrypt_at: item.decryptAt || item.decrypt_at, // Handle both cases
+            created_at: item.createdAt || item.created_at || Date.now(),
             unlocked: item.unlocked,
             metadata: item.metadata,
         }));
@@ -118,12 +119,13 @@ export async function POST(request: NextRequest) {
         const apiResponse = await apiClient.createItem(apiRequest);
 
         // Map response to match original format
+        // Note: Remote API returns camelCase, we convert to snake_case
         return NextResponse.json({
             success: true,
             item: {
                 id: apiResponse.id,
                 type: apiResponse.type,
-                decrypt_at: apiResponse.decrypt_at,
+                decrypt_at: (apiResponse as any).decryptAt || apiResponse.decrypt_at,
                 unlocked: apiResponse.unlocked,
                 metadata: apiResponse.metadata,
             }

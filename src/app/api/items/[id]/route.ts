@@ -14,10 +14,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         const apiResponse = await apiClient.getItemById(id);
 
         // Map response to match original format expected by frontend
+        // Note: Remote API returns camelCase, we convert to snake_case
         const response = {
             id: apiResponse.id,
             type: apiResponse.type,
-            decrypt_at: apiResponse.decrypt_at,
+            decrypt_at: (apiResponse as any).decryptAt || apiResponse.decrypt_at,
             unlocked: apiResponse.unlocked,
             content: apiResponse.content,
             metadata: apiResponse.metadata,
