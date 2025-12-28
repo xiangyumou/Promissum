@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 - **New Tests**: Added tests for `ApiStatusIndicator`, `LanguageSwitcher`, `time-service`, and `Modal` components.
 - **Edge Case Tests**: Enhanced test coverage for `ContentView`, `Dashboard`, and `AddModal` edge cases.
+- **Coverage Completion**: Audited and achieved ~100% coverage by adding foundational tests for `browser-service`, `utils`, and `Providers`.
 
 ### Changed
 - **Type Consistency**: Unified component types to use `ApiItemListView`/`ApiItemDetail` throughout.
