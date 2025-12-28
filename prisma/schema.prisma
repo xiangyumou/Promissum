@@ -8,6 +8,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 // Device represents a unique browser/client
@@ -76,6 +77,7 @@ model ActiveSession {
   startedAt  DateTime @default(now())
   lastActive DateTime @updatedAt
 
+  @@unique([deviceId, itemId])
   @@index([deviceId])
   @@index([itemId])
   @@index([lastActive])

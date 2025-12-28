@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^5.0.1",
-    "@prisma/client": "^7.2.0",
+    "@libsql/client": "^0.15.15",
+    "@prisma/adapter-libsql": "^7.2.0",
+    "@prisma/client": "^5.22.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@tanstack/query-sync-storage-persister": "^5.90.14",
     "@tanstack/react-query": "^5.90.12",
@@ -50,7 +52,7 @@
     "eslint-config-next": "16.0.10",
     "jsdom": "^27.4.0",
     "msw": "^2.12.6",
-    "prisma": "^7.2.0",
+    "prisma": "^5.22.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.0.16"

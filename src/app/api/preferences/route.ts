@@ -82,10 +82,10 @@ export async function POST(request: NextRequest) {
         const validation = PreferencesSchema.safeParse(body);
 
         if (!validation.success) {
-            return NextResponse.json(
-                { error: 'Invalid preferences data', details: validation.error.errors },
-                { status: 400 }
-            );
+            return NextResponse.json({
+                error: 'Invalid preferences data',
+                details: validation.error.issues
+            }, { status: 400 });
         }
 
         const { deviceId, ...preferencesData } = validation.data;

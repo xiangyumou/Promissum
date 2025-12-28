@@ -62,10 +62,10 @@ export async function POST(request: NextRequest) {
         const validation = SessionSchema.safeParse(body);
 
         if (!validation.success) {
-            return NextResponse.json(
-                { error: 'Invalid session data', details: validation.error.errors },
-                { status: 400 }
-            );
+            return NextResponse.json({
+                error: 'Invalid session data',
+                details: validation.error.issues
+            }, { status: 400 });
         }
 
         const { deviceId, itemId } = validation.data;
