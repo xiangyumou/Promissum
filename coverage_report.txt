@@ -1,0 +1,179 @@
+
+> chaster@0.1.0 test:coverage
+> vitest run --coverage
+
+
+[1m[46m RUN [49m[22m [36mv4.0.16 [39m[90m/Users/xiangyu/Library/CloudStorage/SeaDrive-XIANGYU(pan.xiangyu.pro)/My Libraries/projects/Promissum[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [32m✓[39m src/test/unit/lib/queries.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[33m 390[2mms[22m[39m
+ [32m✓[39m src/test/components/AddModal.test.tsx [2m([22m[2m12 tests[22m[2m)[22m[33m 508[2mms[22m[39m
+ [32m✓[39m src/test/components/ConfirmDialog.test.tsx [2m([22m[2m19 tests[22m[2m)[22m[33m 561[2mms[22m[39m
+ [32m✓[39m src/test/components/AddModalEdge.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 647[2mms[22m[39m
+ [32m✓[39m src/test/unit/hooks/useActiveSession.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 919[2mms[22m[39m
+ [32m✓[39m src/test/components/ui/Modal.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[33m 763[2mms[22m[39m
+ [32m✓[39m src/test/integration/home-page.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 423[2mms[22m[39m
+ [32m✓[39m src/test/components/SyncProvider.test.tsx [2m([22m[2m13 tests[22m[2m)[22m[32m 205[2mms[22m[39m
+ [32m✓[39m src/test/components/LanguageSwitcher.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 379[2mms[22m[39m
+ [32m✓[39m src/test/components/Dashboard.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[32m 300[2mms[22m[39m
+ [32m✓[39m src/test/components/ui/Skeleton.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[32m 148[2mms[22m[39m
+ [32m✓[39m src/test/components/FilterPanel.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 135[2mms[22m[39m
+ [32m✓[39m src/test/components/ContentView.test.tsx [2m([22m[2m16 tests[22m[2m)[22m[33m 526[2mms[22m[39m
+ [32m✓[39m src/test/components/Sidebar.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[32m 164[2mms[22m[39m
+ [32m✓[39m src/test/unit/hooks/useSessions.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 134[2mms[22m[39m
+ [32m✓[39m src/test/components/ApiStatusIndicator.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[32m 105[2mms[22m[39m
+ [32m✓[39m src/test/components/FilterBar.test.tsx [2m([22m[2m12 tests[22m[2m)[22m[32m 176[2mms[22m[39m
+ [32m✓[39m src/test/components/ThemeToggle.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+ [32m✓[39m src/test/unit/lib/utils.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/test/unit/hooks/useHasMounted.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m src/test/components/Providers.test.tsx [2m([22m[2m2 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+[90mstdout[2m | src/test/api/items.test.ts[2m > [22m[2mItems API[2m > [22m[2mGET[2m > [22m[2mshould fetch and map items correctly
+[22m[39mAPI Response: [
+  {
+    "id": "1",
+    "type": "text",
+    "decryptAt": 1700000000000,
+    "createdAt": 1690000000000,
+    "unlocked": false,
+    "metadata": {
+      "title": "Test 1"
+    }
+  }
+]
+
+[90mstdout[2m | src/test/api/items.test.ts[2m > [22m[2mItems API[2m > [22m[2mGET[2m > [22m[2mshould handle unexpected API response format
+[22m[39mAPI Response: {
+  "some": "other format"
+}
+
+ [32m✓[39m src/test/unit/hooks/useCountdown.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m src/test/api/items.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 51[2mms[22m[39m
+ [32m✓[39m src/test/components/SecurityProvider.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[32m 97[2mms[22m[39m
+ [32m✓[39m src/test/api/preferences.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m src/test/unit/lib/env.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/test/components/ThemeRegistry.test.tsx [2m([22m[2m7 tests[22m[2m | [22m[33m1 skipped[39m[2m)[22m[32m 63[2mms[22m[39m
+ [32m✓[39m src/test/unit/lib/validation.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/test/components/ExportButton.test.tsx [2m([22m[2m9 tests[22m[2m)[22m[32m 177[2mms[22m[39m
+[90mstdout[2m | src/test/unit/migration.test.ts[2m > [22m[2mLocalStorage Migration[2m > [22m[2mshould return true if migration already complete
+[22m[39mSettings migration already completed
+
+[90mstdout[2m | src/test/unit/migration.test.ts[2m > [22m[2mLocalStorage Migration[2m > [22m[2mshould skip if no settings in localStorage
+[22m[39mNo existing settings to migrate
+
+[90mstdout[2m | src/test/unit/migration.test.ts[2m > [22m[2mLocalStorage Migration[2m > [22m[2mshould migrate settings and mark as complete
+[22m[39mSuccessfully migrated settings to database
+
+ [32m✓[39m src/test/unit/lib/api-client.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/test/unit/migration.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m src/test/unit/hooks/useMediaQuery.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m src/test/unit/lib/services/api-service.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m src/test/unit/lib/stores/settings-store.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/test/api/stats.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/test/unit/lib/services/browser-service.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/test/unit/lib/device-id.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 35[2mms[22m[39m
+ [32m✓[39m src/test/api/sessions.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 40[2mms[22m[39m
+[90mstdout[2m | src/test/unit/lib/cache-config.test.ts[2m > [22m[2mcache-config[2m > [22m[2mTTL management[2m > [22m[2mshould get default TTL
+[22m[39m[Cache] TTL updated to 5 minutes
+
+[90mstdout[2m | src/test/unit/lib/cache-config.test.ts[2m > [22m[2mcache-config[2m > [22m[2mTTL management[2m > [22m[2mshould update TTL
+[22m[39m[Cache] TTL updated to 5 minutes
+
+[90mstdout[2m | src/test/unit/lib/cache-config.test.ts[2m > [22m[2mcache-config[2m > [22m[2mTTL management[2m > [22m[2mshould update TTL
+[22m[39m[Cache] TTL updated to 10 minutes
+
+[90mstdout[2m | src/test/unit/lib/cache-config.test.ts[2m > [22m[2mcache-config[2m > [22m[2mStorage management[2m > [22m[2mshould estimate cache size
+[22m[39m[Cache] TTL updated to 5 minutes
+
+[90mstdout[2m | src/test/unit/lib/cache-config.test.ts[2m > [22m[2mcache-config[2m > [22m[2mStorage management[2m > [22m[2mshould return 0 if cache empty
+[22m[39m[Cache] TTL updated to 5 minutes
+
+[90mstdout[2m | src/test/unit/lib/cache-config.test.ts[2m > [22m[2mcache-config[2m > [22m[2mStorage management[2m > [22m[2mshould get cache stats
+[22m[39m[Cache] TTL updated to 5 minutes
+
+[90mstdout[2m | src/test/unit/lib/cache-config.test.ts[2m > [22m[2mcache-config[2m > [22m[2mStorage management[2m > [22m[2mshould clear persisted cache
+[22m[39m[Cache] TTL updated to 5 minutes
+
+[90mstdout[2m | src/test/unit/lib/cache-config.test.ts[2m > [22m[2mcache-config[2m > [22m[2mStorage management[2m > [22m[2mshould clear persisted cache
+[22m[39m[Cache] Persisted cache cleared
+
+[90mstdout[2m | src/test/unit/lib/cache-config.test.ts[2m > [22m[2mcache-config[2m > [22m[2minitializeQueryPersistence[2m > [22m[2mshould initialize without error
+[22m[39m[Cache] TTL updated to 5 minutes
+
+[90mstdout[2m | src/test/unit/lib/cache-config.test.ts[2m > [22m[2mcache-config[2m > [22m[2minitializeQueryPersistence[2m > [22m[2mshould initialize without error
+[22m[39m[Cache] Using localStorage for persistence
+[Cache] Persistence initialized successfully
+
+ [32m✓[39m src/test/unit/lib/cache-config.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/test/unit/lib/services/time-service.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/test/unit/unlock-time.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/test/unit/lib/query-client.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/test/unit/lib/sse-client.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [2m[90m↓[39m[22m src/test/components/error.test.tsx [2m([22m[2m1 test[22m[2m | [22m[33m1 skipped[39m[2m)[22m
+ [32m✓[39m src/test/unit/lib/date-utils.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m44 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (45)[39m
+[2m      Tests [22m [1m[32m405 passed[39m[22m[2m | [22m[33m2 skipped[39m[90m (407)[39m
+[2m   Start at [22m 19:15:35
+[2m   Duration [22m 12.61s[2m (transform 1.80s, setup 15.69s, import 11.57s, tests 7.28s, environment 31.69s)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   79.09 |    74.96 |   75.54 |   79.98 |                   
+ app/[locale]      |   53.12 |    33.33 |   27.27 |   54.83 |                   
+  page.tsx         |   53.12 |    33.33 |   27.27 |   54.83 | ...,93-95,106-118 
+ app/api/items     |   75.55 |    65.11 |     100 |      75 |                   
+  route.ts         |   75.55 |    65.11 |     100 |      75 | ...95,113,134-135 
+ ...pi/preferences |   80.76 |     87.5 |     100 |   80.76 |                   
+  route.ts         |   80.76 |     87.5 |     100 |   80.76 | 68-69,100,120-121 
+ app/api/sessions  |   75.67 |       75 |     100 |   75.67 |                   
+  route.ts         |   75.67 |       75 |     100 |   75.67 | ...20,131,143-144 
+ app/api/stats     |     100 |       50 |     100 |     100 |                   
+  route.ts         |     100 |       50 |     100 |     100 | 13                
+ components        |      83 |     74.5 |   73.15 |   84.27 |                   
+  AddModal.tsx     |   67.61 |    65.75 |   61.76 |   70.83 | ...51,369-390,460 
+  ...Indicator.tsx |     100 |      100 |     100 |     100 |                   
+  ...irmDialog.tsx |     100 |      100 |     100 |     100 |                   
+  ContentView.tsx  |   82.14 |    82.89 |      75 |   85.52 | ...21,329-331,385 
+  Dashboard.tsx    |     100 |    94.44 |     100 |     100 | 46                
+  ExportButton.tsx |     100 |    77.77 |     100 |     100 | 27-50             
+  FilterBar.tsx    |   83.33 |      100 |   76.92 |   83.33 | 50-66,90          
+  FilterPanel.tsx  |   55.26 |    64.44 |   28.57 |   55.26 | ...54,151,163-258 
+  ...eSwitcher.tsx |     100 |      100 |     100 |     100 |                   
+  Providers.tsx    |     100 |       75 |     100 |     100 | 54                
+  ...yProvider.tsx |     100 |    95.83 |     100 |     100 | 52                
+  Sidebar.tsx      |   86.11 |    60.43 |      75 |   85.29 | 115,228,358-360   
+  SyncProvider.tsx |   96.29 |       70 |     100 |   95.83 | 60                
+  ...eRegistry.tsx |    92.3 |    83.33 |     100 |     100 | 15                
+  ThemeToggle.tsx  |    90.9 |     62.5 |      80 |    90.9 | 33                
+ components/ui     |   66.66 |    81.81 |      60 |   66.66 |                   
+  Modal.tsx        |    62.5 |    81.81 |      50 |    62.5 | 33-34,80          
+  Skeleton.tsx     |     100 |      100 |     100 |     100 |                   
+ hooks             |   96.77 |    82.35 |     100 |     100 |                   
+  ...iveSession.ts |     100 |    83.33 |     100 |     100 | 53                
+  useCountdown.ts  |     100 |      100 |     100 |     100 |                   
+  useHasMounted.ts |     100 |      100 |     100 |     100 |                   
+  useMediaQuery.ts |   93.75 |       80 |     100 |     100 | 16                
+  useSessions.ts   |   85.71 |       75 |     100 |     100 | 8                 
+ lib               |   67.23 |    73.48 |   68.96 |   67.79 |                   
+  api-client.ts    |   72.34 |     90.9 |      60 |    72.5 | 137-147,176-190   
+  cache-config.ts  |   59.32 |    43.75 |   88.88 |   58.62 | ...41-142,171,179 
+  date-utils.ts    |     100 |    96.42 |     100 |     100 | 89                
+  device-id.ts     |      94 |    82.05 |     100 |      94 | 67,93,95          
+  env.ts           |   42.85 |    71.42 |   66.66 |   42.85 | 40-47             
+  ...calstorage.ts |   89.65 |    78.57 |     100 |   92.85 | 46-47             
+  queries.ts       |   77.96 |    72.22 |   77.77 |    74.5 | ...56-161,173-178 
+  query-client.ts  |     100 |      100 |     100 |     100 |                   
+  sse-client.ts    |    8.47 |        0 |    7.14 |    9.61 | 28-122            
+  utils.ts         |     100 |      100 |     100 |     100 |                   
+  validation.ts    |   95.45 |    92.85 |     100 |   95.23 | 74                
+ lib/services      |    98.3 |    90.47 |   94.44 |     100 |                   
+  api-service.ts   |     100 |    96.42 |     100 |     100 | 33                
+  ...er-service.ts |   91.66 |       70 |   83.33 |     100 | 26-30,39          
+  time-service.ts  |     100 |      100 |     100 |     100 |                   
+ lib/stores        |     100 |      100 |     100 |     100 |                   
+  ...ings-store.ts |     100 |      100 |     100 |     100 |                   
+ lib/utils         |     100 |      100 |     100 |     100 |                   
+  unlock-time.ts   |     100 |      100 |     100 |     100 |                   
+-------------------|---------|----------|---------|---------|-------------------

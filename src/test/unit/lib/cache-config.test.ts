@@ -8,12 +8,23 @@ import {
     initializeQueryPersistence
 } from '@/lib/cache-config';
 import { QueryClient } from '@tanstack/react-query';
+import { persistQueryClient } from '@tanstack/react-query-persist-client';
+
+// Mock external dependencies
+vi.mock('@tanstack/react-query-persist-client', () => ({
+    persistQueryClient: vi.fn(),
+}));
 
 describe('cache-config', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         // Reset TTL to default
         setCacheTTL(5);
+
+        // Spy on console
+        vi.spyOn(console, 'info').mockImplementation(() => { });
+        vi.spyOn(console, 'warn').mockImplementation(() => { });
+        vi.spyOn(console, 'error').mockImplementation(() => { });
 
         // Mock localStorage
         const store: Record<string, string> = {};
@@ -49,6 +60,64 @@ describe('cache-config', () => {
         });
     });
 
+    describe('Storage Persistence Fallback', () => {
+        it('should fall back to sessionStorage if localStorage fails', () => {
+            // Simulate localStorage failure
+            vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+                throw new Error('QuotaExceeded');
+            });
+
+            const queryClient = new QueryClient();
+            initializeQueryPersistence(queryClient);
+
+            expect(console.info).toHaveBeenCalledWith(expect.stringContaining('Falling back to sessionStorage'));
+        });
+
+        it('should fall back to memory if both storages fail', () => {
+            vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+                throw new Error('QuotaExceeded');
+            });
+            vi.spyOn(sessionStorage, 'setItem').mockImplementation(() => {
+                throw new Error('QuotaExceeded');
+            });
+
+            const queryClient = new QueryClient();
+            initializeQueryPersistence(queryClient);
+
+            expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('sessionStorage also unavailable'));
+        });
+    });
+
+    describe('initializeQueryPersistence', () => {
+        it('should initialize persistence with correct options', () => {
+            const queryClient = new QueryClient();
+
+            initializeQueryPersistence(queryClient);
+
+            expect(persistQueryClient).toHaveBeenCalledWith(expect.objectContaining({
+                queryClient,
+                maxAge: 5 * 60 * 1000, // Default TTL
+                buster: 'v1',
+            }));
+        });
+
+        it('should not persist fetching or error queries', () => {
+            const queryClient = new QueryClient();
+            initializeQueryPersistence(queryClient);
+
+            expect(persistQueryClient).toHaveBeenCalled();
+
+            // Get the options passed to the first call
+            const options = (persistQueryClient as any).mock.calls[0][0];
+            const shouldDehydrate = options.dehydrateOptions.shouldDehydrateQuery;
+
+            // Check predicates
+            expect(shouldDehydrate({ state: { fetchStatus: 'fetching' } })).toBe(false);
+            expect(shouldDehydrate({ state: { status: 'error' } })).toBe(false);
+            expect(shouldDehydrate({ state: { fetchStatus: 'idle', status: 'success' } })).toBe(true);
+        });
+    });
+
     describe('Storage management', () => {
         it('should estimate cache size', () => {
             localStorage.setItem('promissum-react-query-cache', '1234567890');
@@ -76,13 +145,6 @@ describe('cache-config', () => {
             localStorage.setItem('promissum-react-query-cache', 'data');
             clearPersistedCache();
             expect(localStorage.removeItem).toHaveBeenCalledWith('promissum-react-query-cache');
-        });
-    });
-
-    describe('initializeQueryPersistence', () => {
-        it('should initialize without error', () => {
-            const queryClient = new QueryClient();
-            expect(() => initializeQueryPersistence(queryClient)).not.toThrow();
         });
     });
 });

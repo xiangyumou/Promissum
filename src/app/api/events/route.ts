@@ -15,28 +15,37 @@ const clients = new Set<ReadableStreamDefaultController>();
 type EventType = 'settings-updated' | 'item-locked' | 'item-unlocked' | 'item-deleted' | 'ping';
 
 export async function GET(request: NextRequest) {
+    const deviceId = request.nextUrl.searchParams.get('deviceId');
+
+    if (!deviceId) {
+        return new Response(JSON.stringify({ error: 'Missing deviceId' }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
     const encoder = new TextEncoder();
 
     // Create a streaming response
     const customReadable = new ReadableStream({
         start(controller) {
             clients.add(controller);
-            console.log('SSE Client connected');
+            console.log(`SSE Client connected: ${deviceId}`);
 
             // Send initial connection message
-            const initialData = `data: ${JSON.stringify({ type: 'connected' })}\n\n`;
+            const initialData = `data: ${JSON.stringify({ type: 'connected', deviceId })}\n\n`;
             controller.enqueue(encoder.encode(initialData));
         },
         cancel(controller) {
             clients.delete(controller);
-            console.log('SSE Client disconnected');
+            console.log(`SSE Client disconnected: ${deviceId}`);
         }
     });
 
     return new Response(customReadable, {
         headers: {
             'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
+            'Cache-Control': 'no-cache, no-transform',
             'Connection': 'keep-alive',
             'Content-Encoding': 'none',
         },
