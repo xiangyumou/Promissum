@@ -22,7 +22,8 @@ const messages = {
         image: 'Image',
         unlocked: 'Unlocked',
         locked: 'Locked',
-        unlocksAt: 'Unlocks At'
+        unlocksAt: 'Unlocks At',
+        dashboard: 'Dashboard'
     },
     Sidebar: {
         settings: 'Settings',

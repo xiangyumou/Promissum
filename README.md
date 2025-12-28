@@ -16,10 +16,32 @@
 - 📊 **仪表盘统计**：可视化展示加密数据统计
 - 🛡️ **隐私保护**：隐私模式模糊敏感内容
 - 💾 **本地持久化**：自定义缓存策略与数据持久化
+- 🔄 **多端同步**：基于 SSE 的实时状态同步与会话追踪
 
 ## 🏗️ 架构说明
 
-### 当前架构（基于远程 API）
+### 多端同步架构 (Multi-Device Sync)
+
+```mermaid
+graph TD
+    ClientA[Client A] <-->|SSE / API| Server[Next.js Server]
+    ClientB[Client B] <-->|SSE / API| Server
+    Server <-->|Prisma_ORM| DB[(SQLite/Postgres)]
+    
+    subgraph Data Flow
+        ClientA --Update Settings--> Server
+        Server --Broadcast Event--> ClientB
+        ClientB --Update Store--> Storage
+    end
+```
+
+**同步特性**:
+- **实时性**: 设置变更毫秒级同步到所有设备
+- **会话追踪**: 实时显示当前有多少人正在查看同一内容
+- **双写策略**: 本地优先 + 云端同步，保证极致响应速度
+- **隐私设计**: 基于设备指纹识别，无强制账户体系
+
+### 原有架构（基于远程 API）
 
 ```
 前端 UI (Next.js)

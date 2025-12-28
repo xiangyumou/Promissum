@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2025-12-28
+
+### Added
+- **Multi-Device Synchronization**: Complete state sync across devices using a centralized database.
+- **Real-Time Updates**: Implemented Server-Sent Events (SSE) for instant updates on settings changes and item status.
+- **Session Tracking**: Real-time presence awareness showing active viewers on item detail pages.
+- **Database Layer**: Introduced Prisma ORM with SQLite (migratable to PostgreSQL) for persistent storage.
+- **Dual-Write Architecture**: Hybrid approach syncing `localStorage` (for speed) and Database (for persistence).
+- **Auto-Migration**: Utility to automatically migrate existing local data to the cloud on first run.
+
+### Changed
+- **Architecture**: Moved from pure client-side storage to a Client-Server hybrid model.
+- **API**: Expanded API routes to support `GET/POST/DELETE` for sessions and preferences.
+
 ## [0.3.1] - 2025-12-28
 
 ### Added

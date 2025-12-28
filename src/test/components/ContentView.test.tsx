@@ -12,6 +12,16 @@ vi.mock('@/lib/services/time-service', () => ({
     }
 }));
 
+// Mock useActiveSession
+vi.mock('@/hooks/useActiveSession', () => ({
+    useActiveSession: vi.fn()
+}));
+
+// Mock useSessions
+vi.mock('@/hooks/useSessions', () => ({
+    useSessions: vi.fn().mockReturnValue({ data: [] })
+}));
+
 // Mock framer-motion to avoid animation issues
 vi.mock('framer-motion', async () => {
     const actual = await vi.importActual('framer-motion');
