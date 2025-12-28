@@ -110,6 +110,11 @@ export interface SystemStats {
         image: number;
     };
     avgLockDurationMinutes?: number;
+
+    // Phase 2: Dashboard enhancements
+    upcomingUnlocks?: ApiItemListView[]; // Items unlocking within 24 hours
+    weeklyTrend?: { date: string; count: number }[]; // Last 7 days creation trend
+    monthlyComparison?: { current: number; previous: number }; // This month vs last month
 }
 
 export interface ApiActiveSession {
