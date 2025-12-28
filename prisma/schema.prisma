@@ -1,5 +1,5 @@
 // This is your Prisma schema file for the Promissum frontend database
-// It manages user preferences, device sessions, and sync state
+//It manages user preferences, device sessions, and sync state
 // Learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -8,7 +8,6 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 // Device represents a unique browser/client
