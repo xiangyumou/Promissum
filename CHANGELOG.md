@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - **Export Functionality**: Ability to export unlocked items to JSON or Markdown.
 - **Image Zoom**: Integrated `yet-another-react-lightbox` for in-place image zooming.
 - **Date Formatting**: Centralized date formatting using `date-fns` with configurable formats.
+- **Testing Infrastructure**: Comprehensive unit test coverage (~66%) with 97 tests covering utilities, hooks, and components including edge cases.
 
 ### Changed
 - **Tech Stack**:
