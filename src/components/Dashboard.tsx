@@ -169,6 +169,11 @@ export default function Dashboard() {
                     </div>
                 </div>
             )}
+
+            {/* Upcoming Unlocks Section */}
+            {stats.upcomingUnlocks && stats.upcomingUnlocks.length > 0 && (
+                <UpcomingUnlocks items={stats.upcomingUnlocks} onView={handleViewItem} />
+            )}
         </div>
     );
 }
