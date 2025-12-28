@@ -29,7 +29,17 @@
         "basedOnHistory": "基于历史数据",
         "failedToLoad": "加载统计失败",
         "contentTypeDistribution": "内容类型分布",
-        "lockStatusDistribution": "锁定状态分布"
+        "lockStatusDistribution": "锁定状态分布",
+        "upcomingUnlocks": "即将解锁",
+        "upcomingUnlocksDesc": "24小时内即将解锁的项目",
+        "noUpcomingUnlocks": "暂无即将解锁的项目",
+        "creationTrend": "创建趋势",
+        "creationTrendDesc": "最近7天的创建趋势",
+        "thisMonth": "本月",
+        "lastMonth": "上月",
+        "itemsCreated": "个项目",
+        "viewItem": "查看",
+        "extendItem": "延长"
     },
     "Sidebar": {
         "noItems": "暂无项目",
@@ -184,7 +194,29 @@
         "cacheSize": "缓存大小",
         "queries": "条",
         "persistenceActive": "持久化已激活",
-        "persistenceInactive": "仅内存缓存"
+        "persistenceInactive": "仅内存缓存",
+        "notificationsTitle": "通知提醒",
+        "enableNotifications": "启用通知",
+        "enableNotificationsDesc": "在项目解锁时接收浏览器通知",
+        "requestPermission": "请求权限",
+        "permissionGranted": "通知已启用",
+        "permissionDenied": "通知已拒绝",
+        "permissionDefault": "未配置",
+        "notificationTiming": "通知时机",
+        "notificationTimingDesc": "何时发送解锁提醒",
+        "minutesBefore": "提前 {minutes} 分钟",
+        "hourBefore": "提前 1 小时",
+        "hoursBefore": "提前 {hours} 小时",
+        "soundEnabled": "启用声音",
+        "soundEnabledDesc": "通知时播放声音提示",
+        "testNotification": "测试通知",
+        "testNotificationSent": "已发送测试通知"
+    },
+    "Notifications": {
+        "unlockingSoon": "{title} 即将解锁！",
+        "unlocksIn": "将在 {time} 后解锁",
+        "unlocked": "{title} 已解锁！🎉",
+        "nowAvailable": "您的内容现已可以查看"
     },
     "Error": {
         "title": "出了点问题",

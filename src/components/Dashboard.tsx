@@ -7,12 +7,19 @@ import { cn } from '@/lib/utils';
 import { useSettings } from '@/lib/stores/settings-store';
 import { useTranslations } from 'next-intl';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import UpcomingUnlocks from './UpcomingUnlocks';
+import { useRouter } from '@/i18n/routing';
 
 export default function Dashboard() {
     const { data: stats, isLoading, error } = useStats();
     const t = useTranslations('Dashboard');
     const tCommon = useTranslations('Common');
     const { privacyMode } = useSettings();
+    const router = useRouter();
+
+    const handleViewItem = (id: string) => {
+        router.push(`/?item=${id}`);
+    };
 
     const typeChartData = useMemo(() => [
         { name: t('textNotes'), value: stats?.byType?.text || 0, color: 'var(--warning)' },
@@ -161,6 +168,11 @@ export default function Dashboard() {
                         {Math.round(stats.avgLockDurationMinutes / 60)}<span className="text-lg text-muted-foreground font-normal ml-1">{t('hours')}</span>
                     </div>
                 </div>
+            )}
+
+            {/* Upcoming Unlocks Section */}
+            {stats.upcomingUnlocks && stats.upcomingUnlocks.length > 0 && (
+                <UpcomingUnlocks items={stats.upcomingUnlocks} onView={handleViewItem} />
             )}
         </div>
     );
