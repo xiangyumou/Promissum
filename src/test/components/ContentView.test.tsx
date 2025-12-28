@@ -267,5 +267,204 @@ describe('ContentView', () => {
 
             expect(screen.getByText('2 viewers')).toBeInTheDocument();
         });
+
+        it('should handle zero viewers', () => {
+            (useSessions as any).mockReturnValue({ data: [] });
+
+            renderWithProviders(
+                <ContentView
+                    selectedId="test-item-2"
+                    item={unlockedItem}
+                    isLoading={false}
+                    onDelete={mockOnDelete}
+                    onExtend={mockOnExtend}
+                    onMenuClick={mockOnMenuClick}
+                />
+            );
+
+            // With zero viewers, viewer count should not be displayed
+            expect(screen.queryByText(/viewers/)).not.toBeInTheDocument();
+        });
+
+        it('should handle many viewers (100+)', () => {
+            const manySessions = Array.from({ length: 150 }, (_, i) => ({ id: `s${i}` }));
+            (useSessions as any).mockReturnValue({ data: manySessions });
+
+            renderWithProviders(
+                <ContentView
+                    selectedId="test-item-2"
+                    item={unlockedItem}
+                    isLoading={false}
+                    onDelete={mockOnDelete}
+                    onExtend={mockOnExtend}
+                    onMenuClick={mockOnMenuClick}
+                />
+            );
+
+            expect(screen.getByText('150 viewers')).toBeInTheDocument();
+        });
+    });
+
+    describe('Edge Cases - Data Integrity', () => {
+        it('should handle item without metadata', () => {
+            const itemWithoutMetadata: ApiItemDetail = {
+                id: 'no-meta',
+                type: 'text',
+                decrypt_at: Date.now() + 3600000,
+                unlocked: false,
+                content: null
+            };
+
+            renderWithProviders(
+                <ContentView
+                    selectedId="no-meta"
+                    item={itemWithoutMetadata}
+                    isLoading={false}
+                    onDelete={mockOnDelete}
+                    onExtend={mockOnExtend}
+                    onMenuClick={mockOnMenuClick}
+                />
+            );
+
+            // Should show fallback translation key 'textNote' from Common
+            expect(screen.getByText('textNote')).toBeInTheDocument();
+        });
+
+        it('should show fallback title when title is missing', () => {
+            const itemWithEmptyMetadata: ApiItemDetail = {
+                id: 'empty-meta',
+                type: 'text',
+                decrypt_at: Date.now() + 3600000,
+                unlocked: false,
+                content: null,
+                metadata: {}
+            };
+
+            renderWithProviders(
+                <ContentView
+                    selectedId="empty-meta"
+                    item={itemWithEmptyMetadata}
+                    isLoading={false}
+                    onDelete={mockOnDelete}
+                    onExtend={mockOnExtend}
+                    onMenuClick={mockOnMenuClick}
+                />
+            );
+
+            // Should show fallback translation key
+            expect(screen.getByText('textNote')).toBeInTheDocument();
+        });
+
+        it('should show image fallback for image type without title', () => {
+            const imageWithoutTitle: ApiItemDetail = {
+                id: 'img-no-title',
+                type: 'image',
+                decrypt_at: Date.now() - 1000,
+                unlocked: true,
+                content: 'valid base64',
+                metadata: {}
+            };
+
+            renderWithProviders(
+                <ContentView
+                    selectedId="img-no-title"
+                    item={imageWithoutTitle}
+                    isLoading={false}
+                    onDelete={mockOnDelete}
+                    onExtend={mockOnExtend}
+                    onMenuClick={mockOnMenuClick}
+                />
+            );
+
+            // Should show 'image' translation key
+            expect(screen.getByText('image')).toBeInTheDocument();
+        });
+
+        it('should handle very long content text', () => {
+            const longContent = 'a'.repeat(10000);
+            const longItem: ApiItemDetail = {
+                ...unlockedItem,
+                content: longContent
+            };
+
+            renderWithProviders(
+                <ContentView
+                    selectedId="test-item-2"
+                    item={longItem}
+                    isLoading={false}
+                    onDelete={mockOnDelete}
+                    onExtend={mockOnExtend}
+                    onMenuClick={mockOnMenuClick}
+                />
+            );
+
+            // Content should be rendered (even if extremely long)
+            expect(screen.getByText(longContent)).toBeInTheDocument();
+        });
+
+        it('should handle invalid base64 image data gracefully', () => {
+            const invalidImageItem: ApiItemDetail = {
+                id: 'invalid-img',
+                type: 'image',
+                decrypt_at: Date.now() - 1000,
+                unlocked: true,
+                content: 'definitely-not-valid-base64',
+                metadata: { title: 'Invalid Image' }
+            };
+
+            renderWithProviders(
+                <ContentView
+                    selectedId="invalid-img"
+                    item={invalidImageItem}
+                    isLoading={false}
+                    onDelete={mockOnDelete}
+                    onExtend={mockOnExtend}
+                    onMenuClick={mockOnMenuClick}
+                />
+            );
+
+            // Image element should still be rendered
+            const img = screen.getByAltText('Decrypted content');
+            expect(img).toBeInTheDocument();
+            // Should have constructed data URL
+            expect(img).toHaveAttribute('src', expect.stringContaining('data:image/png;base64,'));
+        });
+
+        it('should handle session data errors (undefined)', () => {
+            // Mock sessions to return undefined (error case)
+            (useSessions as any).mockReturnValue({ data: undefined });
+
+            renderWithProviders(
+                <ContentView
+                    selectedId="test-item-2"
+                    item={unlockedItem}
+                    isLoading={false}
+                    onDelete={mockOnDelete}
+                    onExtend={mockOnExtend}
+                    onMenuClick={mockOnMenuClick}
+                />
+            );
+
+            // Should not crash, viewer count should not be shown
+            expect(screen.queryByText(/viewers/)).not.toBeInTheDocument();
+        });
+
+        it('should handle session data errors (null)', () => {
+            (useSessions as any).mockReturnValue({ data: null });
+
+            renderWithProviders(
+                <ContentView
+                    selectedId="test-item-2"
+                    item={unlockedItem}
+                    isLoading={false}
+                    onDelete={mockOnDelete}
+                    onExtend={mockOnExtend}
+                    onMenuClick={mockOnMenuClick}
+                />
+            );
+
+            // Should not crash
+            expect(screen.queryByText(/viewers/)).not.toBeInTheDocument();
+        });
     });
 });
