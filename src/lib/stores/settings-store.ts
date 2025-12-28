@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { FilterParams } from '../types';
+import { FilterParams, FilterPreset } from '../types';
 
 /**
  * Settings State Interface
@@ -38,6 +38,13 @@ interface SettingsState {
     notificationTiming: number[]; // Minutes before unlock, e.g. [5, 60]
     soundEnabled: boolean;
 
+    // Filter Presets
+    filterPresets: FilterPreset[];
+
+    // Unlock Effects
+    enableUnlockSound: boolean;
+    enableUnlockConfetti: boolean;
+
     // Actions
     setDefaultDuration: (minutes: number) => void;
     setPrivacyMode: (enabled: boolean) => void;
@@ -63,6 +70,15 @@ interface SettingsState {
     setNotificationEnabled: (enabled: boolean) => void;
     setNotificationTiming: (timing: number[]) => void;
     setSoundEnabled: (enabled: boolean) => void;
+
+    // Filter Presets
+    setFilterPresets: (presets: FilterPreset[]) => void;
+    addFilterPreset: (preset: FilterPreset) => void;
+    removeFilterPreset: (id: string) => void;
+
+    // Unlock Effects
+    setEnableUnlockSound: (enabled: boolean) => void;
+    setEnableUnlockConfetti: (enabled: boolean) => void;
 
     resetToDefaults: () => void;
 }
@@ -96,6 +112,13 @@ const DEFAULT_SETTINGS: Omit<SettingsState, 'setDefaultDuration' | 'setPrivacyMo
     notificationEnabled: false,
     notificationTiming: [5, 60], // 5 min and 1 hour before
     soundEnabled: true,
+
+    // Filter Presets Defaults
+    filterPresets: [],
+
+    // Unlock Effects Defaults
+    enableUnlockSound: false,
+    enableUnlockConfetti: true,
 };
 
 /**
@@ -148,6 +171,19 @@ export const createSettingsStore = (
                 setNotificationEnabled: (enabled) => set({ notificationEnabled: enabled }),
                 setNotificationTiming: (timing) => set({ notificationTiming: timing }),
                 setSoundEnabled: (enabled) => set({ soundEnabled: enabled }),
+
+                // Filter Presets
+                setFilterPresets: (presets) => set({ filterPresets: presets }),
+                addFilterPreset: (preset) => set((state) => ({
+                    filterPresets: [...state.filterPresets, preset]
+                })),
+                removeFilterPreset: (id) => set((state) => ({
+                    filterPresets: state.filterPresets.filter(p => p.id !== id)
+                })),
+
+                // Unlock Effects
+                setEnableUnlockSound: (enabled) => set({ enableUnlockSound: enabled }),
+                setEnableUnlockConfetti: (enabled) => set({ enableUnlockConfetti: enabled }),
 
                 resetToDefaults: () => set(DEFAULT_SETTINGS),
             }),
