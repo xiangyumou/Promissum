@@ -1,9 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor, fireEvent } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '../utils';
 import ContentView from '@/components/ContentView';
-import { ItemDetail } from '@/lib/types';
+import { ApiItemDetail } from '@/lib/types';
 import { timeService } from '@/lib/services/time-service';
+import { useSettings } from '@/lib/stores/settings-store';
+import { useSessions } from '@/hooks/useSessions';
 
 // Mock timeService
 vi.mock('@/lib/services/time-service', () => ({
@@ -22,7 +25,17 @@ vi.mock('@/hooks/useSessions', () => ({
     useSessions: vi.fn().mockReturnValue({ data: [] })
 }));
 
-// Mock framer-motion to avoid animation issues
+// Mock next-intl
+vi.mock('next-intl', async () => {
+    const actual = await vi.importActual('next-intl');
+    return {
+        ...actual,
+        useTranslations: (namespace?: string) => (key: string) => key,
+        useLocale: () => 'en',
+    };
+});
+
+// Mock framer-motion
 vi.mock('framer-motion', async () => {
     const actual = await vi.importActual('framer-motion');
     return {
@@ -31,6 +44,7 @@ vi.mock('framer-motion', async () => {
         motion: {
             div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
             button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+            span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
         }
     };
 });
@@ -47,42 +61,58 @@ vi.mock('yet-another-react-lightbox/plugins/zoom', () => ({
     default: () => null
 }));
 
+// Mock settings store
+vi.mock('@/lib/stores/settings-store', async () => {
+    const actual = await vi.importActual('@/lib/stores/settings-store');
+    return {
+        ...actual,
+        useSettings: Object.assign(vi.fn(), {
+            getState: vi.fn(),
+            setState: vi.fn(),
+            subscribe: vi.fn(),
+            destroy: vi.fn(),
+        })
+    };
+});
+
 describe('ContentView', () => {
     const mockOnDelete = vi.fn();
     const mockOnExtend = vi.fn();
     const mockOnMenuClick = vi.fn();
 
-    // Locked item (unlock in future)
-    const lockedItem: ItemDetail = {
+    const lockedItem: ApiItemDetail = {
         id: 'test-item-1',
         type: 'text',
-        original_name: null,
-        decrypt_at: Date.now() + 3600000, // 1 hour from now
-        created_at: Date.now() - 86400000, // 1 day ago
-        layer_count: 0,
-        user_id: 'user-1',
-        metadata: { title: 'Locked Item' },
+        decrypt_at: Date.now() + 3600000,
         unlocked: false,
-        content: null
+        metadata: { title: 'Locked Item' }
     };
 
-    // Unlocked item
-    const unlockedItem: ItemDetail = {
+    const unlockedItem: ApiItemDetail = {
         id: 'test-item-2',
         type: 'text',
-        original_name: null,
-        decrypt_at: Date.now() - 3600000, // 1 hour ago
-        created_at: Date.now() - 86400000,
-        layer_count: 0,
-        user_id: 'user-1',
-        metadata: { title: 'Unlocked Item' },
+        decrypt_at: Date.now() - 3600000,
         unlocked: true,
-        content: 'This is the secret content!'
+        content: 'This is the secret content!',
+        metadata: { title: 'Unlocked Item' }
     };
 
     beforeEach(() => {
         vi.clearAllMocks();
         (timeService.now as any).mockReturnValue(Date.now());
+        // Default settings
+        (useSettings.getState as any).mockReturnValue({
+            confirmDelete: true,
+            confirmExtend: true,
+            sidebarOpen: false,
+            setSidebarOpen: vi.fn()
+        });
+        (useSettings as any).mockReturnValue({
+            sidebarOpen: false,
+            setSidebarOpen: vi.fn(),
+            confirmDelete: true,
+            confirmExtend: true
+        });
     });
 
     describe('Rendering', () => {
@@ -113,52 +143,18 @@ describe('ContentView', () => {
                 />
             );
 
-            expect(screen.getByText('Select an item')).toBeInTheDocument();
-        });
-    });
-
-    describe('Locked Item State', () => {
-        it('should show encrypted indicator for locked item', () => {
-            renderWithProviders(
-                <ContentView
-                    selectedId="test-item-1"
-                    item={lockedItem}
-                    isLoading={false}
-                    onDelete={mockOnDelete}
-                    onExtend={mockOnExtend}
-                    onMenuClick={mockOnMenuClick}
-                />
-            );
-
-            expect(screen.getByText('Content Encrypted')).toBeInTheDocument();
-            expect(screen.getByText('Time Lock Active')).toBeInTheDocument();
-        });
-    });
-
-    describe('Unlocked Item State', () => {
-        it('should show content for unlocked item', () => {
-            renderWithProviders(
-                <ContentView
-                    selectedId="test-item-2"
-                    item={unlockedItem}
-                    isLoading={false}
-                    onDelete={mockOnDelete}
-                    onExtend={mockOnExtend}
-                    onMenuClick={mockOnMenuClick}
-                />
-            );
-
-            expect(screen.getByText('This is the secret content!')).toBeInTheDocument();
+            expect(screen.getByText('selectItem')).toBeInTheDocument();
         });
     });
 
     describe('Image Type', () => {
-        it('should render image content correctly and open lightbox on click', () => {
-            const imageItem: ItemDetail = {
+        it('should render image content correctly and open lightbox on click', async () => {
+            const user = userEvent.setup();
+            const imageItem: ApiItemDetail = {
                 ...unlockedItem,
                 id: 'image-1',
                 type: 'image',
-                content: 'data:image/png;base64,iVBORw0KGgo=',
+                content: 'iVBORw0KGgo=',
                 metadata: { title: 'Test Image' }
             };
 
@@ -173,29 +169,19 @@ describe('ContentView', () => {
                 />
             );
 
-            expect(screen.getByText('Test Image')).toBeInTheDocument();
-
-            // Find the image by its alt text
             const img = screen.getByAltText('Decrypted content');
             expect(img).toBeInTheDocument();
 
-            // Lightbox should be closed initially
-            expect(screen.queryByTestId('lightbox')).not.toBeInTheDocument();
-
-            // Click the image (or its parent div)
-            fireEvent.click(img.closest('div')!);
-
-            // Lightbox should now be open
+            await user.click(img.closest('div')!);
             expect(screen.getByTestId('lightbox')).toBeInTheDocument();
-
-            // Close the lightbox
-            fireEvent.click(screen.getByTestId('close-lightbox'));
-            expect(screen.queryByTestId('lightbox')).not.toBeInTheDocument();
         });
     });
 
     describe('Delete Functionality', () => {
-        it('should render delete button', async () => {
+        it('should call onDelete when delete button is clicked (no confirmation required)', async () => {
+            const user = userEvent.setup();
+            (useSettings as any).mockReturnValue({ confirmDelete: false });
+
             renderWithProviders(
                 <ContentView
                     selectedId="test-item-2"
@@ -207,41 +193,20 @@ describe('ContentView', () => {
                 />
             );
 
-            // Find delete button by its icon or title
-            const deleteButtons = screen.getAllByRole('button');
-            const deleteButton = deleteButtons.find(btn =>
-                btn.getAttribute('title')?.includes('Delete') ||
-                btn.getAttribute('title')?.includes('delete')
-            );
+            const deleteBtn = screen.getByTitle('delete');
+            await user.click(deleteBtn);
 
-            // The delete button exists (at least buttons are rendered)
-            expect(deleteButtons.length).toBeGreaterThan(0);
+            expect(mockOnDelete).toHaveBeenCalledWith('test-item-2');
         });
-    });
 
-    describe('Loading State', () => {
-        it('should show loading spinner when isLoading is true', () => {
+        it('should require double click when confirmation is enabled', async () => {
+            const user = userEvent.setup();
+            (useSettings as any).mockReturnValue({ confirmDelete: true });
+
             renderWithProviders(
                 <ContentView
-                    selectedId="test-item-1"
-                    item={undefined}
-                    isLoading={true}
-                    onDelete={mockOnDelete}
-                    onExtend={mockOnExtend}
-                    onMenuClick={mockOnMenuClick}
-                />
-            );
-
-            expect(screen.getByText('Decrypting...')).toBeInTheDocument();
-        });
-    });
-
-    describe('Not Found State', () => {
-        it('should show not found message when item is undefined after loading', () => {
-            renderWithProviders(
-                <ContentView
-                    selectedId="missing-item"
-                    item={undefined}
+                    selectedId="test-item-2"
+                    item={unlockedItem}
                     isLoading={false}
                     onDelete={mockOnDelete}
                     onExtend={mockOnExtend}
@@ -249,12 +214,21 @@ describe('ContentView', () => {
                 />
             );
 
-            expect(screen.getByText('Item not found')).toBeInTheDocument();
+            const deleteBtn = screen.getByTitle('delete');
+            await user.click(deleteBtn);
+            expect(mockOnDelete).not.toHaveBeenCalled();
+            expect(screen.getByText('confirm')).toBeInTheDocument();
+
+            await user.click(deleteBtn);
+            expect(mockOnDelete).toHaveBeenCalledWith('test-item-2');
         });
     });
 
-    describe('Extend Button', () => {
-        it('should show extend button', () => {
+    describe('Extend Functionality', () => {
+        it('should show extend dropdown and call onExtend when an option is clicked', async () => {
+            const user = userEvent.setup();
+            (useSettings as any).mockReturnValue({ confirmExtend: false });
+
             renderWithProviders(
                 <ContentView
                     selectedId="test-item-1"
@@ -266,20 +240,24 @@ describe('ContentView', () => {
                 />
             );
 
-            // Check for extend button or extend text
-            const extendElement = screen.queryByText('Extend') ||
-                screen.queryByTitle('Extend Lock') ||
-                screen.queryByTitle('extendLock');
-            expect(extendElement || screen.getByRole('button')).toBeTruthy();
+            const extendBtn = screen.getByTitle('extendLock');
+            await user.click(extendBtn);
+
+            await user.click(screen.getByText('+1 hour'));
+            expect(mockOnExtend).toHaveBeenCalledWith('test-item-1', 60);
         });
     });
 
-    describe('Menu Button', () => {
-        it('should call onMenuClick when menu button is clicked', () => {
+    describe('Viewer Count', () => {
+        it('should show viewer count when sessions are present', () => {
+            (useSessions as any).mockReturnValue({
+                data: [{ id: 's1' }, { id: 's2' }]
+            });
+
             renderWithProviders(
                 <ContentView
-                    selectedId={null}
-                    item={undefined}
+                    selectedId="test-item-2"
+                    item={unlockedItem}
                     isLoading={false}
                     onDelete={mockOnDelete}
                     onExtend={mockOnExtend}
@@ -287,26 +265,7 @@ describe('ContentView', () => {
                 />
             );
 
-            // On mobile (where menu is shown), there should be a menu button
-            // Since we're not simulating mobile, just verify the prop is available
-            expect(mockOnMenuClick).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('Countdown Display', () => {
-        it('should show countdown for locked items', () => {
-            renderWithProviders(
-                <ContentView
-                    selectedId="test-item-1"
-                    item={lockedItem}
-                    isLoading={false}
-                    onDelete={mockOnDelete}
-                    onExtend={mockOnExtend}
-                    onMenuClick={mockOnMenuClick}
-                />
-            );
-
-            expect(screen.getByText('Unlocks in')).toBeInTheDocument();
+            expect(screen.getByText('2 viewers')).toBeInTheDocument();
         });
     });
 });

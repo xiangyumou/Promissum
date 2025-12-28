@@ -1,0 +1,58 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { screen } from '@testing-library/react';
+import Home from '@/app/[locale]/page';
+import { renderWithProviders } from '../utils';
+
+// Mock next/navigation using a more robust approach for Vitest in Next.js
+vi.mock('next/navigation', () => {
+    return {
+        useRouter: () => ({
+            push: vi.fn(),
+            replace: vi.fn(),
+            prefetch: vi.fn(),
+        }),
+        usePathname: () => '/',
+        useSearchParams: () => new URLSearchParams(),
+        useParams: () => ({ locale: 'en' }),
+    };
+});
+
+// Mock useStats to avoid API calls
+vi.mock('@/lib/queries', async () => {
+    return {
+        useStats: vi.fn().mockReturnValue({
+            isLoading: false,
+            data: {
+                totalItems: 10,
+                lockedItems: 5,
+                unlockedItems: 5,
+                byType: { text: 5, image: 5 },
+                avgLockDurationMinutes: 120
+            }
+        }),
+        useItems: vi.fn().mockReturnValue({ data: [], isLoading: false }),
+        useItem: vi.fn().mockReturnValue({ data: undefined, isLoading: false }),
+        useCreateItem: vi.fn().mockReturnValue({ mutateAsync: vi.fn() }),
+        useDeleteItem: vi.fn().mockReturnValue({ mutateAsync: vi.fn() }),
+        useExtendItem: vi.fn().mockReturnValue({ mutateAsync: vi.fn() }),
+    };
+});
+
+// Mock next-intl
+vi.mock('next-intl', async () => {
+    const actual = await vi.importActual('next-intl');
+    return {
+        ...actual,
+        useTranslations: (namespace?: string) => (key: string) => key,
+        useLocale: () => 'en',
+    };
+});
+
+describe('Home Page Smoke Test', () => {
+    it('should render Home page without crashing', () => {
+        renderWithProviders(<Home />);
+
+        // Use translation key as expected from mock
+        expect(screen.getByText('selectItem')).toBeInTheDocument();
+    });
+});
