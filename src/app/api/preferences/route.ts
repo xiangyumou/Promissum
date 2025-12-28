@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db/client';
 import { z } from 'zod';
+import { broadcastEvent } from '../events/route';
 
 // Validation schema matching SettingsStore
 const PreferencesSchema = z.object({
@@ -111,9 +112,8 @@ export async function POST(request: NextRequest) {
             update: preferencesData,
         });
 
-        // TODO: Broadcast SSE event to other devices
-        // This will be implemented in the SSE route
-        // broadcastEvent('settings-updated', { deviceId, preferences });
+        // Broadcast SSE event to other devices
+        broadcastEvent('settings-updated', { deviceId, preferences });
 
         return NextResponse.json(preferences);
     } catch (error) {
