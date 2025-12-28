@@ -1,7 +1,7 @@
 'use client';
 
 import { ApiItemDetail } from '@/lib/types';
-import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Trash2, Maximize2, Plus, Menu } from 'lucide-react';
+import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Trash2, Plus, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -164,22 +164,16 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center gap-4">
-                                    <div className="relative group rounded-2xl overflow-hidden shadow-2xl border border-border bg-black/50">
+                                    <div
+                                        className="relative rounded-2xl overflow-hidden shadow-2xl border border-border bg-black/50 cursor-pointer group"
+                                        onClick={() => setIsLightboxOpen(true)}
+                                    >
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
                                             src={imageSrc}
                                             alt="Decrypted content"
-                                            className="max-h-[70vh] w-auto object-contain"
+                                            className="max-h-[70vh] w-auto object-contain transition-transform duration-300 group-hover:scale-[1.02]"
                                         />
-                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 backdrop-blur-sm">
-                                            <button
-                                                onClick={() => setIsLightboxOpen(true)}
-                                                className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-transform hover:scale-110 backdrop-blur-md border border-white/10"
-                                                title={t('viewOriginal')}
-                                            >
-                                                <Maximize2 size={24} />
-                                            </button>
-                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -195,6 +189,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                                     scrollToZoom: true,
                                 }}
                                 carousel={{ finite: true }}
+                                controller={{ closeOnBackdropClick: true }}
                                 render={{
                                     buttonPrev: () => null,
                                     buttonNext: () => null,

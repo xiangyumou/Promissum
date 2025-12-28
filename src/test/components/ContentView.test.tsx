@@ -27,7 +27,11 @@ vi.mock('framer-motion', async () => {
 
 // Mock Lightbox
 vi.mock('yet-another-react-lightbox', () => ({
-    default: () => null
+    default: ({ open, close }: any) => open ? (
+        <div data-testid="lightbox">
+            <button onClick={close} data-testid="close-lightbox">Close</button>
+        </div>
+    ) : null
 }));
 vi.mock('yet-another-react-lightbox/plugins/zoom', () => ({
     default: () => null
@@ -139,7 +143,7 @@ describe('ContentView', () => {
     });
 
     describe('Image Type', () => {
-        it('should render image content correctly', () => {
+        it('should render image content correctly and open lightbox on click', () => {
             const imageItem: ItemDetail = {
                 ...unlockedItem,
                 id: 'image-1',
@@ -160,6 +164,23 @@ describe('ContentView', () => {
             );
 
             expect(screen.getByText('Test Image')).toBeInTheDocument();
+
+            // Find the image by its alt text
+            const img = screen.getByAltText('Decrypted content');
+            expect(img).toBeInTheDocument();
+
+            // Lightbox should be closed initially
+            expect(screen.queryByTestId('lightbox')).not.toBeInTheDocument();
+
+            // Click the image (or its parent div)
+            fireEvent.click(img.closest('div')!);
+
+            // Lightbox should now be open
+            expect(screen.getByTestId('lightbox')).toBeInTheDocument();
+
+            // Close the lightbox
+            fireEvent.click(screen.getByTestId('close-lightbox'));
+            expect(screen.queryByTestId('lightbox')).not.toBeInTheDocument();
         });
     });
 
