@@ -36,10 +36,32 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     const t = useTranslations('ContentView');
     const tCommon = useTranslations('Common');
     const locale = useLocale();
-    const { sidebarOpen, setSidebarOpen } = useSettings();
+    const { sidebarOpen, setSidebarOpen, enableUnlockSound, enableUnlockConfetti } = useSettings();
 
     // Track active session
     useActiveSession(selectedId);
+
+    // Track unlock status and trigger celebration
+    const [wasLocked, setWasLocked] = useState(true);
+
+    useEffect(() => {
+        if (!item) return;
+
+        const isNowUnlocked = timeService.now() >= item.decrypt_at;
+
+        // Trigger unlock effects when transitioning from locked to unlocked
+        if (wasLocked && isNowUnlocked) {
+            // Dynamic import to avoid SSR issues
+            import('@/lib/utils/unlock-effects').then(({ celebrateUnlock }) => {
+                celebrateUnlock({
+                    sound: enableUnlockSound,
+                    confetti: enableUnlockConfetti,
+                });
+            });
+        }
+
+        setWasLocked(!isNowUnlocked);
+    }, [item, wasLocked, enableUnlockSound, enableUnlockConfetti]);
 
 
     // Image lightbox state
