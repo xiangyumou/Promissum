@@ -6,7 +6,7 @@ import { Clock, ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
-import { zhCN, enUS } from 'date-fns/locale';
+import { zhCN, enUS, Locale } from 'date-fns/locale';
 import { useLocale } from 'next-intl';
 
 interface UpcomingUnlocksProps {
