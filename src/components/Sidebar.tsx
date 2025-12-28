@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { ApiItemListView } from '@/lib/types';
 import { FilterParams } from '@/lib/api-client';
 import FilterPanel from './FilterPanel';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, Settings, PanelLeftClose } from 'lucide-react';
+import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, Settings, PanelLeftClose, CheckSquare, Square, Trash2, Clock, Download, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from './ui/Skeleton';
 import { useTranslations } from 'next-intl';
@@ -14,6 +14,7 @@ import { useSettings } from '@/lib/stores/settings-store';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { timeService } from '@/lib/services/time-service';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import ConfirmDialog from './ConfirmDialog';
 
 interface SidebarProps {
     items: ApiItemListView[];
@@ -25,6 +26,8 @@ interface SidebarProps {
     filters: FilterParams;
     onFilterChange: (filters: FilterParams) => void;
     isLoading?: boolean;
+    onBatchDelete?: (ids: string[]) => void;
+    onBatchExtend?: (ids: string[], minutes: number) => void;
 }
 
 export default function Sidebar({
@@ -36,7 +39,9 @@ export default function Sidebar({
     onClose,
     filters,
     onFilterChange,
-    isLoading = false
+    isLoading = false,
+    onBatchDelete,
+    onBatchExtend
 }: SidebarProps) {
     const t = useTranslations('Sidebar');
     const tCommon = useTranslations('Common');
@@ -150,6 +155,8 @@ export default function Sidebar({
                             isLoading={isLoading}
                             compactMode={compactMode}
                             setSidebarOpen={setSidebarOpen}
+                            onBatchDelete={onBatchDelete}
+                            onBatchExtend={onBatchExtend}
                         />
                     )}
                 </motion.div>
@@ -170,6 +177,8 @@ interface SidebarContentProps {
     isLoading: boolean;
     compactMode: boolean;
     setSidebarOpen: (open: boolean) => void;
+    onBatchDelete?: (ids: string[]) => void;
+    onBatchExtend?: (ids: string[], minutes: number) => void;
 }
 
 function SidebarContent({
@@ -182,10 +191,53 @@ function SidebarContent({
     onFilterChange,
     isLoading,
     compactMode,
-    setSidebarOpen
+    setSidebarOpen,
+    onBatchDelete,
+    onBatchExtend
 }: SidebarContentProps) {
     const t = useTranslations('Sidebar');
     const tCommon = useTranslations('Common');
+
+    // Batch Mode State
+    const [isBatchMode, setIsBatchMode] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showExtendDialog, setShowExtendDialog] = useState(false);
+
+    // Toggle batch mode
+    const toggleBatchMode = () => {
+        setIsBatchMode(!isBatchMode);
+        setSelectedIds(new Set());
+    };
+
+    // Toggle item selection
+    const toggleItemSelection = (id: string) => {
+        const newSelected = new Set(selectedIds);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedIds(newSelected);
+    };
+
+    // Select all visible items
+    const handleSelectAll = () => {
+        if (selectedIds.size === items.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(items.map(item => item.id)));
+        }
+    };
+
+    const handleBatchDelete = () => {
+        if (onBatchDelete && selectedIds.size > 0) {
+            onBatchDelete(Array.from(selectedIds));
+            setSelectedIds(new Set());
+            setShowDeleteConfirm(false);
+            // setIsBatchMode(false); // Optional: keep selection mode active?
+        }
+    };
 
     return (
         <>
@@ -201,23 +253,91 @@ function SidebarContent({
 
             {/* Primary Actions Group */}
             <div className={cn("space-y-3", compactMode ? "p-3 pb-1" : "p-4 pb-2")}>
-                {/* Add Button - Premium Gradient */}
-                <button
-                    className={cn(
-                        "premium-button w-full",
-                        compactMode ? "px-3 py-2 text-xs" : "px-4 py-3 text-sm"
-                    )}
-                    onClick={onAddClick}
-                >
-                    <Plus size={compactMode ? 16 : 18} />
-                    {tCommon('newEntry')}
-                </button>
+                {!isBatchMode ? (
+                    /* Normal Mode Actions */
+                    <div className="flex gap-2">
+                        <button
+                            className={cn(
+                                "premium-button flex-1",
+                                compactMode ? "px-3 py-2 text-xs" : "px-4 py-3 text-sm"
+                            )}
+                            onClick={onAddClick}
+                        >
+                            <Plus size={compactMode ? 16 : 18} />
+                            {tCommon('newEntry')}
+                        </button>
+                        <button
+                            onClick={toggleBatchMode}
+                            className={cn(
+                                "flex items-center justify-center rounded-xl bg-accent text-muted-foreground hover:text-foreground transition-colors border border-transparent hover:border-border",
+                                compactMode ? "w-9" : "w-11"
+                            )}
+                            title={t('multiSelect')}
+                        >
+                            <CheckSquare size={compactMode ? 16 : 18} />
+                        </button>
+                    </div>
+                ) : (
+                    /* Batch Mode Actions Bar */
+                    <div className="flex items-center justify-between gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                        <button
+                            onClick={toggleBatchMode}
+                            className="bg-accent/50 hover:bg-accent text-foreground px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                        >
+                            {tCommon('cancel')}
+                        </button>
+                        <div className="flex gap-1">
+                            {selectedIds.size > 0 && (
+                                <>
+                                    <button
+                                        className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                                        title={t('batchDelete')}
+                                        onClick={() => setShowDeleteConfirm(true)}
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </>
+                            )}
+                            <button
+                                className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                                title={t('selectAll')}
+                                onClick={handleSelectAll}
+                            >
+                                {selectedIds.size === items.length ? <CheckSquare size={18} /> : <Square size={18} />}
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            {/* Divider - Subtle */}
+            {/* Selection Status Banner */}
+            <AnimatePresence>
+                {isBatchMode && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="px-4 overflow-hidden"
+                    >
+                        <div className="text-xs font-medium text-primary pb-2 flex justify-between items-center">
+                            <span>{t('itemsSelected', { count: selectedIds.size })}</span>
+                            {selectedIds.size > 0 && (
+                                <button
+                                    onClick={() => setSelectedIds(new Set())}
+                                    className="text-muted-foreground hover:text-foreground"
+                                >
+                                    {t('clearSelection')}
+                                </button>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Divider */}
             <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mx-4 my-2" />
 
-            {/* Filter Panel */}
+            {/* Filter Panel (Disabled in batch mode?) - keeping enabled for filtering selection candidates */}
             <FilterPanel filters={filters} onFilterChange={onFilterChange} />
 
             {/* Items List */}
@@ -246,9 +366,17 @@ function SidebarContent({
                             <ItemCard
                                 key={item.id}
                                 item={item}
-                                isSelected={item.id === selectedId}
-                                onClick={() => onSelectItem(item.id)}
+                                isSelected={!isBatchMode && item.id === selectedId}
+                                onClick={() => {
+                                    if (isBatchMode) {
+                                        toggleItemSelection(item.id);
+                                    } else {
+                                        onSelectItem(item.id);
+                                    }
+                                }}
                                 compactMode={compactMode}
+                                isBatchMode={isBatchMode}
+                                isChecked={selectedIds.has(item.id)}
                             />
                         ))}
                     </AnimatePresence>
@@ -256,17 +384,30 @@ function SidebarContent({
             </div>
 
             {/* Footer - Settings Button */}
-            <div className={cn("border-t border-border", compactMode ? "p-2" : "p-4")}>
-                <Link href="/settings">
-                    <button className={cn(
-                        "w-full flex items-center gap-3 rounded-xl font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200",
-                        compactMode ? "px-3 py-2 text-xs" : "px-4 py-3 text-sm"
-                    )}>
-                        <Settings size={compactMode ? 16 : 18} />
-                        {t('settings')}
-                    </button>
-                </Link>
-            </div>
+            {!isBatchMode && (
+                <div className={cn("border-t border-border", compactMode ? "p-2" : "p-4")}>
+                    <Link href="/settings">
+                        <button className={cn(
+                            "w-full flex items-center gap-3 rounded-xl font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200",
+                            compactMode ? "px-3 py-2 text-xs" : "px-4 py-3 text-sm"
+                        )}>
+                            <Settings size={compactMode ? 16 : 18} />
+                            {t('settings')}
+                        </button>
+                    </Link>
+                </div>
+            )}
+
+            {/* Batch Action Confirmation Dialogs */}
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                title={t('batchDelete')}
+                description={t('itemsSelected', { count: selectedIds.size })}
+                confirmLabel={tCommon('delete')}
+                variant="danger"
+                onConfirm={handleBatchDelete}
+                onCancel={() => setShowDeleteConfirm(false)}
+            />
         </>
     );
 }
@@ -277,9 +418,18 @@ interface ItemCardProps {
     isSelected: boolean;
     onClick: () => void;
     compactMode?: boolean;
+    isBatchMode?: boolean;
+    isChecked?: boolean;
 }
 
-function ItemCard({ item, isSelected, onClick, compactMode = false }: ItemCardProps) {
+function ItemCard({
+    item,
+    isSelected,
+    onClick,
+    compactMode = false,
+    isBatchMode = false,
+    isChecked = false
+}: ItemCardProps) {
     const hasMounted = useHasMounted();
 
     const isUnlocked = hasMounted ? timeService.now() >= item.decrypt_at : false;
@@ -299,17 +449,30 @@ function ItemCard({ item, isSelected, onClick, compactMode = false }: ItemCardPr
                 compactMode ? "px-2 py-2" : "px-3 py-3",
                 isSelected
                     ? "bg-accent border-primary/50 shadow-md shadow-primary/10"
-                    : "border-transparent hover:bg-accent/50 hover:border-border/50 hover:-translate-y-0.5"
+                    : (isChecked
+                        ? "bg-primary/5 border-primary/30"
+                        : "border-transparent hover:bg-accent/50 hover:border-border/50 hover:-translate-y-0.5")
             )}
             onClick={onClick}
         >
+            {/* Batch Selection Checkbox */}
+            {isBatchMode && (
+                <div className="shrink-0 text-primary">
+                    {isChecked ? (
+                        <CheckSquare size={compactMode ? 16 : 18} className="fill-primary/20" />
+                    ) : (
+                        <Square size={compactMode ? 16 : 18} className="text-muted-foreground" />
+                    )}
+                </div>
+            )}
+
             <div className={cn(
                 "flex items-center justify-center rounded-lg shadow-sm text-sm transition-transform group-hover:scale-105",
                 compactMode ? "w-7 h-7" : "w-9 h-9",
                 item.type === 'text'
                     ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
                     : "bg-purple-500/10 text-purple-400 border border-purple-500/20",
-                privacyMode && !isSelected && "blur-sm grayscale opacity-50 group-hover:blur-0 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+                privacyMode && !isSelected && !isChecked && "blur-sm grayscale opacity-50 group-hover:blur-0 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
             )}>
                 {item.type === 'text' ? <FileText size={compactMode ? 14 : 16} /> : <ImageIcon size={compactMode ? 14 : 16} />}
             </div>
@@ -317,8 +480,8 @@ function ItemCard({ item, isSelected, onClick, compactMode = false }: ItemCardPr
             <div className="flex-1 min-w-0">
                 <div className={cn(
                     "text-sm font-medium truncate transition-all duration-300",
-                    isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground",
-                    privacyMode && !isSelected && "blur-sm group-hover:blur-0"
+                    isSelected || isChecked ? "text-foreground" : "text-muted-foreground group-hover:text-foreground",
+                    privacyMode && !isSelected && !isChecked && "blur-sm group-hover:blur-0"
                 )}>
                     {item.metadata?.title ||
                         (item.type === 'text' ? tCommon('textNote') : tCommon('image'))}

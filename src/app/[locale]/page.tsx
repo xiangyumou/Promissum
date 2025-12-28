@@ -95,6 +95,23 @@ export default function Home() {
     setSidebarOpen(false);
   };
 
+  // Batch operations
+  const handleBatchDelete = async (ids: string[]) => {
+    try {
+      await Promise.all(ids.map(id => deleteItem.mutateAsync(id)));
+
+      // If selected item was deleted, clear selection
+      if (selectedId && ids.includes(selectedId)) {
+        setSelectedId(null);
+      }
+
+      toast.success('Items deleted successfully');
+    } catch (error) {
+      console.error('Failed to batch delete items:', error);
+      toast.error('Failed to delete items');
+    }
+  };
+
   return (
     <div className="app-container">
       <Sidebar
@@ -107,6 +124,7 @@ export default function Home() {
         filters={filters}
         onFilterChange={setFilters}
         isLoading={listLoading}
+        onBatchDelete={handleBatchDelete}
       />
 
       <ContentView
