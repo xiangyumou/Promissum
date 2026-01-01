@@ -3,9 +3,9 @@
 import React, { useState, useMemo } from 'react';
 import { ApiItemListView } from '@/lib/types';
 import { FilterParams } from '@/lib/api-client';
-import FilterPanel from './FilterPanel';
+import FilterBar from './FilterBar';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, Settings, PanelLeftClose, CheckSquare, Square, Trash2, Clock, Download, Check } from 'lucide-react';
+import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, Settings, PanelLeftClose, CheckSquare, Square, Trash2, Download, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Skeleton } from './ui/Skeleton';
 import { useTranslations } from 'next-intl';
@@ -15,7 +15,7 @@ import { useHasMounted } from '@/hooks/useHasMounted';
 import { timeService } from '@/lib/services/time-service';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import ConfirmDialog from './ConfirmDialog';
-import BatchExtendDialog from './BatchExtendDialog';
+
 
 interface SidebarProps {
     items: ApiItemListView[];
@@ -28,7 +28,6 @@ interface SidebarProps {
     onFilterChange: (filters: FilterParams) => void;
     isLoading?: boolean;
     onBatchDelete?: (ids: string[]) => void;
-    onBatchExtend?: (ids: string[], minutes: number) => void;
 }
 
 export default function Sidebar({
@@ -41,8 +40,7 @@ export default function Sidebar({
     filters,
     onFilterChange,
     isLoading = false,
-    onBatchDelete,
-    onBatchExtend
+    onBatchDelete
 }: SidebarProps) {
     const t = useTranslations('Sidebar');
     const tCommon = useTranslations('Common');
@@ -157,7 +155,6 @@ export default function Sidebar({
                             compactMode={compactMode}
                             setSidebarOpen={setSidebarOpen}
                             onBatchDelete={onBatchDelete}
-                            onBatchExtend={onBatchExtend}
                         />
                     )}
                 </motion.div>
@@ -179,7 +176,6 @@ interface SidebarContentProps {
     compactMode: boolean;
     setSidebarOpen: (open: boolean) => void;
     onBatchDelete?: (ids: string[]) => void;
-    onBatchExtend?: (ids: string[], minutes: number) => void;
 }
 
 function SidebarContent({
@@ -193,8 +189,7 @@ function SidebarContent({
     isLoading,
     compactMode,
     setSidebarOpen,
-    onBatchDelete,
-    onBatchExtend
+    onBatchDelete
 }: SidebarContentProps) {
     const t = useTranslations('Sidebar');
     const tCommon = useTranslations('Common');
@@ -203,7 +198,6 @@ function SidebarContent({
     const [isBatchMode, setIsBatchMode] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [showExtendDialog, setShowExtendDialog] = useState(false);
 
     // Toggle batch mode
     const toggleBatchMode = () => {
@@ -291,13 +285,6 @@ function SidebarContent({
                             {selectedIds.size > 0 && (
                                 <>
                                     <button
-                                        className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors"
-                                        title={t('batchExtend')}
-                                        onClick={() => setShowExtendDialog(true)}
-                                    >
-                                        <Clock size={18} />
-                                    </button>
-                                    <button
                                         className="p-2 text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
                                         title={t('batchDelete')}
                                         onClick={() => setShowDeleteConfirm(true)}
@@ -347,8 +334,8 @@ function SidebarContent({
             {/* Divider */}
             < div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mx-4 my-2" />
 
-            {/* Filter Panel (Disabled in batch mode?) - keeping enabled for filtering selection candidates */}
-            < FilterPanel filters={filters} onFilterChange={onFilterChange} />
+            {/* Filter Bar - Simple search and status/type filters */}
+            <FilterBar filters={filters} onFilterChange={onFilterChange} />
 
             {/* Items List */}
             < div className={cn("flex-1 overflow-y-auto space-y-1.5 custom-scrollbar", compactMode ? "px-2 py-1" : "px-3 py-2")} >
@@ -421,19 +408,6 @@ function SidebarContent({
                 variant="danger"
                 onConfirm={handleBatchDelete}
                 onCancel={() => setShowDeleteConfirm(false)}
-            />
-
-            <BatchExtendDialog
-                isOpen={showExtendDialog}
-                onClose={() => setShowExtendDialog(false)}
-                onConfirm={(minutes) => {
-                    if (onBatchExtend) {
-                        onBatchExtend(Array.from(selectedIds), minutes);
-                        setSelectedIds(new Set());
-                        // setIsBatchMode(false); 
-                    }
-                }}
-                itemCount={selectedIds.size}
             />
         </>
     );

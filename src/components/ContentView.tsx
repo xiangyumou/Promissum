@@ -1,7 +1,7 @@
 'use client';
 
 import { ApiItemDetail } from '@/lib/types';
-import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Trash2, Plus, Menu, Share2, Shield } from 'lucide-react';
+import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Trash2, Plus, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -16,12 +16,8 @@ import { PanelLeftOpen } from 'lucide-react';
 import ConfirmDialog from './ConfirmDialog';
 import { timeService } from '@/lib/services/time-service';
 import { useCountdown } from '@/hooks/useCountdown';
-import { useActiveSession } from '@/hooks/useActiveSession';
-import { useSessions } from '@/hooks/useSessions';
-import { Users } from 'lucide-react';
 import CountdownVisuals from './CountdownVisuals';
-import ShareDialog from './ShareDialog';
-import ShareManagementDialog from './ShareManagementDialog';
+
 
 interface ContentViewProps {
     selectedId: string | null;
@@ -39,9 +35,6 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     const tCommon = useTranslations('Common');
     const locale = useLocale();
     const { sidebarOpen, setSidebarOpen, enableUnlockSound, enableUnlockConfetti } = useSettings();
-
-    // Track active session
-    useActiveSession(selectedId);
 
     // Track unlock status and trigger celebration
     const [wasLocked, setWasLocked] = useState(true);
@@ -69,9 +62,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     // Image lightbox state
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
-    // Share dialogs state
-    const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
-    const [isShareManagementOpen, setIsShareManagementOpen] = useState(false);
+
 
 
     // No item selected state -> Show welcome message
@@ -177,14 +168,11 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                                     <Clock size={10} />
                                     {formatUnlockTime(item.decrypt_at, locale)}
                                 </span>
-                                <ViewerCount itemId={item.id} />
                             </div>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2 ml-auto md:ml-0 shrink-0">
-                        <ShareButton onClick={() => setIsShareDialogOpen(true)} />
-                        <ManageSharesButton onClick={() => setIsShareManagementOpen(true)} />
                         <ExtendButton onExtend={(mins) => onExtend(item.id, mins)} />
                         <DeleteButton id={item.id} onDelete={onDelete} />
                     </div>
@@ -272,60 +260,12 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                 )}
             </div>
 
-            {/* Share Dialogs */}
-            {item && (
-                <>
-                    <ShareDialog
-                        isOpen={isShareDialogOpen}
-                        onClose={() => setIsShareDialogOpen(false)}
-                        itemId={item.id}
-                    />
-                    <ShareManagementDialog
-                        isOpen={isShareManagementOpen}
-                        onClose={() => setIsShareManagementOpen(false)}
-                        itemId={item.id}
-                    />
-                </>
-            )}
+
         </div>
     );
 }
 
-function ShareButton({ onClick }: { onClick: () => void }) {
-    const t = useTranslations('Share');
 
-    return (
-        <button
-            onClick={onClick}
-            className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border",
-                "bg-transparent text-muted-foreground border-transparent hover:bg-primary/10 hover:text-primary hover:border-primary/20"
-            )}
-            title={t('shareItem')}
-        >
-            <Share2 size={16} />
-            <span className="hidden sm:inline">{t('createShare')}</span>
-        </button>
-    );
-}
-
-function ManageSharesButton({ onClick }: { onClick: () => void }) {
-    const t = useTranslations('Share');
-
-    return (
-        <button
-            onClick={onClick}
-            className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border",
-                "bg-transparent text-muted-foreground border-transparent hover:bg-accent hover:text-foreground hover:border-border"
-            )}
-            title={t('manageShares')}
-        >
-            <Shield size={16} />
-            <span className="hidden md:inline">{t('manageShares')}</span>
-        </button>
-    );
-}
 
 function DeleteButton({ id, onDelete }: { id: string, onDelete: (id: string) => void }) {
     const [isConfirming, setIsConfirming] = useState(false);
@@ -475,21 +415,3 @@ function ExtendButton({ onExtend }: { onExtend: (minutes: number) => void }) {
         </div>
     );
 }
-
-
-
-function ViewerCount({ itemId }: { itemId: string }) {
-    const { data: sessions } = useSessions(itemId);
-
-    // Only show if there are other viewers (count > 1) or just show total?
-    // Let's show total for verification.
-    if (!sessions || sessions.length === 0) return null;
-
-    return (
-        <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-md font-medium text-xs border bg-blue-500/10 text-blue-500 border-blue-500/20" title="Active viewers on this device">
-            <Users size={10} />
-            {sessions.length} {sessions.length === 1 ? 'viewer' : 'viewers'}
-        </span>
-    );
-}
-

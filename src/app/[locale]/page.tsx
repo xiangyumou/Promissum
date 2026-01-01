@@ -6,7 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import AddModal from '@/components/AddModal';
 import ContentView from '@/components/ContentView';
 import { FilterParams } from '@/lib/api-client';
-import { useItems, useCreateItem, useItem, useExtendItem, useDeleteItem, useExtendItemMutation } from '@/lib/queries';
+import { useItems, useCreateItem, useItem, useExtendItem, useDeleteItem } from '@/lib/queries';
 import { useSettings } from '@/lib/stores/settings-store';
 
 export default function Home() {
@@ -26,7 +26,6 @@ export default function Home() {
   // Mutations
   const createItem = useCreateItem();
   const deleteItem = useDeleteItem();
-  const batchExtendItem = useExtendItemMutation();
   // We need to use extendItem inside the handler because the ID isn't constant
   // Actually, useExtendItem takes an ID. So we can't call it conditionally at top level if ID changes?
   // queries.ts defines: export function useExtendItem(id: string) { ... }
@@ -113,16 +112,6 @@ export default function Home() {
     }
   };
 
-  const handleBatchExtend = async (ids: string[], minutes: number) => {
-    try {
-      await Promise.all(ids.map(id => batchExtendItem.mutateAsync({ id, minutes })));
-      toast.success('Items extended successfully');
-    } catch (error) {
-      console.error('Failed to batch extend items:', error);
-      toast.error('Failed to extend items');
-    }
-  };
-
   return (
     <div className="app-container">
       <Sidebar
@@ -136,7 +125,6 @@ export default function Home() {
         onFilterChange={setFilters}
         isLoading={listLoading}
         onBatchDelete={handleBatchDelete}
-        onBatchExtend={handleBatchExtend}
       />
 
       <ContentView

@@ -7,9 +7,7 @@ export default function SecurityProvider() {
     const {
         autoPrivacyDelayMinutes,
         privacyMode,
-        setPrivacyMode,
-        panicShortcut,
-        panicUrl
+        setPrivacyMode
     } = useSettings();
 
     // Auto Privacy Logic
@@ -24,10 +22,6 @@ export default function SecurityProvider() {
         const resetTimer = () => {
             if (timerRef.current) clearTimeout(timerRef.current);
             timerRef.current = setTimeout(() => {
-                // Determine if we should really switch to privacy mode
-                // (double check state in case it changed)
-                // Actually, inside timeout we should check refs or just set it.
-                // Since this effect re-runs on autoPrivacyDelayMinutes change, it's fine.
                 setPrivacyMode(true);
             }, timeoutMs);
         };
@@ -55,40 +49,6 @@ export default function SecurityProvider() {
             });
         };
     }, [autoPrivacyDelayMinutes, privacyMode, setPrivacyMode]);
-
-    // Panic Shortcut Logic
-    useEffect(() => {
-        if (!panicShortcut || !panicUrl) return;
-
-        const handleKeyDown = (e: KeyboardEvent) => {
-            // Parse shortcut string "alt+p" or "ctrl+shift+x"
-            // Simple parser: split by '+', check modifiers and key
-            const parts = panicShortcut.toLowerCase().split('+');
-            const key = parts[parts.length - 1]; // last part is the key
-
-            const modifiers = {
-                alt: parts.includes('alt'),
-                ctrl: parts.includes('ctrl') || parts.includes('control'),
-                shift: parts.includes('shift'),
-                meta: parts.includes('meta') || parts.includes('cmd') || parts.includes('command')
-            };
-
-            const isMatch =
-                e.key.toLowerCase() === key &&
-                e.altKey === modifiers.alt &&
-                e.ctrlKey === modifiers.ctrl &&
-                e.shiftKey === modifiers.shift &&
-                e.metaKey === modifiers.meta;
-
-            if (isMatch) {
-                e.preventDefault();
-                window.location.href = panicUrl;
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [panicShortcut, panicUrl]);
 
     return null; // This component renders nothing
 }

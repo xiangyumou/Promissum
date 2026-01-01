@@ -6,7 +6,6 @@ import ContentView from '@/components/ContentView';
 import { ApiItemDetail } from '@/lib/types';
 import { timeService } from '@/lib/services/time-service';
 import { useSettings } from '@/lib/stores/settings-store';
-import { useSessions } from '@/hooks/useSessions';
 
 // Mock timeService
 vi.mock('@/lib/services/time-service', () => ({
@@ -18,11 +17,6 @@ vi.mock('@/lib/services/time-service', () => ({
 // Mock useActiveSession
 vi.mock('@/hooks/useActiveSession', () => ({
     useActiveSession: vi.fn()
-}));
-
-// Mock useSessions
-vi.mock('@/hooks/useSessions', () => ({
-    useSessions: vi.fn().mockReturnValue({ data: [] })
 }));
 
 // Mock next-intl
@@ -248,63 +242,6 @@ describe('ContentView', () => {
         });
     });
 
-    describe('Viewer Count', () => {
-        it('should show viewer count when sessions are present', () => {
-            (useSessions as any).mockReturnValue({
-                data: [{ id: 's1' }, { id: 's2' }]
-            });
-
-            renderWithProviders(
-                <ContentView
-                    selectedId="test-item-2"
-                    item={unlockedItem}
-                    isLoading={false}
-                    onDelete={mockOnDelete}
-                    onExtend={mockOnExtend}
-                    onMenuClick={mockOnMenuClick}
-                />
-            );
-
-            expect(screen.getByText('2 viewers')).toBeInTheDocument();
-        });
-
-        it('should handle zero viewers', () => {
-            (useSessions as any).mockReturnValue({ data: [] });
-
-            renderWithProviders(
-                <ContentView
-                    selectedId="test-item-2"
-                    item={unlockedItem}
-                    isLoading={false}
-                    onDelete={mockOnDelete}
-                    onExtend={mockOnExtend}
-                    onMenuClick={mockOnMenuClick}
-                />
-            );
-
-            // With zero viewers, viewer count should not be displayed
-            expect(screen.queryByText(/viewers/)).not.toBeInTheDocument();
-        });
-
-        it('should handle many viewers (100+)', () => {
-            const manySessions = Array.from({ length: 150 }, (_, i) => ({ id: `s${i}` }));
-            (useSessions as any).mockReturnValue({ data: manySessions });
-
-            renderWithProviders(
-                <ContentView
-                    selectedId="test-item-2"
-                    item={unlockedItem}
-                    isLoading={false}
-                    onDelete={mockOnDelete}
-                    onExtend={mockOnExtend}
-                    onMenuClick={mockOnMenuClick}
-                />
-            );
-
-            expect(screen.getByText('150 viewers')).toBeInTheDocument();
-        });
-    });
-
     describe('Edge Cases - Data Integrity', () => {
         it('should handle item without metadata', () => {
             const itemWithoutMetadata: ApiItemDetail = {
@@ -428,43 +365,6 @@ describe('ContentView', () => {
             expect(img).toBeInTheDocument();
             // Should have constructed data URL
             expect(img).toHaveAttribute('src', expect.stringContaining('data:image/png;base64,'));
-        });
-
-        it('should handle session data errors (undefined)', () => {
-            // Mock sessions to return undefined (error case)
-            (useSessions as any).mockReturnValue({ data: undefined });
-
-            renderWithProviders(
-                <ContentView
-                    selectedId="test-item-2"
-                    item={unlockedItem}
-                    isLoading={false}
-                    onDelete={mockOnDelete}
-                    onExtend={mockOnExtend}
-                    onMenuClick={mockOnMenuClick}
-                />
-            );
-
-            // Should not crash, viewer count should not be shown
-            expect(screen.queryByText(/viewers/)).not.toBeInTheDocument();
-        });
-
-        it('should handle session data errors (null)', () => {
-            (useSessions as any).mockReturnValue({ data: null });
-
-            renderWithProviders(
-                <ContentView
-                    selectedId="test-item-2"
-                    item={unlockedItem}
-                    isLoading={false}
-                    onDelete={mockOnDelete}
-                    onExtend={mockOnExtend}
-                    onMenuClick={mockOnMenuClick}
-                />
-            );
-
-            // Should not crash
-            expect(screen.queryByText(/viewers/)).not.toBeInTheDocument();
         });
     });
 });

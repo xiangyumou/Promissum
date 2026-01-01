@@ -14,7 +14,6 @@ describe('settings-store', () => {
 
             expect(state.defaultDurationMinutes).toBe(60);
             expect(state.privacyMode).toBe(false);
-            expect(state.panicUrl).toBe('https://google.com');
             expect(state.themeConfig).toEqual({});
             expect(state.dateTimeFormat).toBe('yyyy-MM-dd HH:mm');
             expect(state.compactMode).toBe(false);
@@ -24,7 +23,6 @@ describe('settings-store', () => {
             expect(state.autoRefreshInterval).toBe(60);
             expect(state.cacheTTLMinutes).toBe(5);
             expect(state.autoPrivacyDelayMinutes).toBe(5);
-            expect(state.panicShortcut).toBe('alt+p');
             expect(state.apiToken).toBe('');
             expect(state.apiUrl).toBe('');
         });
@@ -52,16 +50,6 @@ describe('settings-store', () => {
 
             useSettings.getState().setPrivacyMode(false);
             expect(useSettings.getState().privacyMode).toBe(false);
-        });
-
-        it('setPanicUrl should update panic URL', () => {
-            useSettings.getState().setPanicUrl('https://example.com');
-            expect(useSettings.getState().panicUrl).toBe('https://example.com');
-        });
-
-        it('setPanicUrl should handle empty URL', () => {
-            useSettings.getState().setPanicUrl('');
-            expect(useSettings.getState().panicUrl).toBe('');
         });
     });
 
@@ -150,19 +138,6 @@ describe('settings-store', () => {
             expect(useSettings.getState().autoPrivacyDelayMinutes).toBe(0);
         });
 
-        it('setPanicShortcut should update shortcut string', () => {
-            useSettings.getState().setPanicShortcut('ctrl+shift+x');
-            expect(useSettings.getState().panicShortcut).toBe('ctrl+shift+x');
-        });
-
-        it('setPanicShortcut should handle various formats', () => {
-            useSettings.getState().setPanicShortcut('meta+p');
-            expect(useSettings.getState().panicShortcut).toBe('meta+p');
-
-            useSettings.getState().setPanicShortcut('escape');
-            expect(useSettings.getState().panicShortcut).toBe('escape');
-        });
-
         it('setApiToken should update API token', () => {
             useSettings.getState().setApiToken('my-secret-token');
             expect(useSettings.getState().apiToken).toBe('my-secret-token');
@@ -179,7 +154,6 @@ describe('settings-store', () => {
             // Modify several settings
             useSettings.getState().setDefaultDuration(999);
             useSettings.getState().setPrivacyMode(true);
-            useSettings.getState().setPanicUrl('https://modified.com');
             useSettings.getState().setCacheTTLMinutes(100);
             useSettings.getState().setApiToken('token');
 
@@ -190,7 +164,6 @@ describe('settings-store', () => {
             const state = useSettings.getState();
             expect(state.defaultDurationMinutes).toBe(60);
             expect(state.privacyMode).toBe(false);
-            expect(state.panicUrl).toBe('https://google.com');
             expect(state.cacheTTLMinutes).toBe(5);
             expect(state.apiToken).toBe('');
         });

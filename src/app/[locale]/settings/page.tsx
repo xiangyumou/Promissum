@@ -30,7 +30,6 @@ import { toast } from 'sonner';
 import ExportButton from '@/components/ExportButton';
 import ThemeToggle from '@/components/ThemeToggle';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import Dashboard from '@/components/Dashboard'; // Moved here as per previous refactor
 import { queryClient } from '@/lib/query-client';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { useHasMounted } from '@/hooks/useHasMounted';
@@ -72,10 +71,6 @@ export default function SettingsPage() {
         setPrivacyMode,
         autoPrivacyDelayMinutes,
         setAutoPrivacyDelayMinutes,
-        panicUrl,
-        setPanicUrl,
-        panicShortcut,
-        setPanicShortcut,
         apiToken,
         setApiToken,
         apiUrl,
@@ -97,8 +92,6 @@ export default function SettingsPage() {
 
     // Local state for inputs to avoid jitter / validation before save
     const [durationInput, setDurationInput] = useState(defaultDurationMinutes.toString());
-    const [panicUrlInput, setPanicUrlInput] = useState(panicUrl);
-    const [panicShortcutInput, setPanicShortcutInput] = useState(panicShortcut);
     const [apiUrlInput, setApiUrlInput] = useState(apiUrl);
 
     // API Check State
@@ -182,10 +175,6 @@ export default function SettingsPage() {
             setDefaultDuration(minutes);
         }
 
-        // Save URLs and Shortcuts
-        setPanicUrl(panicUrlInput);
-        setPanicShortcut(panicShortcutInput);
-
         toast.success(t('changesSaved'));
     };
 
@@ -198,8 +187,6 @@ export default function SettingsPage() {
         // Sync local state
         setTimeout(() => {
             setDurationInput('60');
-            setPanicUrlInput('https://google.com');
-            setPanicShortcutInput('alt+p');
             setApiStatus('idle');
         }, 0);
         toast.success(t('changesSaved'));
@@ -733,46 +720,6 @@ export default function SettingsPage() {
                             </select>
                         </div>
 
-                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
-                        {/* Panic Button URL */}
-                        <div className="space-y-3">
-                            <div className="space-y-1">
-                                <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                    <ExternalLink size={16} />
-                                    {t('panicButtonUrl')}
-                                </label>
-                                <p className="text-xs text-muted-foreground">{t('panicButtonUrlDesc')}</p>
-                            </div>
-                            <input
-                                type="url"
-                                value={panicUrlInput}
-                                onChange={(e) => setPanicUrlInput(e.target.value)}
-                                className="premium-input"
-                                placeholder="https://google.com"
-                            />
-                        </div>
-
-                        {/* Panic Shortcut */}
-                        <div className="space-y-3">
-                            <div className="space-y-1">
-                                <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                    <Key size={16} />
-                                    {t('panicShortcut')}
-                                </label>
-                                <p className="text-xs text-muted-foreground">{t('panicShortcutDesc')}</p>
-                            </div>
-                            <input
-                                type="text"
-                                value={panicShortcutInput}
-                                onChange={(e) => setPanicShortcutInput(e.target.value)}
-                                className="premium-input"
-                                placeholder="alt+p"
-                            />
-                        </div>
-
-                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
                         {/* API URL */}
                         <div className="space-y-3">
                             <div className="space-y-1">
@@ -884,10 +831,6 @@ export default function SettingsPage() {
                         {t('resetDefaults')}
                     </button>
                 </div>
-                {/* Dashboard Section */}
-                <section className="space-y-4 pt-8 border-t border-border">
-                    {hasMounted && <Dashboard />}
-                </section>
 
                 <ConfirmDialog
                     isOpen={showResetConfirm}

@@ -9,7 +9,6 @@ interface SettingsState {
     // Default Behavior
     defaultDurationMinutes: number;
     privacyMode: boolean;
-    panicUrl: string;
 
     // Theme Configuration
     themeConfig: Record<string, string>;
@@ -29,7 +28,6 @@ interface SettingsState {
 
     // Security
     autoPrivacyDelayMinutes: number; // 0 = disabled
-    panicShortcut: string;
     apiToken: string; // Custom API token overrides env
     apiUrl: string; // Custom API URL overrides env
 
@@ -48,7 +46,6 @@ interface SettingsState {
     // Actions
     setDefaultDuration: (minutes: number) => void;
     setPrivacyMode: (enabled: boolean) => void;
-    setPanicUrl: (url: string) => void;
     setThemeConfig: (config: Record<string, string>) => void;
 
     // New Actions
@@ -63,7 +60,6 @@ interface SettingsState {
     setCacheTTLMinutes: (minutes: number) => void;
 
     setAutoPrivacyDelayMinutes: (minutes: number) => void;
-    setPanicShortcut: (shortcut: string) => void;
     setApiToken: (token: string) => void;
     setApiUrl: (url: string) => void;
 
@@ -87,10 +83,10 @@ interface SettingsState {
  * Default Settings Values
  */
 const DEFAULT_SETTINGS: Omit<SettingsState,
-    'setDefaultDuration' | 'setPrivacyMode' | 'setPanicUrl' | 'setThemeConfig' |
+    'setDefaultDuration' | 'setPrivacyMode' | 'setThemeConfig' |
     'setDateTimeFormat' | 'setCompactMode' | 'setSidebarOpen' |
     'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' | 'setDefaultSort' |
-    'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' | 'setPanicShortcut' |
+    'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' |
     'setApiToken' | 'setApiUrl' |
     'setNotificationEnabled' | 'setNotificationTiming' | 'setSoundEnabled' |
     'setFilterPresets' | 'addFilterPreset' | 'removeFilterPreset' |
@@ -99,7 +95,6 @@ const DEFAULT_SETTINGS: Omit<SettingsState,
 > = {
     defaultDurationMinutes: 60,
     privacyMode: false,
-    panicUrl: 'https://google.com',
     themeConfig: {},
 
     // New Defaults
@@ -114,7 +109,6 @@ const DEFAULT_SETTINGS: Omit<SettingsState,
     cacheTTLMinutes: 5,
 
     autoPrivacyDelayMinutes: 5,
-    panicShortcut: 'alt+p',
     apiToken: '',
     apiUrl: '',
 
@@ -155,7 +149,6 @@ export const createSettingsStore = (
                 // Actions
                 setDefaultDuration: (minutes) => set({ defaultDurationMinutes: minutes }),
                 setPrivacyMode: (enabled) => set({ privacyMode: enabled }),
-                setPanicUrl: (url) => set({ panicUrl: url }),
                 setThemeConfig: (config) => set({ themeConfig: config }),
 
                 // Interface
@@ -173,7 +166,6 @@ export const createSettingsStore = (
 
                 // Security
                 setAutoPrivacyDelayMinutes: (minutes) => set({ autoPrivacyDelayMinutes: minutes }),
-                setPanicShortcut: (shortcut) => set({ panicShortcut: shortcut }),
                 setApiToken: (token) => set({ apiToken: token }),
                 setApiUrl: (url) => set({ apiUrl: url }),
 

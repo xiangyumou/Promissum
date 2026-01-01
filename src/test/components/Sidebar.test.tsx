@@ -4,10 +4,10 @@ import Sidebar from '@/components/Sidebar';
 import { renderWithProviders } from '@/test/utils';
 
 // Mock dependencies
-vi.mock('@/components/FilterPanel', () => ({
+vi.mock('@/components/FilterBar', () => ({
     default: ({ filters, onFilterChange }: any) => (
-        <div data-testid="filter-panel">
-            Filter Panel
+        <div data-testid="filter-bar">
+            Filter Bar
             <button onClick={() => onFilterChange({ ...filters, search: 'test' })}>
                 Update Filter
             </button>
@@ -58,7 +58,7 @@ describe('Sidebar', () => {
     it('should render empty state when no items', () => {
         renderWithProviders(<Sidebar {...defaultProps} />);
         expect(screen.getByText('No items found')).toBeInTheDocument();
-        expect(screen.getByText('Filter Panel')).toBeInTheDocument();
+        expect(screen.getByText('Filter Bar')).toBeInTheDocument();
     });
 
     it('should render items list', () => {

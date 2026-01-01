@@ -2,20 +2,18 @@
  * API Route: /api/preferences
  * 
  * Manages user preferences synchronization across devices.
- * Stores settings in database and broadcasts changes via SSE.
+ * Stores settings in database.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db/client';
 import { z } from 'zod';
-import { broadcastEvent } from '../events/route';
 
 // Validation schema matching SettingsStore
 const PreferencesSchema = z.object({
     deviceId: z.string(),
     defaultDurationMinutes: z.number().min(1).optional(),
     privacyMode: z.boolean().optional(),
-    panicUrl: z.string().url().optional(),
     themeConfig: z.string().optional(), // JSON string
     dateTimeFormat: z.string().optional(),
     compactMode: z.boolean().optional(),
@@ -25,7 +23,6 @@ const PreferencesSchema = z.object({
     autoRefreshInterval: z.number().min(0).optional(),
     cacheTTLMinutes: z.number().min(1).optional(),
     autoPrivacyDelayMinutes: z.number().min(0).optional(),
-    panicShortcut: z.string().optional(),
     apiToken: z.string().optional(),
     apiUrl: z.string().optional(),
 });
@@ -75,7 +72,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/preferences
- * Update preferences for a device and broadcast change via SSE
+ * Update preferences for a device
  */
 export async function POST(request: NextRequest) {
     try {
@@ -111,9 +108,6 @@ export async function POST(request: NextRequest) {
             },
             update: preferencesData,
         });
-
-        // Broadcast SSE event to other devices
-        broadcastEvent('settings-updated', { deviceId, preferences });
 
         return NextResponse.json(preferences);
     } catch (error) {
