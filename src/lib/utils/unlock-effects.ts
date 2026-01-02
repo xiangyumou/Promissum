@@ -10,7 +10,7 @@ import confetti from 'canvas-confetti';
  * Play unlock sound effect
  * Uses Web Audio API with fallback for unsupported browsers
  */
-export async function playUnlockSound(): Promise<void> {
+async function playUnlockSound(): Promise<void> {
     try {
         const audio = new Audio('/sounds/unlock.mp3');
         audio.volume = 0.5; // 50% volume
@@ -24,7 +24,7 @@ export async function playUnlockSound(): Promise<void> {
  * Trigger confetti celebration
  * Uses canvas-confetti library
  */
-export function triggerConfetti(): void {
+function triggerConfetti(): void {
     try {
         // Fire confetti from both sides
         const count = 200;

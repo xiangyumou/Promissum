@@ -31,7 +31,7 @@ interface LocalStorageSettings {
 /**
  * Check if migration has already been performed
  */
-export function isMigrationComplete(): boolean {
+function isMigrationComplete(): boolean {
     if (typeof window === 'undefined') return true;
     return localStorage.getItem(MIGRATION_FLAG_KEY) === 'true';
 }
