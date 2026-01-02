@@ -2,7 +2,6 @@
     "Common": {
         "loading": "Loading...",
         "error": "Error",
-        "dashboard": "Dashboard",
         "newEntry": "New Entry",
         "open": "Expand",
         "delete": "Delete",
@@ -55,15 +54,7 @@
         "presetName": "Preset Name",
         "presetNamePlaceholder": "e.g. My Favorite Filter",
         "deletePreset": "Delete Preset",
-        "noPresets": "No saved presets",
-        "multiSelect": "Multi-Select",
-        "selectAll": "Select All",
-        "clearSelection": "Clear Selection",
-        "itemsSelected": "{count} items selected",
-        "batchDelete": "Batch Delete",
-        "batchExtend": "Batch Extend",
-        "batchExtendDesc": "Extend unlock time for all selected items",
-        "batchExport": "Batch Export"
+        "noPresets": "No saved presets"
     },
     "AddModal": {
         "title": "Create Encrypted Item",

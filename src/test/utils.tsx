@@ -22,8 +22,7 @@ const messages = {
         image: 'Image',
         unlocked: 'Unlocked',
         locked: 'Locked',
-        unlocksAt: 'Unlocks At',
-        dashboard: 'Dashboard'
+        unlocksAt: 'Unlocks At'
     },
     Sidebar: {
         settings: 'Settings',
@@ -62,15 +61,7 @@ const messages = {
         today: 'Today',
         thisWeek: 'This Week',
         thisMonth: 'This Month',
-        customRange: 'Custom Range',
-        multiSelect: 'Multi-Select',
-        selectAll: 'Select All',
-        clearSelection: 'Clear Selection',
-        itemsSelected: '{count} items selected',
-        batchDelete: 'Batch Delete',
-        batchExtend: 'Batch Extend',
-        batchExtendDesc: 'Extend unlock time for all selected items',
-        batchExport: 'Batch Export',
+        customRange: 'Custom Range'
     },
     ContentView: {
         delete: 'Delete',
@@ -141,40 +132,6 @@ const messages = {
         contentType: 'Content Type',
         contentPreview: 'Content Preview'
     },
-    Share: {
-        shareItem: 'Share Item',
-        manageShares: 'Manage Shares',
-        createShare: 'Create Share',
-        selectPermission: 'Select Permission Level',
-        permissionView: 'View Only',
-        permissionViewDesc: 'Recipient can only view the decrypted content',
-        permissionViewExtend: 'View & Extend',
-        permissionViewExtendDesc: 'Recipient can view and extend the lock duration',
-        permissionFull: 'Full Access',
-        permissionFullDesc: 'Recipient can view, extend, and delete the item',
-        expiresIn: 'Share Expires In',
-        generating: 'Generating...',
-        generateLink: 'Generate Share Link',
-        linkCreated: 'Share link created & copied!',
-        linkReady: 'Share Link Ready!',
-        linkReadyDesc: 'Link has been copied to your clipboard',
-        shareUrl: 'Share URL',
-        copyLink: 'Copy Link',
-        copied: 'Copied!',
-        copyError: 'Failed to copy',
-        linkCopied: 'Link copied to clipboard',
-        createShareError: 'Failed to create share',
-        expiresInInfo: 'This link will expire in {hours} hours',
-        noShares: 'No active shares for this item',
-        fetchSharesError: 'Failed to load shares',
-        shareRevoked: 'Share revoked successfully',
-        revokeError: 'Failed to revoke share',
-        revokeShare: 'Revoke Share',
-        created: 'Created',
-        expires: 'Expires',
-        expired: 'Expired',
-        refresh: 'Refresh'
-    },
     Theme: {
         light: 'Light',
         dark: 'Dark',
@@ -185,20 +142,6 @@ const messages = {
         exportDataDesc: 'Export your data as JSON or Markdown.',
         exportJSON: 'JSON',
         exportMarkdown: 'Markdown'
-    },
-    Dashboard: {
-        textNotes: 'Text Notes',
-        images: 'Images',
-        encrypted: 'Encrypted',
-        unlocked: 'Unlocked',
-        failedToLoad: 'Failed to load data',
-        systemOverview: 'System Overview',
-        totalItems: 'Total Items',
-        contentTypeDistribution: 'Content Type Distribution',
-        lockStatusDistribution: 'Lock Status Distribution',
-        averageLockDuration: 'Average Lock Duration',
-        basedOnHistory: 'Based on history',
-        hours: 'hours'
     },
     ApiStatus: {
         checking: 'Checking...',

@@ -2,7 +2,6 @@
     "Common": {
         "loading": "加载中...",
         "error": "错误",
-        "dashboard": "仪表盘",
         "newEntry": "新建项目",
         "open": "展开",
         "delete": "删除",
@@ -55,14 +54,7 @@
         "presetName": "预设名称",
         "presetNamePlaceholder": "例如：我的常用筛选",
         "deletePreset": "删除预设",
-        "noPresets": "暂无保存的预设",
-        "multiSelect": "多选模式",
-        "selectAll": "全选",
-        "clearSelection": "清除选择",
-        "itemsSelected": "已选择 {count} 个项目",
-        "batchDelete": "批量删除",
-        "batchExtend": "批量延长",
-        "batchExport": "批量导出"
+        "noPresets": "暂无保存的预设"
     },
     "AddModal": {
         "title": "创建加密项目",

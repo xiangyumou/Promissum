@@ -128,24 +128,12 @@ export interface SystemStats {
         image: number;
     };
     avgLockDurationMinutes?: number;
-
-    // Phase 2: Dashboard enhancements
-    upcomingUnlocks?: ApiItemListView[]; // Items unlocking within 24 hours
-    weeklyTrend?: { date: string; count: number }[]; // Last 7 days creation trend
-    monthlyComparison?: { current: number; previous: number }; // This month vs last month
 }
 
-export interface ApiActiveSession {
-    id: string;
-    deviceId: string;
-    itemId: string;
-    lastActive: string;
-}
 
 export interface ApiUserPreferences {
     defaultDurationMinutes?: number;
     privacyMode?: boolean;
-    panicUrl?: string;
     themeConfig?: string;
     dateTimeFormat?: string;
     compactMode?: boolean;
@@ -155,47 +143,7 @@ export interface ApiUserPreferences {
     autoRefreshInterval?: number;
     cacheTTLMinutes?: number;
     autoPrivacyDelayMinutes?: number;
-    panicShortcut?: string;
     apiToken?: string;
     apiUrl?: string;
 }
 
-// ============================================
-// Sharing Types
-// ============================================
-
-/**
- * Share permission levels
- */
-export type SharePermission = 'view' | 'view-extend' | 'full';
-
-/**
- * Shared item data
- */
-export interface ShareData {
-    id: string;
-    itemId: string;
-    shareToken: string;
-    permission: SharePermission;
-    createdBy: string;
-    expiresAt: number | null; // Timestamp in ms
-    createdAt: number; // Timestamp in ms
-    lastAccessedAt: number | null; // Timestamp in ms
-}
-
-/**
- * Request to create a new share
- */
-export interface CreateShareRequest {
-    itemId: string;
-    permission: SharePermission;
-    expiresAt?: number; // Optional timestamp in ms
-}
-
-/**
- * Request to update a share
- */
-export interface UpdateShareRequest {
-    permission?: SharePermission;
-    expiresAt?: number | null; // null to remove expiration
-}

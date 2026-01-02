@@ -14,11 +14,6 @@ vi.mock('@/lib/services/time-service', () => ({
     }
 }));
 
-// Mock useActiveSession
-vi.mock('@/hooks/useActiveSession', () => ({
-    useActiveSession: vi.fn()
-}));
-
 // Mock next-intl
 vi.mock('next-intl', async () => {
     const actual = await vi.importActual('next-intl');
@@ -79,6 +74,7 @@ describe('ContentView', () => {
         type: 'text',
         decrypt_at: Date.now() + 3600000,
         unlocked: false,
+        content: null,
         metadata: { title: 'Locked Item' }
     };
 

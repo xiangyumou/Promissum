@@ -14,7 +14,6 @@ interface LocalStorageSettings {
     state: {
         defaultDurationMinutes?: number;
         privacyMode?: boolean;
-        panicUrl?: string;
         themeConfig?: Record<string, string>;
         dateTimeFormat?: string;
         compactMode?: boolean;
@@ -24,7 +23,6 @@ interface LocalStorageSettings {
         autoRefreshInterval?: number;
         cacheTTLMinutes?: number;
         autoPrivacyDelayMinutes?: number;
-        panicShortcut?: string;
         apiToken?: string;
         apiUrl?: string;
     };
