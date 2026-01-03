@@ -15,6 +15,25 @@ const eslintConfig = defineConfig([
     // Chaster SDK source (separate project)
     "Chaster/**",
   ]),
+  // Custom rules
+  {
+    rules: {
+      // Allow underscore-prefixed variables to be unused
+      "@typescript-eslint/no-unused-vars": ["warn", {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }],
+    },
+  },
+  // Allow any types in test files (common pattern for mocks)
+  {
+    files: ["src/test/**/*.ts", "src/test/**/*.tsx"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;
+

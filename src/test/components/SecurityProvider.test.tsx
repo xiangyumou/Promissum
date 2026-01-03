@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { act } from '@testing-library/react';
 import { render } from '@testing-library/react';
 import SecurityProvider from '@/components/SecurityProvider';
 import * as settingsStore from '@/lib/stores/settings-store';

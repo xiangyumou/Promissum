@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ApiStatusIndicator from '@/components/ApiStatusIndicator';
 import { renderWithProviders } from '@/test/utils';
@@ -10,7 +10,7 @@ vi.mock('@/lib/use-api-health', () => ({
 }));
 
 // Add ApiStatus messages to test utils
-const apiStatusMessages = {
+const _apiStatusMessages = {
     ApiStatus: {
         checking: 'Checking...',
         connected: 'Connected',

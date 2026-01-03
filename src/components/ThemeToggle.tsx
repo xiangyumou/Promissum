@@ -3,17 +3,12 @@
 import { useTheme } from 'next-themes';
 import { Sun, Moon, Monitor } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useHasMounted } from '@/hooks/useHasMounted';
 
 export default function ThemeToggle() {
     const { theme, setTheme } = useTheme();
     const t = useTranslations('Theme');
-    const [mounted, setMounted] = useState(false);
-
-    // useEffect only runs on the client, so now we can safely show the UI
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    const mounted = useHasMounted();
 
     if (!mounted) {
         return <div className="w-[104px] h-[36px] bg-white/5 rounded-lg animate-pulse" />;

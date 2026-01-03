@@ -7,7 +7,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { FilterParams, SystemStats } from './api-client';
+import { FilterParams } from './api-client';
 import { useSettings } from '@/lib/stores/settings-store';
 import { apiService, type ApiItemResponse } from './services/api-service';
 import { timeService } from './services/time-service';

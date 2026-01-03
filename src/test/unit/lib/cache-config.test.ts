@@ -108,7 +108,7 @@ describe('cache-config', () => {
             expect(persistQueryClient).toHaveBeenCalled();
 
             // Get the options passed to the first call
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             const options = vi.mocked(persistQueryClient).mock.calls[0][0] as any;
             const shouldDehydrate = options.dehydrateOptions.shouldDehydrateQuery;
 

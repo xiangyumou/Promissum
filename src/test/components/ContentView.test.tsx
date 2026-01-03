@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '../utils';
 import ContentView from '@/components/ContentView';
@@ -19,7 +19,7 @@ vi.mock('next-intl', async () => {
     const actual = await vi.importActual('next-intl');
     return {
         ...actual,
-        useTranslations: (namespace?: string) => (key: string) => key,
+        useTranslations: (_namespace?: string) => (key: string) => key,
         useLocale: () => 'en',
     };
 });

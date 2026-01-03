@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { createSettingsStore, resetSettingsStore, useSettings } from '@/lib/stores/settings-store';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { resetSettingsStore, useSettings } from '@/lib/stores/settings-store';
 
 describe('settings-store', () => {
     beforeEach(() => {

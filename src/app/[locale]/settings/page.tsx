@@ -2,7 +2,7 @@
 
 import { useSettings } from '@/lib/stores/settings-store';
 import { useTranslations } from 'next-intl';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Settings as SettingsIcon,
     Save,
@@ -21,7 +21,6 @@ import {
     Database,
     Zap,
     Lock,
-    Key,
     CheckCircle2,
     XCircle,
     ArrowLeft
@@ -236,7 +235,7 @@ export default function SettingsPage() {
                 setApiStatus('error');
                 toast.error(t('connectionFailed'));
             }
-        } catch (error) {
+        } catch (_error) {
             setApiStatus('error');
             toast.error(t('connectionFailed'));
         } finally {

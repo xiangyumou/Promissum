@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Modal from './ui/Modal';
 import ImageUploadZone from './ImageUploadZone';
 import { cn } from '@/lib/utils';

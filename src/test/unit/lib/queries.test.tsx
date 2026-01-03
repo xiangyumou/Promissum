@@ -39,7 +39,7 @@ describe('queries hooks', () => {
                 cacheTTLMinutes: 5,
                 autoRefreshInterval: 60
             };
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             return (selector as (s: typeof state) => unknown)(state) as any;
         });
         vi.mocked(timeService.now).mockReturnValue(1000000);

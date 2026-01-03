@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { FilterParams, FilterPreset } from '../types';
+import { FilterPreset } from '../types';
 
 /**
  * Settings State Interface
@@ -143,7 +143,7 @@ export const createSettingsStore = (
         persist(
             (set) => ({
                 // Default values
-                ...(DEFAULT_SETTINGS as any),
+                ...DEFAULT_SETTINGS,
                 ...initialState,
 
                 // Actions
@@ -201,5 +201,5 @@ export const useSettings = createSettingsStore();
 
 // Reset helper for tests
 export function resetSettingsStore() {
-    useSettings.setState(DEFAULT_SETTINGS as any);
+    useSettings.setState(DEFAULT_SETTINGS);
 }

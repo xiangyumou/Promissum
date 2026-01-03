@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getEffectiveApiUrl, getEffectiveApiToken, validateEnv } from '@/lib/env';
+import { getEffectiveApiUrl, getEffectiveApiToken } from '@/lib/env';
 
 describe('env', () => {
     const originalEnv = process.env;

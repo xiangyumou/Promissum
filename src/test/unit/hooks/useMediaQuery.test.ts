@@ -37,20 +37,26 @@ describe('useMediaQuery', () => {
     });
 
     it('should update when listener fires', () => {
-        const listeners: ((event: MediaQueryListEvent) => void)[] = [];
-        vi.mocked(browserService.matchMedia).mockReturnValue({
-            matches: false,
-            addListener: (cb: (event: MediaQueryListEvent) => void) => listeners.push(cb),
+        const listeners: (() => void)[] = [];
+        let currentMatches = false;
+
+        vi.mocked(browserService.matchMedia).mockImplementation(() => ({
+            get matches() { return currentMatches; },
+            addListener: vi.fn(),
             removeListener: vi.fn(),
-            // Mocking legacy API as hook supports both
-            // If hook prefers modern, we might need to mock addEventListener
-        } as unknown as MediaQueryList);
+            addEventListener: (type: string, cb: () => void) => {
+                if (type === 'change') listeners.push(cb);
+            },
+            removeEventListener: vi.fn(),
+        } as unknown as MediaQueryList));
 
         const { result } = renderHook(() => useMediaQuery('(min-width: 600px)'));
         expect(result.current).toBe(false);
 
+        // Update the matches value and trigger listeners
+        currentMatches = true;
         act(() => {
-            listeners.forEach(l => l({ matches: true } as unknown as MediaQueryListEvent));
+            listeners.forEach(l => l());
         });
 
         expect(result.current).toBe(true);

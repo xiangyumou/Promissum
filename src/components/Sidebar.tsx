@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { ApiItemListView } from '@/lib/types';
 import { FilterParams } from '@/lib/api-client';
 import FilterBar from './FilterBar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, Settings, PanelLeftClose } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Skeleton } from './ui/Skeleton';
+
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { useSettings } from '@/lib/stores/settings-store';
@@ -182,7 +182,7 @@ function SidebarContent({
     onFilterChange,
     isLoading,
     compactMode,
-    setSidebarOpen
+    setSidebarOpen: _setSidebarOpen
 }: SidebarContentProps) {
     const t = useTranslations('Sidebar');
     const tCommon = useTranslations('Common');

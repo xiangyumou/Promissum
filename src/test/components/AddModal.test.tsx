@@ -1,4 +1,4 @@
-import { fireEvent, waitFor, screen } from '@testing-library/react';
+import { waitFor, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import AddModal from '@/components/AddModal';
@@ -17,17 +17,17 @@ vi.mock('framer-motion', async () => {
     const actual = await vi.importActual('framer-motion');
     return {
         ...actual,
-        AnimatePresence: ({ children }: any) => <>{children}</>,
+        AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
         motion: {
-            div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-            button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+            div: ({ children, ...props }: { children: React.ReactNode;[key: string]: unknown }) => <div {...props}>{children}</div>,
+            button: ({ children, ...props }: { children: React.ReactNode;[key: string]: unknown }) => <button {...props}>{children}</button>,
         }
     };
 });
 
 // Mock Modal to simplify testing
 vi.mock('@/components/ui/Modal', () => ({
-    default: ({ isOpen, children, title }: any) => {
+    default: ({ isOpen, children, title }: { isOpen: boolean; children: React.ReactNode; title: string }) => {
         if (!isOpen) return null;
         return (
             <div data-testid="modal">
@@ -40,7 +40,7 @@ vi.mock('@/components/ui/Modal', () => ({
 
 // Mock ImageUploadZone
 vi.mock('@/components/ImageUploadZone', () => ({
-    default: ({ file, onFileChange }: any) => (
+    default: ({ file, onFileChange }: { file: File | null; onFileChange: (file: File | null) => void }) => (
         <div data-testid="image-upload-zone">
             {file ? <span>File: {file.name}</span> : <span>No file</span>}
             <input
@@ -109,7 +109,7 @@ describe('AddModal', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        (timeService.now as any).mockReturnValue(NOW);
+        vi.mocked(timeService.now).mockReturnValue(NOW);
     });
 
     describe('Rendering', () => {

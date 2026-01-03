@@ -70,7 +70,7 @@ class NotificationService {
             icon?: string;
             tag?: string;
             requireInteraction?: boolean;
-            data?: any;
+            data?: unknown;
         }
     ): Notification | null {
         if (!this.isEnabled()) {

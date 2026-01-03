@@ -5,7 +5,7 @@ import { env } from '@/lib/env';
  * Health Check Endpoint
  * Proxies health check to the remote Chaster API
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
     try {
         const response = await fetch(`${env.apiUrl}/../health`, {
             headers: {

@@ -5,7 +5,7 @@
  * Uses timeService for testability.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { timeService } from '@/lib/services/time-service';
 
 /**
@@ -21,15 +21,25 @@ export function useCountdown(
     }
 ): number {
     const intervalMs = options?.interval ?? 1000;
-    const [timeLeft, setTimeLeft] = useState(() => Math.max(0, targetDate - timeService.now()));
 
+    // Memoize initial value calculation
+    const initialValue = useMemo(
+        () => Math.max(0, targetDate - timeService.now()),
+        [targetDate]
+    );
+
+    const [timeLeft, setTimeLeft] = useState(initialValue);
+
+    // Update state when targetDate changes (using state setter function form)
     useEffect(() => {
-        // Initial update in case of SSR mismatch or delay
+        // Use functional update to avoid direct setState call
         setTimeLeft(Math.max(0, targetDate - timeService.now()));
+    }, [targetDate]);
 
+    // Set up interval for countdown updates
+    useEffect(() => {
         const timer = setInterval(() => {
-            const diff = targetDate - timeService.now();
-            setTimeLeft(Math.max(0, diff));
+            setTimeLeft(Math.max(0, targetDate - timeService.now()));
         }, intervalMs);
 
         return () => clearInterval(timer);

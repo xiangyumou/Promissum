@@ -4,7 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'sonner';
 import { queryClient } from '@/lib/query-client';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import { ThemeProvider, useTheme } from 'next-themes';
 import SecurityProvider from './SecurityProvider';
 import ThemeRegistry from './ThemeRegistry';
@@ -28,14 +28,14 @@ function ToasterProvider() {
  * Initialize cache persistence once on client mount
  */
 function CachePersistenceInitializer() {
-    const [initialized, setInitialized] = useState(false);
+    const initializedRef = useRef(false);
 
     useEffect(() => {
-        if (!initialized) {
+        if (!initializedRef.current) {
             initializeQueryPersistence(queryClient);
-            setInitialized(true);
+            initializedRef.current = true;
         }
-    }, [initialized]);
+    }, []);
 
     return null;
 }

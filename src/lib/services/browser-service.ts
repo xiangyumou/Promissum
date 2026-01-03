@@ -12,7 +12,7 @@ export interface IBrowserService {
     matchMedia(query: string): MediaQueryList | null;
     addWindowListener<K extends keyof WindowEventMap>(
         type: K,
-        listener: (this: Window, ev: WindowEventMap[K]) => any,
+        listener: (this: Window, ev: WindowEventMap[K]) => void,
         options?: boolean | AddEventListenerOptions
     ): () => void;
 }

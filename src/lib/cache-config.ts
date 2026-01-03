@@ -73,7 +73,7 @@ function createSafePersister() {
                 storage: window.sessionStorage,
                 key: CACHE_KEY,
             });
-        } catch (sessionError) {
+        } catch (_sessionError) {
             console.warn('[Cache] sessionStorage also unavailable, using memory-only cache');
             return null;
         }

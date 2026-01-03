@@ -6,16 +6,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useTranslations, useLocale } from 'next-intl';
-import { formatDateTime, formatUnlockTime } from '@/lib/date-utils';
+import { formatUnlockTime } from '@/lib/date-utils';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
 
 import { useSettings } from '@/lib/stores/settings-store';
-import { PanelLeftOpen } from 'lucide-react';
+
 import ConfirmDialog from './ConfirmDialog';
 import { timeService } from '@/lib/services/time-service';
-import { useCountdown } from '@/hooks/useCountdown';
+
 import CountdownVisuals from './CountdownVisuals';
 
 
@@ -34,7 +34,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     const t = useTranslations('ContentView');
     const tCommon = useTranslations('Common');
     const locale = useLocale();
-    const { sidebarOpen, setSidebarOpen, enableUnlockSound, enableUnlockConfetti } = useSettings();
+    const { enableUnlockSound, enableUnlockConfetti } = useSettings();
 
     // Track unlock status and trigger celebration
     const [wasLocked, setWasLocked] = useState(true);

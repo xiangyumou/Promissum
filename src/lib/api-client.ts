@@ -120,10 +120,6 @@ function configureSDK(customBaseUrl?: string, customToken?: string) {
 
     OpenAPI.BASE = customBaseUrl || getEffectiveApiUrl(apiUrl);
     OpenAPI.TOKEN = customToken || getEffectiveApiToken(apiToken);
-
-    // Debug: Log SDK configuration
-    console.log('[SDK Config] BASE:', OpenAPI.BASE);
-    console.log('[SDK Config] TOKEN:', OpenAPI.TOKEN ? `${OpenAPI.TOKEN.substring(0, 8)}...` : 'NOT SET');
 }
 
 /**
