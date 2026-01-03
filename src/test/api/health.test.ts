@@ -35,8 +35,9 @@ describe('Health API', () => {
         expect(data).toMatchObject({
             status: 'ok',
         });
-        expect(data.timestamp).toBeDefined();
-        expect(data.uptime).toBeDefined();
+        expect(data.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/); // ISO format
+        expect(typeof data.uptime).toBe('number');
+        expect(data.uptime).toBeGreaterThanOrEqual(0);
     });
 
     it('should handle remote API failure', async () => {

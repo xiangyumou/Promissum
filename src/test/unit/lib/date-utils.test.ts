@@ -78,7 +78,7 @@ describe('date-utils', () => {
     describe('formatDateTime', () => {
         it('should format with PPpp pattern', () => {
             const result = formatDateTime(TEST_DATE);
-            expect(result).toBeTruthy();
+            expect(result).toMatch(/2023/); // Should contain year
         });
     });
 
