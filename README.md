@@ -99,11 +99,9 @@ npm start
 
 ## 🐳 生产环境部署 (Production Deployment)
 
-本项目的生产环境部署基于 Docker Compose 和 GitHub Container Registry (GHCR)。
-
 ### 1. 准备配置文件
 
-在服务器目录中创建 `docker-compose.yml` (可以使用项目中的 `docker-compose.prod.yml`) 和 `.env` 文件。
+确保服务器目录中包含 `docker-compose.yml` 和 `.env` 文件。
 
 **.env 示例**:
 
@@ -117,21 +115,15 @@ API_TOKEN=your_secure_random_token_here
 
 ### 2. 启动服务
 
-使用 Docker Compose 拉取镜像并启动服务：
-
 ```bash
-docker compose -f docker-compose.prod.yml up -d
+docker compose up -d
 ```
 
-这将自动从 `ghcr.io/xiangyumou/promissum:latest` 拉取最新的生产镜像并启动应用。
-
-### 3. 更新镜像
-
-当有新版本发布时，执行以下命令更新：
+### 3. 更新
 
 ```bash
-docker compose -f docker-compose.prod.yml pull
-docker compose -f docker-compose.prod.yml up -d
+docker compose pull
+docker compose up -d
 ```
 
 ## 🧪 Testing
