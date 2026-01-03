@@ -150,23 +150,6 @@ export function useDeleteItem() {
 }
 
 /**
- * Hook: Extend item lock mutation (Dynamic ID)
- */
-export function useExtendItemMutation() {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: ({ id, minutes }: { id: string; minutes: number }) => apiService.extendItem(id, minutes),
-        onSuccess: (_data, variables) => {
-            // Invalidate this item's detail
-            queryClient.invalidateQueries({ queryKey: queryKeys.items.detail(variables.id) });
-            // Invalidate items list
-            queryClient.invalidateQueries({ queryKey: queryKeys.items.all });
-        },
-    });
-}
-
-/**
  * Hook: Extend item lock mutation
  */
 export function useExtendItem(id: string) {

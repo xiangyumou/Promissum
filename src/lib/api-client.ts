@@ -299,28 +299,4 @@ export function createApiClient(options?: ApiClientOptions): ChasterApiClient {
  */
 export const apiClient = createApiClient();
 
-// ============================================
-// Utility Functions
-// ============================================
 
-/**
- * Helper: Convert File to Base64 string
- */
-export async function fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-
-        reader.onload = () => {
-            const dataUrl = reader.result as string;
-            // Remove the data:image/xxx;base64, prefix
-            const base64 = dataUrl.split(',')[1];
-            resolve(base64);
-        };
-
-        reader.onerror = () => {
-            reject(new Error('Failed to read file'));
-        };
-
-        reader.readAsDataURL(file);
-    });
-}
