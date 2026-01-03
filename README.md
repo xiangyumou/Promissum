@@ -14,34 +14,33 @@
   - 优雅的毛玻璃效果与动画交互
 - 🌍 **国际化支持**：完整的中英文界面 (i18n)
 - 📊 **仪表盘统计**：可视化展示加密数据统计
-- 🛡️ **隐私保护**：隐私模式模糊敏感内容
 - 💾 **本地持久化**：自定义缓存策略与数据持久化
-- 🔄 **多端同步**：基于 SSE 的实时状态同步与会话追踪
+- 🔄 **自动同步**：基于智能轮询 (Smart Polling) 的状态自动刷新
 - 🔍 **高级筛选与搜索**：支持模糊搜索、时间范围筛选及常用预设保存
 - 🎉 **解锁特效**：解锁时刻的庆祝动画与音效
 
 ## 🏗️ 架构说明
 
-### 多端同步架构 (Multi-Device Sync)
+### 智能轮询架构 (Smart Polling Sync)
 
 ```mermaid
 graph TD
-    ClientA[Client A] <-->|SSE / API| Server[Next.js Server]
-    ClientB[Client B] <-->|SSE / API| Server
+    ClientA[Client A] <-->|Polling / API| Server[Next.js Server]
+    ClientB[Client B] <-->|Polling / API| Server
     Server <-->|Prisma_ORM| DB[(SQLite/Postgres)]
     
     subgraph Data Flow
-        ClientA --Update Settings--> Server
-        Server --Broadcast Event--> ClientB
-        ClientB --Update Store--> Storage
+        ClientA --Update Item--> Server
+        Server --Save to DB--> DB
+        ClientB --Poll Status--> Server
     end
 ```
 
 **同步特性**:
-- **实时性**: 设置变更毫秒级同步到所有设备
-- **会话追踪**: 实时显示当前有多少人正在查看同一内容
+- **智能轮询**: 根据解锁剩余时间动态调整刷新频率 (1s - 60s)
+- **自动刷新**: 列表和详情页自动保持最新状态
 - **双写策略**: 本地优先 + 云端同步，保证极致响应速度
-- **隐私设计**: 基于设备指纹识别，无强制账户体系
+- **隐私优先**: 无需强制账户体系
 
 ### 原有架构（基于远程 API）
 
