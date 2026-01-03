@@ -2,8 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
     getCacheTTL,
     setCacheTTL,
-    estimateCacheSize,
-    getCacheStats,
     clearPersistedCache,
     initializeQueryPersistence
 } from '@/lib/cache-config';
@@ -109,7 +107,6 @@ describe('cache-config', () => {
             expect(persistQueryClient).toHaveBeenCalled();
 
             // Get the options passed to the first call
-
             const options = vi.mocked(persistQueryClient).mock.calls[0][0] as any;
             const shouldDehydrate = options.dehydrateOptions.shouldDehydrateQuery;
 
@@ -121,28 +118,6 @@ describe('cache-config', () => {
     });
 
     describe('Storage management', () => {
-        it('should estimate cache size', () => {
-            localStorage.setItem('promissum-react-query-cache', '1234567890');
-            const size = estimateCacheSize();
-            // 10 bytes / 1024 = 0.009... -> round to 0
-            expect(size).toBe(0);
-
-            // Larger content
-            const largeContent = 'a'.repeat(1024 * 5); // 5KB
-            localStorage.setItem('promissum-react-query-cache', largeContent);
-            expect(estimateCacheSize()).toBe(5);
-        });
-
-        it('should return 0 if cache empty', () => {
-            expect(estimateCacheSize()).toBe(0);
-        });
-
-        it('should get cache stats', () => {
-            const stats = getCacheStats();
-            expect(stats).toHaveProperty('sizeKB');
-            expect(stats).toHaveProperty('isOverLimit');
-        });
-
         it('should clear persisted cache', () => {
             localStorage.setItem('promissum-react-query-cache', 'data');
             clearPersistedCache();

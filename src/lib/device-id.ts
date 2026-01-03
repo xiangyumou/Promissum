@@ -1,12 +1,9 @@
 /**
- * Device Fingerprinting
+ * Device ID Generation
  * 
- * Generates stable device IDs using browser characteristics.
- * Uses @fingerprintjs/fingerprintjs for reliable, privacy-friendly fingerprinting.
- * Falls back to random UUID if fingerprinting fails.
+ * Simple UUID-based device ID with localStorage persistence.
+ * Falls back to session-only ID if localStorage is unavailable.
  */
-
-import FingerprintJS from '@fingerprintjs/fingerprintjs';
 
 const DEVICE_ID_KEY = 'promissum_device_id';
 
@@ -14,9 +11,9 @@ let cachedDeviceId: string | null = null;
 
 /**
  * Get or generate a stable device ID
- * Stored in localStorage for persistence across sessions
+ * Uses simple UUID generation with localStorage persistence.
  */
-export async function getDeviceId(): Promise<string> {
+export function getDeviceId(): string {
     // Return cached ID if available
     if (cachedDeviceId) {
         return cachedDeviceId;
@@ -24,38 +21,31 @@ export async function getDeviceId(): Promise<string> {
 
     // Try to get from localStorage first
     if (typeof window !== 'undefined') {
-        const stored = localStorage.getItem(DEVICE_ID_KEY);
-        if (stored) {
-            cachedDeviceId = stored;
-            return stored;
+        try {
+            const stored = localStorage.getItem(DEVICE_ID_KEY);
+            if (stored) {
+                cachedDeviceId = stored;
+                return stored;
+            }
+        } catch {
+            // localStorage unavailable, continue to generate
         }
     }
 
-    // Generate new fingerprint
-    try {
-        const fp = await FingerprintJS.load();
-        const result = await fp.get();
-        const deviceId = result.visitorId;
+    // Generate new UUID
+    const deviceId = crypto.randomUUID();
 
-        // Store in localStorage and cache
-        if (typeof window !== 'undefined') {
+    // Store in localStorage and cache
+    if (typeof window !== 'undefined') {
+        try {
             localStorage.setItem(DEVICE_ID_KEY, deviceId);
+        } catch {
+            // localStorage unavailable, ID will only persist in memory
         }
-        cachedDeviceId = deviceId;
-
-        return deviceId;
-    } catch (error) {
-        console.error('Failed to generate device fingerprint:', error);
-
-        // Fallback to random UUID
-        const fallbackId = `device_${crypto.randomUUID()}`;
-        if (typeof window !== 'undefined') {
-            localStorage.setItem(DEVICE_ID_KEY, fallbackId);
-        }
-        cachedDeviceId = fallbackId;
-
-        return fallbackId;
     }
+    cachedDeviceId = deviceId;
+
+    return deviceId;
 }
 
 /**
@@ -103,7 +93,11 @@ export function getDeviceName(): string {
  */
 export function resetDeviceId(): void {
     if (typeof window !== 'undefined') {
-        localStorage.removeItem(DEVICE_ID_KEY);
+        try {
+            localStorage.removeItem(DEVICE_ID_KEY);
+        } catch {
+            // Ignore localStorage errors
+        }
     }
     cachedDeviceId = null;
 }

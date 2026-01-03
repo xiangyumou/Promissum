@@ -83,17 +83,6 @@ export interface FilterParams {
 }
 
 /**
- * Saved filter preset
- */
-export interface FilterPreset {
-    id: string;
-    name: string;
-    filters: Omit<FilterParams, 'limit' | 'offset'>;
-    createdAt: number;
-}
-
-
-/**
  * System statistics response
  */
 export interface SystemStats {

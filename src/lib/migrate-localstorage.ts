@@ -59,7 +59,7 @@ export async function migrateLocalStorage(): Promise<boolean> {
         }
 
         const settings: LocalStorageSettings = JSON.parse(settingsJson);
-        const deviceId = await getDeviceId();
+        const deviceId = getDeviceId();
 
         // Upload to database
         const response = await fetch('/api/preferences', {

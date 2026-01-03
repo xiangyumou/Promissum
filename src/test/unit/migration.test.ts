@@ -3,9 +3,9 @@ import { migrateLocalStorage, resetMigration } from '@/lib/migrate-localstorage'
 import { server } from '../mocks/server';
 import { http, HttpResponse } from 'msw';
 
-// Mock getDeviceId
+// Mock getDeviceId (now synchronous)
 vi.mock('@/lib/device-id', () => ({
-    getDeviceId: vi.fn().mockResolvedValue('device-123'),
+    getDeviceId: vi.fn().mockReturnValue('device-123'),
 }));
 
 describe('LocalStorage Migration', () => {

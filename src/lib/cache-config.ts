@@ -5,7 +5,6 @@
  * - TTL configuration
  * - localStorage persistence with error handling
  * - Fallback to sessionStorage/in-memory cache
- * - Cache size monitoring
  */
 
 import { persistQueryClient } from '@tanstack/react-query-persist-client';
@@ -14,7 +13,6 @@ import { QueryClient } from '@tanstack/react-query';
 
 const CACHE_VERSION = 'v1';
 const CACHE_KEY = 'promissum-react-query-cache';
-const MAX_CACHE_SIZE_KB = 5000; // 5MB warning threshold
 
 /**
  * Global cache TTL in milliseconds
@@ -115,47 +113,6 @@ export function initializeQueryPersistence(queryClient: QueryClient): void {
     } catch (error) {
         console.error('[Cache] Failed to initialize persistence:', error);
     }
-}
-
-/**
- * Estimate current cache size in KB
- */
-export function estimateCacheSize(): number {
-    if (typeof window === 'undefined') {
-        return 0;
-    }
-
-    try {
-        const cache = window.localStorage.getItem(CACHE_KEY);
-        if (!cache) return 0;
-
-        // Use Blob to get accurate byte size
-        const sizeBytes = new Blob([cache]).size;
-        return Math.round(sizeBytes / 1024); // Convert to KB
-    } catch (error) {
-        console.warn('[Cache] Could not estimate cache size:', error);
-        return 0;
-    }
-}
-
-/**
- * Check if cache size exceeds warning threshold
- */
-function isCacheSizeExceeded(): boolean {
-    return estimateCacheSize() > MAX_CACHE_SIZE_KB;
-}
-
-/**
- * Get cache statistics
- */
-export function getCacheStats() {
-    const sizeKB = estimateCacheSize();
-    return {
-        sizeKB,
-        sizeMB: (sizeKB / 1024).toFixed(2),
-        isOverLimit: isCacheSizeExceeded(),
-        maxSizeKB: MAX_CACHE_SIZE_KB,
-    };
 }
 
 /**

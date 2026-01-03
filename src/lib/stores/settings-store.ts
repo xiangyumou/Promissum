@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { FilterPreset } from '../types';
 
 /**
  * Settings State Interface
@@ -31,14 +30,6 @@ interface SettingsState {
     apiToken: string; // Custom API token overrides env
     apiUrl: string; // Custom API URL overrides env
 
-    // Notifications
-    notificationEnabled: boolean;
-    notificationTiming: number[]; // Minutes before unlock, e.g. [5, 60]
-    soundEnabled: boolean;
-
-    // Filter Presets
-    filterPresets: FilterPreset[];
-
     // Unlock Effects
     enableUnlockSound: boolean;
     enableUnlockConfetti: boolean;
@@ -48,7 +39,6 @@ interface SettingsState {
     setPrivacyMode: (enabled: boolean) => void;
     setThemeConfig: (config: Record<string, string>) => void;
 
-    // New Actions
     setDateTimeFormat: (format: string) => void;
     setCompactMode: (enabled: boolean) => void;
     setSidebarOpen: (open: boolean) => void;
@@ -63,16 +53,6 @@ interface SettingsState {
     setApiToken: (token: string) => void;
     setApiUrl: (url: string) => void;
 
-    setNotificationEnabled: (enabled: boolean) => void;
-    setNotificationTiming: (timing: number[]) => void;
-    setSoundEnabled: (enabled: boolean) => void;
-
-    // Filter Presets
-    setFilterPresets: (presets: FilterPreset[]) => void;
-    addFilterPreset: (preset: FilterPreset) => void;
-    removeFilterPreset: (id: string) => void;
-
-    // Unlock Effects
     setEnableUnlockSound: (enabled: boolean) => void;
     setEnableUnlockConfetti: (enabled: boolean) => void;
 
@@ -85,11 +65,9 @@ interface SettingsState {
 const DEFAULT_SETTINGS: Omit<SettingsState,
     'setDefaultDuration' | 'setPrivacyMode' | 'setThemeConfig' |
     'setDateTimeFormat' | 'setCompactMode' | 'setSidebarOpen' |
-    'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' | 'setDefaultSort' |
+    'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' |
     'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' |
     'setApiToken' | 'setApiUrl' |
-    'setNotificationEnabled' | 'setNotificationTiming' | 'setSoundEnabled' |
-    'setFilterPresets' | 'addFilterPreset' | 'removeFilterPreset' |
     'setEnableUnlockSound' | 'setEnableUnlockConfetti' |
     'resetToDefaults'
 > = {
@@ -97,7 +75,6 @@ const DEFAULT_SETTINGS: Omit<SettingsState,
     privacyMode: false,
     themeConfig: {},
 
-    // New Defaults
     dateTimeFormat: 'yyyy-MM-dd HH:mm',
     compactMode: false,
     sidebarOpen: true,
@@ -112,15 +89,6 @@ const DEFAULT_SETTINGS: Omit<SettingsState,
     apiToken: '',
     apiUrl: '',
 
-    // Notification Defaults
-    notificationEnabled: false,
-    notificationTiming: [5, 60], // 5 min and 1 hour before
-    soundEnabled: true,
-
-    // Filter Presets Defaults
-    filterPresets: [],
-
-    // Unlock Effects Defaults
     enableUnlockSound: false,
     enableUnlockConfetti: true,
 };
@@ -168,20 +136,6 @@ export const createSettingsStore = (
                 setAutoPrivacyDelayMinutes: (minutes) => set({ autoPrivacyDelayMinutes: minutes }),
                 setApiToken: (token) => set({ apiToken: token }),
                 setApiUrl: (url) => set({ apiUrl: url }),
-
-                // Notifications
-                setNotificationEnabled: (enabled) => set({ notificationEnabled: enabled }),
-                setNotificationTiming: (timing) => set({ notificationTiming: timing }),
-                setSoundEnabled: (enabled) => set({ soundEnabled: enabled }),
-
-                // Filter Presets
-                setFilterPresets: (presets) => set({ filterPresets: presets }),
-                addFilterPreset: (preset) => set((state) => ({
-                    filterPresets: [...state.filterPresets, preset]
-                })),
-                removeFilterPreset: (id) => set((state) => ({
-                    filterPresets: state.filterPresets.filter(p => p.id !== id)
-                })),
 
                 // Unlock Effects
                 setEnableUnlockSound: (enabled) => set({ enableUnlockSound: enabled }),

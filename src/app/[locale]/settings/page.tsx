@@ -34,8 +34,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { setCacheTTL } from '@/lib/cache-config';
 import { Link } from '@/i18n/routing';
-import { Bell } from 'lucide-react';
-import { notificationService } from '@/lib/services/notification-service';
+
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 
 export default function SettingsPage() {
@@ -76,14 +75,6 @@ export default function SettingsPage() {
         apiUrl,
         setApiUrl,
 
-        // Notifications
-        notificationEnabled,
-        setNotificationEnabled,
-        notificationTiming,
-        setNotificationTiming,
-        soundEnabled,
-        setSoundEnabled,
-
         // Actions
         resetToDefaults,
         themeConfig,
@@ -101,8 +92,7 @@ export default function SettingsPage() {
     // Clear Data State
     const [isClearing, setIsClearing] = useState(false);
 
-    // Notification Permission State
-    const [notificationPermission, setNotificationPermission] = useState<'default' | 'granted' | 'denied'>('default');
+
 
     // Confirmation Dialog States
     const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -110,12 +100,7 @@ export default function SettingsPage() {
 
     const hasMounted = useHasMounted();
 
-    // Check notification permission on mount
-    useEffect(() => {
-        if (hasMounted) {
-            setNotificationPermission(notificationService.getPermissionStatus());
-        }
-    }, [hasMounted]);
+
 
     // Sync TTL changes to cache config
     useEffect(() => {
@@ -250,41 +235,7 @@ export default function SettingsPage() {
         setApiStatus('idle');
     };
 
-    // Notification handlers
-    const handleRequestNotificationPermission = async () => {
-        const permission = await notificationService.requestPermission();
-        setNotificationPermission(permission);
 
-        if (permission === 'granted') {
-            setNotificationEnabled(true);
-            toast.success(t('permissionGranted'));
-        } else if (permission === 'denied') {
-            toast.error(t('permissionDenied'));
-        }
-    };
-
-    const handleTestNotification = () => {
-        if (notificationService.isEnabled()) {
-            notificationService.showNotification(
-                'Test Notification',
-                'This is a test notification from Chaster',
-                { requireInteraction: false }
-            );
-            toast.success(t('testNotificationSent'));
-        } else {
-            toast.error(t('permissionDenied'));
-        }
-    };
-
-    const handleNotificationTimingChange = (checked: boolean, minutes: number) => {
-        if (checked) {
-            if (!notificationTiming.includes(minutes)) {
-                setNotificationTiming([...notificationTiming, minutes].sort((a, b) => a - b));
-            }
-        } else {
-            setNotificationTiming(notificationTiming.filter(m => m !== minutes));
-        }
-    };
 
     return (
         <div className="h-full overflow-y-auto bg-background custom-scrollbar">
@@ -518,112 +469,6 @@ export default function SettingsPage() {
                                 <option value={300}>5m</option>
                             </select>
                         </div>
-                    </div>
-                </section>
-
-                {/* Notifications Section */}
-                <section className="space-y-4">
-                    <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-                        <Bell size={20} className="text-primary" />
-                        {t('notificationsTitle')}
-                    </h2>
-
-                    <div className="glass-card rounded-xl p-6 space-y-6">
-                        {/* Enable Notifications */}
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-1">
-                                <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                    <Bell size={16} />
-                                    {t('enableNotifications')}
-                                </label>
-                                <p className="text-xs text-muted-foreground">{t('enableNotificationsDesc')}</p>
-                                {notificationPermission !== 'granted' && (
-                                    <button
-                                        onClick={handleRequestNotificationPermission}
-                                        className="mt-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-medium hover:bg-primary/90 transition-colors"
-                                    >
-                                        {t('requestPermission')}
-                                    </button>
-                                )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                                {notificationPermission === 'granted' && (
-                                    <span className="text-xs text-green-500">{t('permissionGranted')}</span>
-                                )}
-                                {notificationPermission === 'denied' && (
-                                    <span className="text-xs text-red-500">{t('permissionDenied')}</span>
-                                )}
-                                <ToggleSwitch
-                                    checked={notificationEnabled && notificationPermission === 'granted'}
-                                    onChange={setNotificationEnabled}
-                                    disabled={notificationPermission !== 'granted'}
-                                    aria-label={t('enableNotifications')}
-                                />
-                            </div>
-                        </div>
-
-                        {notificationEnabled && notificationPermission === 'granted' && (
-                            <>
-                                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
-                                {/* Notification Timing */}
-                                <div className="space-y-3">
-                                    <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                        <Clock size={16} />
-                                        {t('notificationTiming')}
-                                    </label>
-                                    <p className="text-xs text-muted-foreground">{t('notificationTimingDesc')}</p>
-
-                                    <div className="space-y-2 pl-6">
-                                        {[
-                                            { value: 5, label: t('minutesBefore', { minutes: 5 }) },
-                                            { value: 60, label: t('hourBefore') },
-                                        ].map((option) => (
-                                            <label key={option.value} className="flex items-center gap-2 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={notificationTiming.includes(option.value)}
-                                                    onChange={(e) => handleNotificationTimingChange(e.target.checked, option.value)}
-                                                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary/50"
-                                                />
-                                                <span className="text-sm text-foreground">{option.label}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
-                                {/* Sound Enabled */}
-                                <div className="flex items-center justify-between">
-                                    <div className="space-y-1">
-                                        <label className="text-sm font-medium text-foreground">
-                                            {t('soundEnabled')}
-                                        </label>
-                                        <p className="text-xs text-muted-foreground">{t('soundEnabledDesc')}</p>
-                                    </div>
-                                    <ToggleSwitch
-                                        checked={soundEnabled}
-                                        onChange={setSoundEnabled}
-                                        size="sm"
-                                        aria-label={t('soundEnabled')}
-                                    />
-                                </div>
-
-                                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
-                                {/* Test Notification */}
-                                <div className="flex justify-end">
-                                    <button
-                                        onClick={handleTestNotification}
-                                        className="flex items-center gap-2 px-4 py-2 bg-muted hover:bg-muted/80 text-foreground rounded-lg text-sm font-medium transition-colors"
-                                    >
-                                        <Bell size={16} />
-                                        {t('testNotification')}
-                                    </button>
-                                </div>
-                            </>
-                        )}
                     </div>
                 </section>
 

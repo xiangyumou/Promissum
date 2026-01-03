@@ -1,18 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import FingerprintJS from '@fingerprintjs/fingerprintjs';
-
-// Mock FingerprintJS
-vi.mock('@fingerprintjs/fingerprintjs', () => ({
-    default: {
-        load: vi.fn()
-    }
-}));
 
 describe('device-id module', () => {
     let localStorageMock: Record<string, string> = {};
 
     beforeEach(async () => {
-        // Clear all mocks
         vi.clearAllMocks();
 
         // Mock localStorage
@@ -37,7 +28,7 @@ describe('device-id module', () => {
 
         // Mock crypto.randomUUID
         vi.stubGlobal('crypto', {
-            randomUUID: vi.fn(() => 'random-uuid-12345')
+            randomUUID: vi.fn(() => 'test-uuid-12345')
         });
 
         // Reset module by re-importing
@@ -49,33 +40,19 @@ describe('device-id module', () => {
     });
 
     describe('getDeviceId', () => {
-        it('should generate device ID using FingerprintJS', async () => {
-            const mockVisitorId = 'fp-visitor-123';
-            const mockFp = {
-                get: vi.fn().mockResolvedValue({ visitorId: mockVisitorId })
-            };
-            vi.mocked(FingerprintJS.load).mockResolvedValue(mockFp);
-
-            // Import after mocking
+        it('should generate device ID using UUID', async () => {
             const { getDeviceId } = await import('@/lib/device-id');
-            const deviceId = await getDeviceId();
+            const deviceId = getDeviceId();
 
-            expect(deviceId).toBe(mockVisitorId);
-            expect(FingerprintJS.load).toHaveBeenCalled();
-            expect(mockFp.get).toHaveBeenCalled();
+            expect(deviceId).toBe('test-uuid-12345');
+            expect(crypto.randomUUID).toHaveBeenCalled();
         });
 
         it('should store generated device ID in localStorage', async () => {
-            const mockVisitorId = 'fp-visitor-456';
-            const mockFp = {
-                get: vi.fn().mockResolvedValue({ visitorId: mockVisitorId })
-            };
-            vi.mocked(FingerprintJS.load).mockResolvedValue(mockFp);
-
             const { getDeviceId } = await import('@/lib/device-id');
-            await getDeviceId();
+            getDeviceId();
 
-            expect(localStorageMock['promissum_device_id']).toBe(mockVisitorId);
+            expect(localStorageMock['promissum_device_id']).toBe('test-uuid-12345');
         });
 
         it('should retrieve cached device ID from localStorage', async () => {
@@ -83,57 +60,34 @@ describe('device-id module', () => {
             localStorageMock['promissum_device_id'] = cachedDevice;
 
             const { getDeviceId } = await import('@/lib/device-id');
-            const deviceId = await getDeviceId();
+            const deviceId = getDeviceId();
 
             expect(deviceId).toBe(cachedDevice);
-            // Should not call FingerprintJS if cached
-            expect(FingerprintJS.load).not.toHaveBeenCalled();
+            expect(crypto.randomUUID).not.toHaveBeenCalled();
         });
 
         it('should return same device ID on subsequent calls (in-memory cache)', async () => {
-            const mockVisitorId = 'fp-visitor-999';
-            const mockFp = {
-                get: vi.fn().mockResolvedValue({ visitorId: mockVisitorId })
-            };
-            vi.mocked(FingerprintJS.load).mockResolvedValue(mockFp);
-
             const { getDeviceId } = await import('@/lib/device-id');
-            const deviceId1 = await getDeviceId();
-            const deviceId2 = await getDeviceId();
-            const deviceId3 = await getDeviceId();
+            const deviceId1 = getDeviceId();
+            const deviceId2 = getDeviceId();
+            const deviceId3 = getDeviceId();
 
             expect(deviceId1).toBe(deviceId2);
             expect(deviceId2).toBe(deviceId3);
-            // FingerprintJS should only be called once
-            expect(FingerprintJS.load).toHaveBeenCalledTimes(1);
+            // randomUUID should only be called once
+            expect(crypto.randomUUID).toHaveBeenCalledTimes(1);
         });
 
-        it('should fallback to random UUID when FingerprintJS fails', async () => {
-            vi.mocked(FingerprintJS.load).mockRejectedValue(new Error('Fingerprint failed'));
-            const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+        it('should handle localStorage errors gracefully', async () => {
+            vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+                throw new Error('QuotaExceeded');
+            });
 
             const { getDeviceId } = await import('@/lib/device-id');
-            const deviceId = await getDeviceId();
+            const deviceId = getDeviceId();
 
-            expect(deviceId).toBe('device_random-uuid-12345');
-            expect(consoleErrorSpy).toHaveBeenCalledWith(
-                'Failed to generate device fingerprint:',
-                expect.any(Error)
-            );
-
-            consoleErrorSpy.mockRestore();
-        });
-
-        it('should store fallback UUID in localStorage', async () => {
-            vi.mocked(FingerprintJS.load).mockRejectedValue(new Error('Fingerprint failed'));
-            vi.spyOn(console, 'error').mockImplementation(() => { });
-
-            const { getDeviceId } = await import('@/lib/device-id');
-            await getDeviceId();
-
-            expect(localStorageMock['promissum_device_id']).toBe('device_random-uuid-12345');
-
-            vi.restoreAllMocks();
+            // Should still return a valid UUID despite localStorage failure
+            expect(deviceId).toBe('test-uuid-12345');
         });
     });
 
@@ -186,46 +140,6 @@ describe('device-id module', () => {
             expect(name).toBe('Edge on Windows');
         });
 
-        it('should detect Chrome on Linux', async () => {
-            Object.defineProperty(navigator, 'userAgent', {
-                value: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                configurable: true
-            });
-
-            const { getDeviceName } = await import('@/lib/device-id');
-            const name = getDeviceName();
-
-            expect(name).toBe('Chrome on Linux');
-        });
-
-        it('should detect Chrome on Android (limited by OS detection order)', async () => {
-            Object.defineProperty(navigator, 'userAgent', {
-                value: 'Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
-                configurable: true
-            });
-
-            const { getDeviceName } = await import('@/lib/device-id');
-            const name = getDeviceName();
-
-            // Note: Current implementation checks Linux before Android,
-            // so Android UA strings are detected as Linux
-            expect(name).toBe('Chrome on Linux');
-        });
-
-        it('should detect Safari on iOS (limited by OS detection order)', async () => {
-            Object.defineProperty(navigator, 'userAgent', {
-                value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
-                configurable: true
-            });
-
-            const { getDeviceName } = await import('@/lib/device-id');
-            const name = getDeviceName();
-
-            // Note: Current implementation checks Mac OS X before iOS,
-            // so iOS UA strings are detected as macOS
-            expect(name).toBe('Safari on macOS');
-        });
-
         it('should return "Unknown Browser on Unknown OS" for unrecognized user agent', async () => {
             Object.defineProperty(navigator, 'userAgent', {
                 value: 'Some/Weird/UserAgent',
@@ -241,7 +155,6 @@ describe('device-id module', () => {
 
     describe('resetDeviceId', () => {
         it('should clear device ID from localStorage', async () => {
-            // Set up a cached device ID
             localStorageMock['promissum_device_id'] = 'old-device-id';
 
             const { resetDeviceId } = await import('@/lib/device-id');
@@ -251,30 +164,21 @@ describe('device-id module', () => {
         });
 
         it('should clear in-memory cache and generate new ID', async () => {
-            // Generate initial ID
-            const mockFp1 = {
-                get: vi.fn().mockResolvedValue({ visitorId: 'first-id' })
-            };
-            vi.mocked(FingerprintJS.load).mockResolvedValue(mockFp1);
+            let uuidCounter = 0;
+            vi.mocked(crypto.randomUUID).mockImplementation(() => `uuid-${++uuidCounter}`);
 
             const { getDeviceId, resetDeviceId } = await import('@/lib/device-id');
-            const firstId = await getDeviceId();
-            expect(firstId).toBe('first-id');
+            const firstId = getDeviceId();
+            expect(firstId).toBe('uuid-1');
 
             // Reset and clear module
             resetDeviceId();
             vi.resetModules();
 
-            // Mock new ID
-            const mockFp2 = {
-                get: vi.fn().mockResolvedValue({ visitorId: 'second-id' })
-            };
-            vi.mocked(FingerprintJS.load).mockResolvedValue(mockFp2);
-
             const { getDeviceId: getDeviceId2 } = await import('@/lib/device-id');
-            const secondId = await getDeviceId2();
+            const secondId = getDeviceId2();
 
-            expect(secondId).toBe('second-id');
+            expect(secondId).toBe('uuid-2');
             expect(firstId).not.toBe(secondId);
         });
     });
