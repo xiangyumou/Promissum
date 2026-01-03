@@ -3,22 +3,40 @@
  *
  * Service layer for interacting with the backend API.
  * Abstracts the actual fetch calls from React Query hooks.
+ * 
+ * Note: This service calls the local Next.js API routes,
+ * which in turn call the Chaster SDK. Response format
+ * uses snake_case for frontend compatibility.
  */
 
-import { FilterParams, SystemStats, ApiItemListView, ApiItemDetail } from '../api-client';
+import type { FilterParams, SystemStats } from '../api-client';
+
+/**
+ * API Item response format (from local API routes)
+ * Uses snake_case for frontend compatibility
+ */
+export interface ApiItemResponse {
+    id: string;
+    type: 'text' | 'image';
+    decrypt_at: number;
+    created_at?: number;
+    unlocked: boolean;
+    content: string | null;
+    metadata?: Record<string, unknown>;
+}
 
 export interface IApiService {
-    getItems(filters?: FilterParams): Promise<ApiItemListView[]>;
-    getItem(id: string): Promise<ApiItemDetail>;
-    createItem(formData: FormData): Promise<{ success: boolean; item: any }>;
-    extendItem(id: string, minutes: number): Promise<ApiItemDetail>;
+    getItems(filters?: FilterParams): Promise<ApiItemResponse[]>;
+    getItem(id: string): Promise<ApiItemResponse>;
+    createItem(formData: FormData): Promise<{ success: boolean; item: ApiItemResponse }>;
+    extendItem(id: string, minutes: number): Promise<ApiItemResponse>;
     deleteItem(id: string): Promise<{ success: boolean }>;
     getStats(): Promise<SystemStats>;
 }
 
 // Default implementation using fetch
 export class ApiService implements IApiService {
-    async getItems(filters?: FilterParams): Promise<ApiItemListView[]> {
+    async getItems(filters?: FilterParams): Promise<ApiItemResponse[]> {
         const params = new URLSearchParams();
 
         if (filters?.status && filters.status !== 'all') {
@@ -41,18 +59,18 @@ export class ApiService implements IApiService {
         return data.items || [];
     }
 
-    async getItem(id: string): Promise<ApiItemDetail> {
+    async getItem(id: string): Promise<ApiItemResponse> {
         const response = await fetch(`/api/items/${id}`);
         if (!response.ok) {
             // Throw object with status for useItem error handling
-            const error: any = new Error('Failed to fetch item');
+            const error: Error & { status?: number } = new Error('Failed to fetch item');
             error.status = response.status;
             throw error;
         }
         return response.json();
     }
 
-    async createItem(formData: FormData): Promise<{ success: boolean; item: any }> {
+    async createItem(formData: FormData): Promise<{ success: boolean; item: ApiItemResponse }> {
         const response = await fetch('/api/items', {
             method: 'POST',
             body: formData,
@@ -65,7 +83,7 @@ export class ApiService implements IApiService {
         return response.json();
     }
 
-    async extendItem(id: string, minutes: number): Promise<ApiItemDetail> {
+    async extendItem(id: string, minutes: number): Promise<ApiItemResponse> {
         const response = await fetch(`/api/items/${id}/extend`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

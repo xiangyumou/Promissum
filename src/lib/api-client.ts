@@ -2,32 +2,165 @@
  * Chaster API Client
  * 
  * Wrapper for calling the remote Chaster encryption service API.
- * Handles authentication, request formatting, and response parsing.
+ * Uses the official @xymou/chaster-client SDK internally.
+ * 
+ * This module converts SDK camelCase responses to snake_case
+ * for frontend compatibility.
  */
 
-import { getEffectiveApiUrl, getEffectiveApiToken } from './env';
 import {
-    ApiItemListView,
-    ApiItemDetail,
-    CreateItemRequest,
-    ExtendItemRequest,
-    FilterParams,
-    SystemStats,
-} from './types';
-
-// Re-export types for convenience
-export type {
-    ApiItemListView,
-    ApiItemDetail,
-    CreateItemRequest,
-    ExtendItemRequest,
-    FilterParams,
-    SystemStats,
-};
-
-// Import settings store for dynamic configuration
+    ItemsService,
+    SystemService,
+    OpenAPI,
+    type Item,
+    type ItemInput
+} from '@xymou/chaster-client';
+import { getEffectiveApiUrl, getEffectiveApiToken } from './env';
 import { useSettings } from './stores/settings-store';
 
+// ============================================
+// Type Definitions (API Response Types - snake_case for frontend)
+// ============================================
+
+/**
+ * Extended metadata for items
+ */
+export interface ItemMetadata {
+    title?: string;
+    tags?: string[];
+    [key: string]: unknown;
+}
+
+/**
+ * Item list view - uses snake_case for frontend compatibility
+ */
+export interface ApiItemListView {
+    id: string;
+    type: 'text' | 'image';
+    unlocked: boolean;
+    decrypt_at: number;
+    created_at?: number;
+    metadata?: ItemMetadata;
+}
+
+/**
+ * Full item detail view - uses snake_case for frontend compatibility
+ */
+export interface ApiItemDetail {
+    id: string;
+    type: 'text' | 'image';
+    unlocked: boolean;
+    timeRemainingMs?: number;
+    decrypt_at: number;
+    content: string | null;
+    metadata?: ItemMetadata;
+    layer_count?: number;
+    original_name?: string | null;
+    created_at?: number;
+}
+
+/**
+ * Request to create a new item
+ */
+export interface CreateItemRequest {
+    type: 'text' | 'image';
+    content: string;
+    durationMinutes?: number;
+    decryptAt?: number;
+    metadata?: ItemMetadata;
+}
+
+/**
+ * Request to extend an item's lock
+ */
+export interface ExtendItemRequest {
+    minutes: number;
+}
+
+/**
+ * Filter parameters for listing items
+ */
+export interface FilterParams {
+    status?: 'all' | 'locked' | 'unlocked';
+    type?: 'text' | 'image';
+    search?: string;
+    limit?: number;
+    offset?: number;
+    sort?: 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc';
+    dateRange?: {
+        start: number;
+        end: number;
+    };
+    quickFilter?: 'unlocking-soon' | 'long-locked' | 'recent';
+}
+
+/**
+ * System statistics response
+ */
+export interface SystemStats {
+    totalItems: number;
+    lockedItems: number;
+    unlockedItems: number;
+    byType: {
+        text: number;
+        image: number;
+    };
+    avgLockDurationMinutes?: number;
+}
+
+// ============================================
+// Helper Functions
+// ============================================
+
+/**
+ * Configure SDK before making requests
+ */
+function configureSDK(customBaseUrl?: string, customToken?: string) {
+    const { apiUrl, apiToken } = useSettings.getState();
+
+    OpenAPI.BASE = customBaseUrl || getEffectiveApiUrl(apiUrl);
+    OpenAPI.TOKEN = customToken || getEffectiveApiToken(apiToken);
+
+    // Debug: Log SDK configuration
+    console.log('[SDK Config] BASE:', OpenAPI.BASE);
+    console.log('[SDK Config] TOKEN:', OpenAPI.TOKEN ? `${OpenAPI.TOKEN.substring(0, 8)}...` : 'NOT SET');
+}
+
+/**
+ * Convert SDK Item (camelCase) to ApiItemListView (snake_case)
+ */
+function toApiItemListView(item: Item): ApiItemListView {
+    return {
+        id: item.id || '',
+        type: item.type || 'text',
+        unlocked: item.unlocked || false,
+        decrypt_at: item.decryptAt || 0,
+        created_at: item.createdAt,
+        metadata: item.metadata as ItemMetadata,
+    };
+}
+
+/**
+ * Convert SDK Item (camelCase) to ApiItemDetail (snake_case)
+ */
+function toApiItemDetail(item: Item): ApiItemDetail {
+    return {
+        id: item.id || '',
+        type: item.type || 'text',
+        unlocked: item.unlocked || false,
+        decrypt_at: item.decryptAt || 0,
+        content: item.content || null,
+        timeRemainingMs: item.timeRemainingMs,
+        metadata: item.metadata as ItemMetadata,
+        layer_count: item.layerCount,
+        original_name: item.originalName,
+        created_at: item.createdAt,
+    };
+}
+
+// ============================================
+// API Client Options
+// ============================================
 
 export interface ApiClientOptions {
     baseUrl?: string;
@@ -35,127 +168,124 @@ export interface ApiClientOptions {
     fetchFn?: typeof fetch;
 }
 
+// ============================================
+// API Client Class
+// ============================================
+
 /**
- * API Client Class
+ * API Client Class using Chaster SDK
  */
 export class ChasterApiClient {
     private customBaseUrl?: string;
     private customToken?: string;
-    private fetchFn: typeof fetch;
 
     constructor(options: ApiClientOptions = {}) {
         this.customBaseUrl = options.baseUrl;
         this.customToken = options.token;
-        this.fetchFn = options.fetchFn || fetch;
     }
 
     /**
-     * Get current base URL with priority: constructor config > env var > user setting > default
+     * Configure SDK before each request
      */
-    private get baseUrl(): string {
-        if (this.customBaseUrl) return this.customBaseUrl;
-        const { apiUrl } = useSettings.getState();
-        return getEffectiveApiUrl(apiUrl);
-    }
-
-    /**
-     * Get current token with priority: constructor config > env var > user setting
-     */
-    private get token(): string {
-        if (this.customToken) return this.customToken;
-        const { apiToken } = useSettings.getState();
-        return getEffectiveApiToken(apiToken);
-    }
-
-    /**
-     * Make an authenticated API request
-     */
-    private async request<T>(
-        endpoint: string,
-        options: RequestInit = {}
-    ): Promise<T> {
-        const url = `${this.baseUrl}${endpoint}`;
-
-        const response = await this.fetchFn(url, {
-            ...options,
-            headers: {
-                'Authorization': `Bearer ${this.token}`,
-                'Content-Type': 'application/json',
-                ...options.headers,
-            },
-        });
-
-        if (!response.ok) {
-            const error = await response.text();
-            throw new Error(
-                `API request failed: ${response.status} ${response.statusText}\n${error}`
-            );
-        }
-
-        return response.json();
+    private configure() {
+        configureSDK(this.customBaseUrl, this.customToken);
     }
 
     /**
      * List all items with optional filtering
      */
     async getItems(params?: FilterParams): Promise<ApiItemListView[]> {
-        const queryParams = new URLSearchParams();
+        this.configure();
 
-        if (params?.status) queryParams.set('status', params.status);
-        if (params?.type) queryParams.set('type', params.type);
-        if (params?.limit) queryParams.set('limit', params.limit.toString());
-        if (params?.offset) queryParams.set('offset', params.offset.toString());
-        if (params?.sort) queryParams.set('sort', params.sort);
+        const response = await ItemsService.getItems1({
+            status: params?.status || 'all',
+            type: params?.type,
+            limit: params?.limit || 50,
+            offset: params?.offset,
+        });
 
-        const queryString = queryParams.toString();
-        const endpoint = `/items${queryString ? `?${queryString}` : ''}`;
-
-        return this.request<ApiItemListView[]>(endpoint);
+        const items = response.items || [];
+        return items.map(toApiItemListView);
     }
 
     /**
      * Create a new encrypted item
      */
     async createItem(data: CreateItemRequest): Promise<ApiItemDetail> {
-        return this.request<ApiItemDetail>('/items', {
-            method: 'POST',
-            body: JSON.stringify(data),
-        });
+        this.configure();
+
+        const input: ItemInput = {
+            type: data.type,
+            content: data.content,
+            durationMinutes: data.durationMinutes,
+            decryptAt: data.decryptAt,
+            metadata: data.metadata,
+        };
+
+        const item = await ItemsService.postItems({ requestBody: input });
+        return toApiItemDetail(item);
     }
 
     /**
      * Get item details by ID (attempts decryption if unlocked)
      */
     async getItemById(id: string): Promise<ApiItemDetail> {
-        return this.request<ApiItemDetail>(`/items/${id}`);
+        this.configure();
+
+        const item = await ItemsService.getItems({ id });
+        return toApiItemDetail(item);
     }
 
     /**
      * Extend the lock duration of an existing item
      */
     async extendItem(id: string, minutes: number): Promise<ApiItemDetail> {
-        return this.request<ApiItemDetail>(`/items/${id}/extend`, {
-            method: 'POST',
-            body: JSON.stringify({ minutes }),
+        this.configure();
+
+        const result = await ItemsService.postItemsExtend({
+            id,
+            requestBody: { minutes },
         });
+
+        // The extend response may be the Item itself or similar structure
+        return toApiItemDetail(result);
     }
 
     /**
      * Delete an item permanently
+     * Note: SDK returns void, we convert to legacy format for backward compatibility
      */
     async deleteItem(id: string): Promise<{ success: boolean }> {
-        return this.request<{ success: boolean }>(`/items/${id}`, {
-            method: 'DELETE',
-        });
+        this.configure();
+
+        await ItemsService.deleteItems({ id });
+        return { success: true };
     }
 
     /**
      * Get system statistics
      */
     async getStats(): Promise<SystemStats> {
-        return this.request<SystemStats>('/stats');
+        this.configure();
+
+        const stats = await SystemService.getStats();
+
+        return {
+            totalItems: stats.totalItems || 0,
+            lockedItems: stats.lockedItems || 0,
+            unlockedItems: stats.unlockedItems || 0,
+            byType: {
+                text: stats.byType?.text || 0,
+                image: stats.byType?.image || 0,
+            },
+            avgLockDurationMinutes: stats.avgLockDurationMinutes,
+        };
     }
 }
+
+// ============================================
+// Factory & Singleton
+// ============================================
 
 /**
  * Factory function to create an API client instance
@@ -168,6 +298,10 @@ export function createApiClient(options?: ApiClientOptions): ChasterApiClient {
  * Singleton API client instance
  */
 export const apiClient = createApiClient();
+
+// ============================================
+// Utility Functions
+// ============================================
 
 /**
  * Helper: Convert File to Base64 string

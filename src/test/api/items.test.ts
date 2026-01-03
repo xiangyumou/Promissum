@@ -18,17 +18,18 @@ describe('Items API', () => {
 
     describe('GET', () => {
         it('should fetch and map items correctly', async () => {
+            // apiClient now returns snake_case format
             const mockApiResponse = [
                 {
                     id: '1',
                     type: 'text',
-                    decryptAt: 1700000000000,
-                    createdAt: 1690000000000,
+                    decrypt_at: 1700000000000,
+                    created_at: 1690000000000,
                     unlocked: false,
                     metadata: { title: 'Test 1' }
                 }
             ];
-            (apiClient.getItems as any).mockResolvedValue(mockApiResponse);
+            (apiClient.getItems as ReturnType<typeof vi.fn>).mockResolvedValue(mockApiResponse);
 
             const req = new NextRequest('http://localhost/api/items?status=locked&sort=created_desc');
             const res = await GET(req);
@@ -53,8 +54,8 @@ describe('Items API', () => {
             });
         });
 
-        it('should handle unexpected API response format', async () => {
-            (apiClient.getItems as any).mockResolvedValue({ some: 'other format' });
+        it('should handle empty array from API', async () => {
+            (apiClient.getItems as ReturnType<typeof vi.fn>).mockResolvedValue([]);
 
             const req = new NextRequest('http://localhost/api/items');
             const res = await GET(req);
@@ -62,7 +63,6 @@ describe('Items API', () => {
             expect(res.status).toBe(200);
             const data = await res.json();
             expect(data.items).toEqual([]);
-            expect(data.error).toBe('Unexpected API response format');
         });
 
         it('should handle API errors with 500 status', async () => {

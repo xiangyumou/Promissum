@@ -1,6 +1,9 @@
 /**
  * Type definitions for Chaster application
  * Single source of truth for all shared types
+ * 
+ * Note: Field names use snake_case to match frontend expectations.
+ * The API routes convert SDK camelCase responses to snake_case.
  */
 
 // ============================================
@@ -32,7 +35,7 @@ export interface ItemListView {
     created_at: number;
     layer_count: number;
     user_id: string;
-    metadata?: ItemMetadata; // Extended metadata
+    metadata?: ItemMetadata;
 }
 
 /**
@@ -41,6 +44,7 @@ export interface ItemListView {
 export interface ItemDetail extends ItemListView {
     unlocked: boolean;
     content: string | null;
+    timeRemainingMs?: number;
 }
 
 /**
@@ -66,6 +70,9 @@ export interface ApiItemDetail {
     decrypt_at: number;
     content: string | null;
     metadata?: ItemMetadata;
+    layer_count?: number;
+    original_name?: string | null;
+    created_at?: number;
 }
 
 /**
@@ -146,4 +153,3 @@ export interface ApiUserPreferences {
     apiToken?: string;
     apiUrl?: string;
 }
-

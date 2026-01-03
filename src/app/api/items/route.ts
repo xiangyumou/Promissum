@@ -11,36 +11,19 @@ export async function GET(request: NextRequest) {
         const sort = searchParams.get('sort') as 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc' | null;
 
         // Call remote API service with filters
-        const apiResponse = await apiClient.getItems({
+        // apiClient returns items in snake_case format
+        const items = await apiClient.getItems({
             status: status || undefined,
             type: type || undefined,
             sort: sort || 'created_desc', // Default sort: newest first
         });
 
-        console.log('API Response:', JSON.stringify(apiResponse, null, 2));
-
-        // Handle response - API might return { items: [...] } or just [...]
-        let itemsArray: any[];
-        if (Array.isArray(apiResponse)) {
-            itemsArray = apiResponse;
-        } else if (apiResponse && typeof apiResponse === 'object' && 'items' in apiResponse) {
-            itemsArray = (apiResponse as any).items;
-        } else {
-            console.error('Unexpected API response format:', apiResponse);
-            return NextResponse.json({
-                items: [],
-                lastDuration: 720,
-                error: 'Unexpected API response format'
-            });
-        }
-
-        // Map API response to match original format expected by frontend
-        // Note: Remote API returns camelCase, we convert to snake_case for frontend
-        const mappedItems = itemsArray.map(item => ({
+        // Items are already in snake_case format from apiClient
+        const mappedItems = items.map(item => ({
             id: item.id,
             type: item.type,
-            decrypt_at: item.decryptAt || item.decrypt_at, // Handle both cases
-            created_at: item.createdAt || item.created_at || Date.now(),
+            decrypt_at: item.decrypt_at,
+            created_at: item.created_at || Date.now(),
             unlocked: item.unlocked,
             metadata: item.metadata,
         }));
@@ -98,11 +81,10 @@ export async function POST(request: NextRequest) {
         // Prepare API request payload
         const apiRequest: {
             type: 'text' | 'image';
-
             content: string;
             durationMinutes?: number;
             decryptAt?: number;
-            metadata?: any;
+            metadata?: Record<string, unknown>;
         } = {
             type,
             content,
@@ -116,16 +98,16 @@ export async function POST(request: NextRequest) {
         }
 
         // Call remote API service
+        // apiClient returns response in snake_case format
         const apiResponse = await apiClient.createItem(apiRequest);
 
-        // Map response to match original format
-        // Note: Remote API returns camelCase, we convert to snake_case
+        // Response already uses snake_case from apiClient
         return NextResponse.json({
             success: true,
             item: {
                 id: apiResponse.id,
                 type: apiResponse.type,
-                decrypt_at: (apiResponse as any).decryptAt || apiResponse.decrypt_at,
+                decrypt_at: apiResponse.decrypt_at,
                 unlocked: apiResponse.unlocked,
                 metadata: apiResponse.metadata,
             }

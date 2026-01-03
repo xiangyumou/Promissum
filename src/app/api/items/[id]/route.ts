@@ -11,14 +11,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         const { id } = await params;
 
         // Call remote API service (it handles decryption automatically)
+        // apiClient returns response in snake_case format
         const apiResponse = await apiClient.getItemById(id);
 
-        // Map response to match original format expected by frontend
-        // Note: Remote API returns camelCase, we convert to snake_case
-        const response = {
+        // Response already uses snake_case from apiClient
+        const response: Record<string, unknown> = {
             id: apiResponse.id,
             type: apiResponse.type,
-            decrypt_at: (apiResponse as any).decryptAt || apiResponse.decrypt_at,
+            decrypt_at: apiResponse.decrypt_at,
             unlocked: apiResponse.unlocked,
             content: apiResponse.content,
             metadata: apiResponse.metadata,

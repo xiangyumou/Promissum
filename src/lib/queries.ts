@@ -1,14 +1,20 @@
 /**
  * TanStack Query Hooks for Chaster API
  * 
- * Centralized data fetching hooks with automatic caching and revalidation
+ * Centralized data fetching hooks with automatic caching and revalidation.
+ * Uses the local API routes which internally use the Chaster SDK.
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { SystemStats, FilterParams, ApiItemListView } from './api-client';
-import { ItemDetail } from './types';
+import { FilterParams, SystemStats } from './api-client';
+import { useSettings } from '@/lib/stores/settings-store';
+import { apiService, type ApiItemResponse } from './services/api-service';
+import { timeService } from './services/time-service';
 
+/**
+ * Custom API Error with status code
+ */
 class ApiError extends Error {
     status: number;
 
@@ -30,10 +36,6 @@ export const queryKeys = {
         detail: (id: string) => ['items', 'detail', id] as const,
     },
 };
-
-import { useSettings } from '@/lib/stores/settings-store';
-import { apiService } from './services/api-service';
-import { timeService } from './services/time-service';
 
 /**
  * Hook: Fetch system statistics
@@ -72,20 +74,21 @@ export function useItems(filters?: FilterParams) {
 
 /**
  * Hook: Fetch item detail by ID
+ * Note: Response uses snake_case (decrypt_at) from local API routes
  */
 export function useItem(id: string | null) {
     const cacheTTLMinutes = useSettings(state => state.cacheTTLMinutes);
     const cacheTime = useMemo(() => cacheTTLMinutes * 60 * 1000, [cacheTTLMinutes]);
-
 
     return useQuery({
         queryKey: queryKeys.items.detail(id!),
         queryFn: async () => {
             try {
                 return await apiService.getItem(id!);
-            } catch (error: any) {
-                if (error.status) {
-                    throw new ApiError('Failed to fetch item', error.status);
+            } catch (error: unknown) {
+                const err = error as Error & { status?: number };
+                if (err.status) {
+                    throw new ApiError('Failed to fetch item', err.status);
                 }
                 throw error;
             }
@@ -107,7 +110,7 @@ export function useItem(id: string | null) {
                 return false;
             }
 
-            const data = query.state.data;
+            const data = query.state.data as ApiItemResponse | undefined;
             if (!data) return 1000; // Poll faster if no data yet (maybe loading/error fallback)
 
             // If already unlocked, no need to poll frequently

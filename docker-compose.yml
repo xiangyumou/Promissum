@@ -12,6 +12,7 @@ services:
     environment:
       - NODE_ENV=production
       - CHASTER_API_URL=http://chaster:3000/api/v1
+      - CHASTER_API_TOKEN=${API_TOKEN:-your_secure_token_here}
     depends_on:
       - chaster
 
@@ -19,24 +20,29 @@ services:
     image: ghcr.io/xiangyumou/chaster:latest
     container_name: chaster-service
     restart: always
+    ports:
+      - "3001:3000"
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-chaster}:${POSTGRES_PASSWORD:-chaster_password}@chaster-db:5432/${POSTGRES_DB:-chaster}
-      NEXTAUTH_SECRET: your-secret-here
-      NEXTAUTH_URL: http://localhost:3001
+      REDIS_URL: redis://chaster-redis:6379
+      API_TOKEN: ${API_TOKEN:-your_secure_token_here}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-100}
       MOCK_DRAND: "true"
-      # DB env vars for redundancy if needed by the app logic specifically, though usually DATABASE_URL suffices
-      POSTGRES_USER: ${POSTGRES_USER:-chaster}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chaster_password}
-      POSTGRES_DB: ${POSTGRES_DB:-chaster}
     depends_on:
       chaster-db:
+        condition: service_healthy
+      chaster-redis:
         condition: service_healthy
 
   chaster-db:
     image: postgres:16-alpine
     container_name: chaster-db
     restart: always
+    networks:
+      default:
+        aliases:
+          - db
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-chaster}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chaster_password}
@@ -49,5 +55,23 @@ services:
       timeout: 5s
       retries: 5
 
+  chaster-redis:
+    image: redis:7-alpine
+    container_name: chaster-redis
+    restart: always
+    networks:
+      default:
+        aliases:
+          - redis
+    command: redis-server --appendonly yes --appendfsync everysec
+    volumes:
+      - chaster_redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
 volumes:
   chaster_postgres_data:
+  chaster_redis_data:
