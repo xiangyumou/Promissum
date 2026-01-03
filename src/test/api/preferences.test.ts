@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET, POST } from '@/app/api/preferences/route';
 import { NextRequest } from 'next/server';
-import prisma from '@/lib/db/client';
+import { prisma } from '@/lib/db/client';
 
 // Mock Prisma
 vi.mock('@/lib/db/client', () => ({
-    default: {
+    prisma: {
         device: {
             findUnique: vi.fn(),
             create: vi.fn(),

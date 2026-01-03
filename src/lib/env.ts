@@ -72,8 +72,3 @@ export function validateEnv(): void {
     );
   }
 }
-
-/**
- * @deprecated Use checkEnvConfig() for non-throwing validation
- */
-export const isConfigured = () => checkEnvConfig().valid;

@@ -47,7 +47,6 @@ export async function migrateLocalStorage(): Promise<boolean> {
 
     // Skip if already migrated
     if (isMigrationComplete()) {
-        console.log('Settings migration already completed');
         return true;
     }
 
@@ -55,7 +54,6 @@ export async function migrateLocalStorage(): Promise<boolean> {
         // Get existing settings from localStorage
         const settingsJson = localStorage.getItem(SETTINGS_KEY);
         if (!settingsJson) {
-            console.log('No existing settings to migrate');
             localStorage.setItem(MIGRATION_FLAG_KEY, 'true');
             return true;
         }
@@ -82,7 +80,6 @@ export async function migrateLocalStorage(): Promise<boolean> {
 
         // Mark migration as complete
         localStorage.setItem(MIGRATION_FLAG_KEY, 'true');
-        console.log('Successfully migrated settings to database');
         return true;
     } catch (error) {
         console.error('Failed to migrate localStorage settings:', error);

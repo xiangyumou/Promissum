@@ -25,29 +25,6 @@ export interface ItemMetadata {
 // ============================================
 
 /**
- * Item list view - used in sidebar and API responses
- */
-export interface ItemListView {
-    id: string;
-    type: 'text' | 'image';
-    original_name: string | null;
-    decrypt_at: number;
-    created_at: number;
-    layer_count: number;
-    user_id: string;
-    metadata?: ItemMetadata;
-}
-
-/**
- * Full item detail view - used in content view
- */
-export interface ItemDetail extends ItemListView {
-    unlocked: boolean;
-    content: string | null;
-    timeRemainingMs?: number;
-}
-
-/**
  * API list view format (from remote API)
  */
 export interface ApiItemListView {
@@ -84,13 +61,6 @@ export interface CreateItemRequest {
     durationMinutes?: number;
     decryptAt?: number;
     metadata?: ItemMetadata;
-}
-
-/**
- * Request to extend an item's lock
- */
-export interface ExtendItemRequest {
-    minutes: number;
 }
 
 /**
@@ -137,19 +107,3 @@ export interface SystemStats {
     avgLockDurationMinutes?: number;
 }
 
-
-export interface ApiUserPreferences {
-    defaultDurationMinutes?: number;
-    privacyMode?: boolean;
-    themeConfig?: string;
-    dateTimeFormat?: string;
-    compactMode?: boolean;
-    sidebarOpen?: boolean;
-    confirmDelete?: boolean;
-    confirmExtend?: boolean;
-    autoRefreshInterval?: number;
-    cacheTTLMinutes?: number;
-    autoPrivacyDelayMinutes?: number;
-    apiToken?: string;
-    apiUrl?: string;
-}

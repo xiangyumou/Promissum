@@ -35,7 +35,6 @@ export function getCacheTTL(): number {
  */
 export function setCacheTTL(minutes: number): void {
     globalCacheTTL = minutes * 60 * 1000;
-    console.info(`[Cache] TTL updated to ${minutes} minutes`);
 }
 
 /**
@@ -54,7 +53,6 @@ function createSafePersister() {
         window.localStorage.setItem(testKey, 'test');
         window.localStorage.removeItem(testKey);
 
-        console.info('[Cache] Using localStorage for persistence');
         return createSyncStoragePersister({
             storage: window.localStorage,
             key: CACHE_KEY,
@@ -68,7 +66,6 @@ function createSafePersister() {
             window.sessionStorage.setItem(testKey, 'test');
             window.sessionStorage.removeItem(testKey);
 
-            console.info('[Cache] Falling back to sessionStorage');
             return createSyncStoragePersister({
                 storage: window.sessionStorage,
                 key: CACHE_KEY,
@@ -115,8 +112,6 @@ export function initializeQueryPersistence(queryClient: QueryClient): void {
                 },
             },
         });
-
-        console.info('[Cache] Persistence initialized successfully');
     } catch (error) {
         console.error('[Cache] Failed to initialize persistence:', error);
     }
@@ -146,7 +141,7 @@ export function estimateCacheSize(): number {
 /**
  * Check if cache size exceeds warning threshold
  */
-export function isCacheSizeExceeded(): boolean {
+function isCacheSizeExceeded(): boolean {
     return estimateCacheSize() > MAX_CACHE_SIZE_KB;
 }
 
@@ -174,7 +169,6 @@ export function clearPersistedCache(): void {
     try {
         window.localStorage.removeItem(CACHE_KEY);
         window.sessionStorage.removeItem(CACHE_KEY);
-        console.info('[Cache] Persisted cache cleared');
     } catch (error) {
         console.warn('[Cache] Failed to clear persisted cache:', error);
     }

@@ -17,96 +17,17 @@ import {
 } from '@xymou/chaster-client';
 import { getEffectiveApiUrl, getEffectiveApiToken } from './env';
 import { useSettings } from './stores/settings-store';
+import type {
+    ItemMetadata,
+    ApiItemListView,
+    ApiItemDetail,
+    CreateItemRequest,
+    FilterParams,
+    SystemStats,
+} from './types';
 
-// ============================================
-// Type Definitions (API Response Types - snake_case for frontend)
-// ============================================
-
-/**
- * Extended metadata for items
- */
-export interface ItemMetadata {
-    title?: string;
-    tags?: string[];
-    [key: string]: unknown;
-}
-
-/**
- * Item list view - uses snake_case for frontend compatibility
- */
-export interface ApiItemListView {
-    id: string;
-    type: 'text' | 'image';
-    unlocked: boolean;
-    decrypt_at: number;
-    created_at?: number;
-    metadata?: ItemMetadata;
-}
-
-/**
- * Full item detail view - uses snake_case for frontend compatibility
- */
-export interface ApiItemDetail {
-    id: string;
-    type: 'text' | 'image';
-    unlocked: boolean;
-    timeRemainingMs?: number;
-    decrypt_at: number;
-    content: string | null;
-    metadata?: ItemMetadata;
-    layer_count?: number;
-    original_name?: string | null;
-    created_at?: number;
-}
-
-/**
- * Request to create a new item
- */
-export interface CreateItemRequest {
-    type: 'text' | 'image';
-    content: string;
-    durationMinutes?: number;
-    decryptAt?: number;
-    metadata?: ItemMetadata;
-}
-
-/**
- * Request to extend an item's lock
- */
-export interface ExtendItemRequest {
-    minutes: number;
-}
-
-/**
- * Filter parameters for listing items
- */
-export interface FilterParams {
-    status?: 'all' | 'locked' | 'unlocked';
-    type?: 'text' | 'image';
-    search?: string;
-    limit?: number;
-    offset?: number;
-    sort?: 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc';
-    dateRange?: {
-        start: number;
-        end: number;
-    };
-    quickFilter?: 'unlocking-soon' | 'long-locked' | 'recent';
-}
-
-/**
- * System statistics response
- */
-export interface SystemStats {
-    totalItems: number;
-    lockedItems: number;
-    unlockedItems: number;
-    byType: {
-        text: number;
-        image: number;
-    };
-    avgLockDurationMinutes?: number;
-}
+// Re-export types for backward compatibility
+export type { FilterParams, SystemStats };
 
 // ============================================
 // Helper Functions
