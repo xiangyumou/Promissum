@@ -12,7 +12,7 @@ vi.mock('@/lib/services/time-service', () => ({
 describe('useCountdown', () => {
     beforeEach(() => {
         vi.useFakeTimers();
-        (timeService.now as any).mockReturnValue(1000);
+        vi.mocked(timeService.now).mockReturnValue(1000);
     });
 
     afterEach(() => {
@@ -32,7 +32,7 @@ describe('useCountdown', () => {
         const { result } = renderHook(() => useCountdown(target));
 
         // Advance time by 1s
-        (timeService.now as any).mockReturnValue(2000);
+        vi.mocked(timeService.now).mockReturnValue(2000);
         act(() => {
             vi.advanceTimersByTime(1000);
         });
@@ -45,7 +45,7 @@ describe('useCountdown', () => {
         const { result } = renderHook(() => useCountdown(target));
 
         // Advance past target
-        (timeService.now as any).mockReturnValue(3000);
+        vi.mocked(timeService.now).mockReturnValue(3000);
         act(() => {
             vi.advanceTimersByTime(2000);
         });
@@ -55,7 +55,7 @@ describe('useCountdown', () => {
 
     describe('Edge Cases', () => {
         it('should handle target time in the past', () => {
-            (timeService.now as any).mockReturnValue(5000);
+            vi.mocked(timeService.now).mockReturnValue(5000);
             const target = 2000; // In the past
             const { result } = renderHook(() => useCountdown(target));
 
@@ -65,7 +65,7 @@ describe('useCountdown', () => {
 
         it('should handle target time equal to current time', () => {
             const now = 5000;
-            (timeService.now as any).mockReturnValue(now);
+            vi.mocked(timeService.now).mockReturnValue(now);
             const { result } = renderHook(() => useCountdown(now));
 
             // Should show 0 when equal
@@ -73,7 +73,7 @@ describe('useCountdown', () => {
         });
 
         it('should handle very large time difference', () => {
-            (timeService.now as any).mockReturnValue(1000);
+            vi.mocked(timeService.now).mockReturnValue(1000);
             const yearsInFuture = 1000 + (365 * 24 * 60 * 60 * 1000 * 10); // 10 years
             const { result } = renderHook(() => useCountdown(yearsInFuture));
 
@@ -83,7 +83,7 @@ describe('useCountdown', () => {
         });
 
         it('should handle negative target time', () => {
-            (timeService.now as any).mockReturnValue(1000);
+            vi.mocked(timeService.now).mockReturnValue(1000);
             const { result } = renderHook(() => useCountdown(-5000));
 
             // Negative target should result in 0 (past)
@@ -93,7 +93,7 @@ describe('useCountdown', () => {
         it('should update when target changes', () => {
             const firstTarget = 5000;
             const secondTarget = 10000;
-            (timeService.now as any).mockReturnValue(1000);
+            vi.mocked(timeService.now).mockReturnValue(1000);
 
             const { result, rerender } = renderHook(
                 ({ target }) => useCountdown(target),
@@ -110,7 +110,7 @@ describe('useCountdown', () => {
 
         it('should cleanup timer on unmount', () => {
             const target = 5000;
-            (timeService.now as any).mockReturnValue(1000);
+            vi.mocked(timeService.now).mockReturnValue(1000);
 
             const { unmount } = renderHook(() => useCountdown(target));
 
@@ -126,14 +126,14 @@ describe('useCountdown', () => {
 
         it('should handle custom interval', () => {
             const target = 5000;
-            (timeService.now as any).mockReturnValue(1000);
+            vi.mocked(timeService.now).mockReturnValue(1000);
 
             const { result } = renderHook(() => useCountdown(target, { interval: 500 }));
 
             expect(result.current).toBe(4000);
 
             // Advance by 500ms (custom interval)
-            (timeService.now as any).mockReturnValue(1500);
+            vi.mocked(timeService.now).mockReturnValue(1500);
             act(() => {
                 vi.advanceTimersByTime(500);
             });
@@ -143,12 +143,12 @@ describe('useCountdown', () => {
 
         it('should never show negative values', () => {
             const target = 2000;
-            (timeService.now as any).mockReturnValue(1000);
+            vi.mocked(timeService.now).mockReturnValue(1000);
 
             const { result } = renderHook(() => useCountdown(target));
 
             // Advance way past target
-            (timeService.now as any).mockReturnValue(10000);
+            vi.mocked(timeService.now).mockReturnValue(10000);
             act(() => {
                 vi.advanceTimersByTime(10000);
             });

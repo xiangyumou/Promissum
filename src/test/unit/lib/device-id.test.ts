@@ -54,7 +54,7 @@ describe('device-id module', () => {
             const mockFp = {
                 get: vi.fn().mockResolvedValue({ visitorId: mockVisitorId })
             };
-            (FingerprintJS.load as any).mockResolvedValue(mockFp);
+            vi.mocked(FingerprintJS.load).mockResolvedValue(mockFp);
 
             // Import after mocking
             const { getDeviceId } = await import('@/lib/device-id');
@@ -70,7 +70,7 @@ describe('device-id module', () => {
             const mockFp = {
                 get: vi.fn().mockResolvedValue({ visitorId: mockVisitorId })
             };
-            (FingerprintJS.load as any).mockResolvedValue(mockFp);
+            vi.mocked(FingerprintJS.load).mockResolvedValue(mockFp);
 
             const { getDeviceId } = await import('@/lib/device-id');
             await getDeviceId();
@@ -95,7 +95,7 @@ describe('device-id module', () => {
             const mockFp = {
                 get: vi.fn().mockResolvedValue({ visitorId: mockVisitorId })
             };
-            (FingerprintJS.load as any).mockResolvedValue(mockFp);
+            vi.mocked(FingerprintJS.load).mockResolvedValue(mockFp);
 
             const { getDeviceId } = await import('@/lib/device-id');
             const deviceId1 = await getDeviceId();
@@ -109,7 +109,7 @@ describe('device-id module', () => {
         });
 
         it('should fallback to random UUID when FingerprintJS fails', async () => {
-            (FingerprintJS.load as any).mockRejectedValue(new Error('Fingerprint failed'));
+            vi.mocked(FingerprintJS.load).mockRejectedValue(new Error('Fingerprint failed'));
             const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
             const { getDeviceId } = await import('@/lib/device-id');
@@ -125,7 +125,7 @@ describe('device-id module', () => {
         });
 
         it('should store fallback UUID in localStorage', async () => {
-            (FingerprintJS.load as any).mockRejectedValue(new Error('Fingerprint failed'));
+            vi.mocked(FingerprintJS.load).mockRejectedValue(new Error('Fingerprint failed'));
             vi.spyOn(console, 'error').mockImplementation(() => { });
 
             const { getDeviceId } = await import('@/lib/device-id');
@@ -255,7 +255,7 @@ describe('device-id module', () => {
             const mockFp1 = {
                 get: vi.fn().mockResolvedValue({ visitorId: 'first-id' })
             };
-            (FingerprintJS.load as any).mockResolvedValue(mockFp1);
+            vi.mocked(FingerprintJS.load).mockResolvedValue(mockFp1);
 
             const { getDeviceId, resetDeviceId } = await import('@/lib/device-id');
             const firstId = await getDeviceId();
@@ -269,7 +269,7 @@ describe('device-id module', () => {
             const mockFp2 = {
                 get: vi.fn().mockResolvedValue({ visitorId: 'second-id' })
             };
-            (FingerprintJS.load as any).mockResolvedValue(mockFp2);
+            vi.mocked(FingerprintJS.load).mockResolvedValue(mockFp2);
 
             const { getDeviceId: getDeviceId2 } = await import('@/lib/device-id');
             const secondId = await getDeviceId2();

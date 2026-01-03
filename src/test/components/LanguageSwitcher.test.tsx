@@ -41,7 +41,7 @@ describe('LanguageSwitcher', () => {
         });
 
         it('should show Chinese text when current locale is English', () => {
-            (useLocale as any).mockReturnValue('en');
+            vi.mocked(useLocale).mockReturnValue('en');
 
             renderWithProviders(<LanguageSwitcher />);
 
@@ -49,7 +49,7 @@ describe('LanguageSwitcher', () => {
         });
 
         it('should show English text when current locale is Chinese', () => {
-            (useLocale as any).mockReturnValue('zh');
+            vi.mocked(useLocale).mockReturnValue('zh');
 
             renderWithProviders(<LanguageSwitcher />);
 
@@ -59,7 +59,7 @@ describe('LanguageSwitcher', () => {
 
     describe('Language Switching', () => {
         it('should call router.replace with zh locale when switching from English', () => {
-            (useLocale as any).mockReturnValue('en');
+            vi.mocked(useLocale).mockReturnValue('en');
 
             renderWithProviders(<LanguageSwitcher />);
 
@@ -71,7 +71,7 @@ describe('LanguageSwitcher', () => {
         });
 
         it('should call router.replace with en locale when switching from Chinese', () => {
-            (useLocale as any).mockReturnValue('zh');
+            vi.mocked(useLocale).mockReturnValue('zh');
 
             renderWithProviders(<LanguageSwitcher />);
 

@@ -1,7 +1,8 @@
-import { screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import Modal from '@/components/ui/Modal';
 import { renderWithProviders } from '@/test/utils';
+import React from 'react';
 
 // Mock react-use for media query
 vi.mock('react-use', () => ({
@@ -13,17 +14,13 @@ vi.mock('framer-motion', async () => {
     const actual = await vi.importActual('framer-motion');
     return {
         ...actual,
-        AnimatePresence: ({ children }: any) => <>{children}</>,
+        AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
         useDragControls: () => ({
             start: vi.fn()
         }),
         motion: {
-            div: ({ children, ...props }: any) => {
-                // Filter out motion-specific props
-                const { initial, animate, exit, transition, drag, dragControls,
-                    dragConstraints, dragElastic, onDragEnd, ...validProps } = props;
-                return <div {...validProps}>{children}</div>;
-            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            div: ({ children, ...props }: any) => <div {...props}>{children}</div>
         }
     };
 });
@@ -35,7 +32,7 @@ describe('Modal', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        (useMedia as any).mockReturnValue(false); // Desktop by default
+        (useMedia as Mock).mockReturnValue(false); // Desktop by default
     });
 
     describe('Rendering', () => {
@@ -110,7 +107,7 @@ describe('Modal', () => {
 
     describe('Mobile Mode', () => {
         it('should render drag handle on mobile', () => {
-            (useMedia as any).mockReturnValue(true); // Mobile
+            (useMedia as Mock).mockReturnValue(true); // Mobile
 
             const { container } = renderWithProviders(
                 <Modal isOpen={true} onClose={mockOnClose} title="Title">
@@ -128,7 +125,7 @@ describe('Modal', () => {
         });
 
         it('should not render drag handle on desktop', () => {
-            (useMedia as any).mockReturnValue(false); // Desktop
+            (useMedia as Mock).mockReturnValue(false); // Desktop
 
             const { container } = renderWithProviders(
                 <Modal isOpen={true} onClose={mockOnClose} title="Title">

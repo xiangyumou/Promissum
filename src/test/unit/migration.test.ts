@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { migrateLocalStorage, resetMigration } from '@/lib/migrate-localstorage';
 import { server } from '../mocks/server';
 import { http, HttpResponse } from 'msw';
@@ -44,10 +44,10 @@ describe('LocalStorage Migration', () => {
         localStorage.setItem('chaster-settings', JSON.stringify(mockSettings));
 
         // Intercept the specific POST request
-        let requestBody: any;
+        let requestBody: Record<string, unknown> | undefined;
         server.use(
             http.post('/api/preferences', async ({ request }) => {
-                requestBody = await request.json();
+                requestBody = await request.json() as Record<string, unknown>;
                 return HttpResponse.json({ success: true });
             })
         );

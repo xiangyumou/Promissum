@@ -157,8 +157,8 @@ describe('validation', () => {
         });
 
         it('should handle empty error array in formatZodErrors', () => {
-            // Mock minimal ZodError structure
-            const mockError = { issues: [] } as any;
+            // Create minimal ZodError-like structure
+            const mockError = { issues: [] } as unknown as z.ZodError;
             const result = formatZodErrors(mockError);
             expect(result).toBe(''); // Empty issues array returns empty string
         });

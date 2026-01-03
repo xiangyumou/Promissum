@@ -1,15 +1,38 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Home from '@/app/[locale]/page';
-import { renderWithProviders } from '@/test/utils';
+import { renderWithProviders, type ApiItemResponse } from '@/test/utils';
+
+interface SidebarProps {
+    items: ApiItemResponse[];
+    onSelectItem: (id: string) => void;
+    onAddClick: () => void;
+    isOpen: boolean;
+    onClose: () => void;
+    onFilterChange: (filters: Record<string, unknown>) => void;
+}
+
+interface AddModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (formData: FormData) => void;
+}
+
+interface ContentViewProps {
+    selectedId: string | null;
+    item?: ApiItemResponse;
+    onDelete: (id: string) => void;
+    onExtend: (id: string, minutes: number) => void;
+    onMenuClick: () => void;
+}
 
 // Mock components
 vi.mock('@/components/Sidebar', () => ({
-    default: ({ items, onSelectItem, onAddClick, isOpen, onClose, onFilterChange }: any) => (
+    default: ({ items, onSelectItem, onAddClick, onClose, onFilterChange }: SidebarProps) => (
         <div data-testid="sidebar">
             <button onClick={() => onAddClick()} data-testid="add-button">Add</button>
-            {items.map((item: any) => (
+            {items.map((item: ApiItemResponse) => (
                 <button
                     key={item.id}
                     onClick={() => {
@@ -29,7 +52,7 @@ vi.mock('@/components/Sidebar', () => ({
 }));
 
 vi.mock('@/components/AddModal', () => ({
-    default: ({ isOpen, onClose, onSubmit }: any) => isOpen ? (
+    default: ({ isOpen, onClose, onSubmit }: AddModalProps) => isOpen ? (
         <div data-testid="add-modal">
             <button onClick={() => {
                 const formData = new FormData();
@@ -44,7 +67,7 @@ vi.mock('@/components/AddModal', () => ({
 }));
 
 vi.mock('@/components/ContentView', () => ({
-    default: ({ selectedId, item, onDelete, onExtend, onMenuClick }: any) => selectedId ? (
+    default: ({ selectedId, item, onDelete, onExtend, onMenuClick }: ContentViewProps) => selectedId ? (
         <div data-testid="content-view">
             <button onClick={onMenuClick} data-testid="menu-button">Menu</button>
             <div data-testid="item-title">{item?.metadata?.title || 'Loading...'}</div>

@@ -1,11 +1,12 @@
 import { fireEvent, screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Sidebar from '@/components/Sidebar';
-import { renderWithProviders } from '@/test/utils';
+import { renderWithProviders, type ApiItemResponse } from '@/test/utils';
+import React from 'react';
 
 // Mock dependencies
 vi.mock('@/components/FilterBar', () => ({
-    default: ({ filters, onFilterChange }: any) => (
+    default: ({ filters, onFilterChange }: { filters: { search?: string }; onFilterChange: (f: Record<string, string>) => void }) => (
         <div data-testid="filter-bar">
             Filter Bar
             <button onClick={() => onFilterChange({ ...filters, search: 'test' })}>
@@ -16,7 +17,7 @@ vi.mock('@/components/FilterBar', () => ({
 }));
 
 vi.mock('@/i18n/routing', () => ({
-    Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
+    Link: ({ children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { children: React.ReactNode }) => <a {...props}>{children}</a>,
     usePathname: () => '/test',
     useRouter: () => ({ push: vi.fn() })
 }));
@@ -26,10 +27,10 @@ vi.mock('framer-motion', async () => {
     const actual = await vi.importActual('framer-motion');
     return {
         ...actual,
-        AnimatePresence: ({ children }: any) => <>{children}</>,
+        AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
         motion: {
-            div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-            button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+            div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement> & { children?: React.ReactNode }) => <div {...props}>{children}</div>,
+            button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement> & { children?: React.ReactNode }) => <button {...props}>{children}</button>,
         }
     };
 });
@@ -62,9 +63,9 @@ describe('Sidebar', () => {
     });
 
     it('should render items list', () => {
-        const items: any[] = [
-            { id: '1', type: 'text', decrypt_at: Date.now() + 10000, metadata: { title: 'Item 1' } },
-            { id: '2', type: 'image', decrypt_at: Date.now() - 10000, metadata: { title: 'Item 2' } }
+        const items: ApiItemResponse[] = [
+            { id: '1', type: 'text', decrypt_at: Date.now() + 10000, content: null, unlocked: false, metadata: { title: 'Item 1' } },
+            { id: '2', type: 'image', decrypt_at: Date.now() - 10000, content: null, unlocked: true, metadata: { title: 'Item 2' } }
         ];
 
         renderWithProviders(<Sidebar {...defaultProps} items={items} />);
@@ -74,7 +75,7 @@ describe('Sidebar', () => {
     });
 
     it('should handle item selection', () => {
-        const items: any[] = [{ id: '1', type: 'text', decrypt_at: Date.now() + 10000 }];
+        const items: ApiItemResponse[] = [{ id: '1', type: 'text', decrypt_at: Date.now() + 10000, content: null, unlocked: false }];
         renderWithProviders(<Sidebar {...defaultProps} items={items} />);
 
         fireEvent.click(screen.getByText('Text Note')); // fallback title

@@ -69,8 +69,8 @@ describe('date-utils', () => {
         });
 
         it('should return safe defaults for invalid inputs', () => {
-            expect(formatDate(null as any)).toBe('Invalid date');
-            expect(formatDate(undefined as any)).toBe('Invalid date');
+            expect(formatDate(null as unknown as Date)).toBe('Invalid date');
+            expect(formatDate(undefined as unknown as Date)).toBe('Invalid date');
             expect(formatDateTime('invalid-date')).toBe('Invalid date');
         });
     });

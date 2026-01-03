@@ -22,7 +22,7 @@ describe('ThemeRegistry', () => {
                 '--bg': '#1f2937'
             };
 
-            (useSettings as any).mockReturnValue({ themeConfig: mockThemeConfig });
+            vi.mocked(useSettings).mockReturnValue({ themeConfig: mockThemeConfig });
 
             render(<ThemeRegistry />);
 
@@ -36,7 +36,7 @@ describe('ThemeRegistry', () => {
             document.documentElement.style.setProperty('--primary', '#000');
             document.documentElement.style.setProperty('--secondary', '#fff');
 
-            (useSettings as any).mockReturnValue({ themeConfig: {} });
+            vi.mocked(useSettings).mockReturnValue({ themeConfig: {} });
 
             render(<ThemeRegistry />);
 
@@ -48,7 +48,7 @@ describe('ThemeRegistry', () => {
             const { rerender } = render(<ThemeRegistry />);
 
             // Initial theme
-            (useSettings as any).mockReturnValue({
+            vi.mocked(useSettings).mockReturnValue({
                 themeConfig: { '--primary': '#ff0000' }
             });
             rerender(<ThemeRegistry />);
@@ -56,7 +56,7 @@ describe('ThemeRegistry', () => {
             expect(document.documentElement.style.getPropertyValue('--primary')).toBe('#ff0000');
 
             // Updated theme
-            (useSettings as any).mockReturnValue({
+            vi.mocked(useSettings).mockReturnValue({
                 themeConfig: { '--primary': '#00ff00' }
             });
             rerender(<ThemeRegistry />);
@@ -67,7 +67,7 @@ describe('ThemeRegistry', () => {
 
     describe('Edge Cases', () => {
         it('should handle partial theme config', () => {
-            (useSettings as any).mockReturnValue({
+            vi.mocked(useSettings).mockReturnValue({
                 themeConfig: { '--primary': '#3b82f6' }
             });
 
@@ -78,7 +78,7 @@ describe('ThemeRegistry', () => {
         });
 
         it('should skip falsy values in theme config', () => {
-            (useSettings as any).mockReturnValue({
+            vi.mocked(useSettings).mockReturnValue({
                 themeConfig: {
                     '--primary': '#3b82f6',
                     '--secondary': '',
@@ -94,7 +94,7 @@ describe('ThemeRegistry', () => {
         });
 
         it('should not render any visible content', () => {
-            (useSettings as any).mockReturnValue({ themeConfig: {} });
+            vi.mocked(useSettings).mockReturnValue({ themeConfig: {} });
 
             const { container } = render(<ThemeRegistry />);
 
@@ -109,7 +109,7 @@ describe('ThemeRegistry', () => {
             // The actual component code has the check: if (typeof window === 'undefined') return;
             // This works correctly in real SSR (Next.js) but can't be tested in jsdom environment
 
-            (useSettings as any).mockReturnValue({ themeConfig: { '--primary': '#000' } });
+            vi.mocked(useSettings).mockReturnValue({ themeConfig: { '--primary': '#000' } });
 
             // In real SSR, component returns null when window is undefined
             expect(true).toBe(true);

@@ -108,9 +108,10 @@ describe('ApiService', () => {
             try {
                 await apiService.getItem('missing');
                 expect.fail('Should have thrown');
-            } catch (error: any) {
-                expect(error.message).toBe('Failed to fetch item');
-                expect(error.status).toBe(404);
+            } catch (error) {
+                const e = error as Error & { status?: number };
+                expect(e.message).toBe('Failed to fetch item');
+                expect(e.status).toBe(404);
             }
         });
 
@@ -124,8 +125,9 @@ describe('ApiService', () => {
             try {
                 await apiService.getItem('private');
                 expect.fail('Should have thrown');
-            } catch (error: any) {
-                expect(error.status).toBe(401);
+            } catch (error) {
+                const e = error as Error & { status?: number };
+                expect(e.status).toBe(401);
             }
         });
     });

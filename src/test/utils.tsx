@@ -3,7 +3,6 @@ import { render, RenderOptions } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { NextIntlClientProvider } from 'next-intl';
 import { resetSettingsStore } from '@/lib/stores/settings-store';
-import { vi } from 'vitest';
 
 // Mock generic messages for testing
 const messages = {
@@ -167,12 +166,10 @@ interface ExtendedRenderOptions extends Omit<RenderOptions, 'queries'> {
 
 export function renderWithProviders(
     ui: ReactElement,
-    { route = '/', ...renderOptions }: ExtendedRenderOptions = {}
+    renderOptions: ExtendedRenderOptions = {}
 ) {
     // Reset store before each render
     resetSettingsStore();
-
-    const queryClient = createTestQueryClient();
 
     return {
         user: undefined, // userEvent.setup() can be added here if needed
@@ -193,6 +190,16 @@ export function TestWrapper({ children }: { children: React.ReactNode }) {
 
 export function createWrapper() {
     return TestWrapper;
+}
+
+// Re-export types used by tests  
+export interface ApiItemResponse {
+    id: string;
+    type: 'text' | 'image';
+    decrypt_at: number;
+    unlocked: boolean;
+    content: string | null;
+    metadata?: { title?: string; tags?: string[] };
 }
 
 // Re-export everything

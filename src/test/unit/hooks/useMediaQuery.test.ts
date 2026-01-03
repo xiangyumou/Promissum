@@ -10,10 +10,10 @@ vi.mock('@/lib/services/browser-service', () => ({
 }));
 
 describe('useMediaQuery', () => {
-    let addListenerMock: any;
-    let removeListenerMock: any;
-    let addEventListenerMock: any;
-    let removeEventListenerMock: any;
+    let addListenerMock: ReturnType<typeof vi.fn>;
+    let removeListenerMock: ReturnType<typeof vi.fn>;
+    let addEventListenerMock: ReturnType<typeof vi.fn>;
+    let removeEventListenerMock: ReturnType<typeof vi.fn>;
 
     beforeEach(() => {
         addListenerMock = vi.fn();
@@ -24,33 +24,33 @@ describe('useMediaQuery', () => {
     });
 
     it('should return matches based on query', () => {
-        (browserService.matchMedia as any).mockReturnValue({
+        vi.mocked(browserService.matchMedia).mockReturnValue({
             matches: true,
             addListener: addListenerMock,
             removeListener: removeListenerMock,
             addEventListener: addEventListenerMock,
             removeEventListener: removeEventListenerMock,
-        });
+        } as unknown as MediaQueryList);
 
         const { result } = renderHook(() => useMediaQuery('(min-width: 600px)'));
         expect(result.current).toBe(true);
     });
 
     it('should update when listener fires', () => {
-        const listeners: any[] = [];
-        (browserService.matchMedia as any).mockReturnValue({
+        const listeners: ((event: MediaQueryListEvent) => void)[] = [];
+        vi.mocked(browserService.matchMedia).mockReturnValue({
             matches: false,
-            addListener: (cb: any) => listeners.push(cb),
+            addListener: (cb: (event: MediaQueryListEvent) => void) => listeners.push(cb),
             removeListener: vi.fn(),
             // Mocking legacy API as hook supports both
             // If hook prefers modern, we might need to mock addEventListener
-        });
+        } as unknown as MediaQueryList);
 
         const { result } = renderHook(() => useMediaQuery('(min-width: 600px)'));
         expect(result.current).toBe(false);
 
         act(() => {
-            listeners.forEach(l => l({ matches: true } as any));
+            listeners.forEach(l => l({ matches: true } as unknown as MediaQueryListEvent));
         });
 
         expect(result.current).toBe(true);
