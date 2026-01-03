@@ -20,6 +20,7 @@ export interface UnlockTimeInfo {
     formatted: string; // MM-DD HH:mm format
     remaining: string; // e.g., "1d 2h 30m"
     isValid: boolean;  // whether duration is at least 1 minute/future
+    errorReason?: 'past' | 'incomplete' | null; // specific error reason
 }
 
 /**
@@ -64,8 +65,17 @@ export function calculateUnlockTimeInfo(
 ): UnlockTimeInfo {
     let unlockDate: Date;
     let diffMs: number;
+    let errorReason: 'past' | 'incomplete' | null = null;
 
     if (timeMode === 'absolute') {
+        // Check for incomplete absolute time input
+        const hasIncompleteInput = !absoluteTime.year || !absoluteTime.month || !absoluteTime.day ||
+            !absoluteTime.hour || !absoluteTime.minute;
+
+        if (hasIncompleteInput) {
+            errorReason = 'incomplete';
+        }
+
         const year = parseInt(absoluteTime.year) + 2000;
         const month = parseInt(absoluteTime.month) - 1;
         const day = parseInt(absoluteTime.day);
@@ -73,6 +83,11 @@ export function calculateUnlockTimeInfo(
         const minute = parseInt(absoluteTime.minute);
         unlockDate = new Date(year, month, day, hour, minute);
         diffMs = unlockDate.getTime() - currentTime;
+
+        // Check if time is in the past
+        if (!errorReason && diffMs < 60000) {
+            errorReason = 'past';
+        }
     } else {
         unlockDate = new Date(currentTime + calculatedDuration * 60 * 1000);
         // Recalculate diff to be precise
@@ -86,7 +101,7 @@ export function calculateUnlockTimeInfo(
 
     // Calculate remaining string
     const totalMinutes = Math.ceil(diffMs / 60000);
-    const isValid = totalMinutes >= 1;
+    const isValid = totalMinutes >= 1 && !errorReason;
 
     const days = Math.floor(totalMinutes / 1440);
     const hours = Math.floor((totalMinutes % 1440) / 60);
@@ -101,6 +116,7 @@ export function calculateUnlockTimeInfo(
         unlockDate,
         formatted: `${monthStr}-${dayStr} ${hourStr}:${minuteStr}`,
         remaining: remaining.trim(),
-        isValid
+        isValid,
+        errorReason
     };
 }

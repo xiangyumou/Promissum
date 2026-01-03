@@ -60,7 +60,10 @@ const messages = {
         today: 'Today',
         thisWeek: 'This Week',
         thisMonth: 'This Month',
-        customRange: 'Custom Range'
+        customRange: 'Custom Range',
+        statusLabel: 'Status',
+        typeLabel: 'Type',
+        clearFilters: 'Clear Filters'
     },
     ContentView: {
         delete: 'Delete',

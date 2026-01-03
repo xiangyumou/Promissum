@@ -54,7 +54,10 @@
         "presetName": "预设名称",
         "presetNamePlaceholder": "例如：我的常用筛选",
         "deletePreset": "删除预设",
-        "noPresets": "暂无保存的预设"
+        "noPresets": "暂无保存的预设",
+        "statusLabel": "状态",
+        "typeLabel": "类型",
+        "clearFilters": "清除筛选"
     },
     "AddModal": {
         "title": "创建加密项目",
@@ -72,7 +75,9 @@
         "invalidTime": "时间无效",
         "checkInput": "检查输入",
         "remaining": "剩余",
-        "reset": "重置"
+        "reset": "重置",
+        "timePast": "时间不能在过去",
+        "timeIncomplete": "请填写完整的日期时间"
     },
     "ImageUpload": {
         "dragDropHere": "拖拽图片到这里",
@@ -160,6 +165,7 @@
         "dangerZoneDesc": "清除所有本地数据并重置应用",
         "clearAllData": "清除所有数据",
         "clearDataConfirm": "确定要清除所有数据吗？此操作无法撤销。",
+        "resetConfirmDesc": "您确定要将所有设置恢复为默认值吗？",
         "exportDataTitle": "导出数据",
         "exportDataDesc": "导出 {count} 个已解锁项目",
         "exportJSON": "导出 JSON",

@@ -59,7 +59,7 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
 
             {/* Status Filter */}
             <div className="space-y-2">
-                <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider pl-1 font-mono">Status</div>
+                <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider pl-1 font-mono">{t('statusLabel')}</div>
                 <div className="flex bg-card/50 p-1 rounded-xl border border-border">
                     <FilterButton
                         active={filters.status === 'all'}
@@ -83,7 +83,7 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
 
             {/* Type Filter */}
             <div className="space-y-2">
-                <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider pl-1 font-mono">Type</div>
+                <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider pl-1 font-mono">{t('typeLabel')}</div>
                 <div className="flex bg-card/50 p-1 rounded-xl border border-border">
                     <FilterButton
                         active={!filters.type}
@@ -116,7 +116,7 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
                     title="Reset Filters"
                 >
                     <X size={12} />
-                    Clear Filters
+                    {t('clearFilters')}
                 </button>
             )}
         </div>

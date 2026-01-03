@@ -73,6 +73,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                 <div className="absolute top-4 left-4 z-50 md:hidden">
                     <button
                         onClick={onMenuClick}
+                        aria-label="Open menu"
                         className={cn(
                             "p-2 bg-card/50 backdrop-blur-md rounded-lg border border-border text-foreground hover:bg-accent transition-colors"
                         )}
@@ -134,6 +135,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                         {/* Mobile Menu Button */}
                         <button
                             onClick={onMenuClick}
+                            aria-label="Open menu"
                             className={cn(
                                 "p-2 -ml-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors md:hidden"
                             )}

@@ -320,14 +320,23 @@ function ItemCard({
             </div>
 
             <div className="flex-1 min-w-0">
-                <div className={cn(
-                    "text-sm font-medium truncate transition-all duration-300",
-                    isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground",
-                    privacyMode && !isSelected && "blur-sm group-hover:blur-0"
-                )}>
+                <div
+                    className={cn(
+                        "text-sm font-medium truncate transition-all duration-300",
+                        isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground",
+                        privacyMode && !isSelected && "blur-sm group-hover:blur-0"
+                    )}
+                    aria-hidden={privacyMode && !isSelected}
+                >
                     {item.metadata?.title ||
                         (item.type === 'text' ? tCommon('textNote') : tCommon('image'))}
                 </div>
+                {/* Screen reader accessible alternative when blurred */}
+                {privacyMode && !isSelected && (
+                    <span className="sr-only">
+                        {item.type === 'text' ? tCommon('textNote') : tCommon('image')} - {tCommon('locked')}
+                    </span>
+                )}
                 <div className={cn(
                     "text-xs flex items-center gap-1.5 mt-1 font-medium truncate",
                     isUnlocked ? "text-emerald-500" : "text-muted-foreground"

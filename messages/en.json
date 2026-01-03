@@ -54,7 +54,10 @@
         "presetName": "Preset Name",
         "presetNamePlaceholder": "e.g. My Favorite Filter",
         "deletePreset": "Delete Preset",
-        "noPresets": "No saved presets"
+        "noPresets": "No saved presets",
+        "statusLabel": "Status",
+        "typeLabel": "Type",
+        "clearFilters": "Clear Filters"
     },
     "AddModal": {
         "title": "Create Encrypted Item",
@@ -72,7 +75,9 @@
         "invalidTime": "Invalid Time",
         "checkInput": "Check Input",
         "remaining": "Remaining",
-        "reset": "Reset"
+        "reset": "Reset",
+        "timePast": "Time cannot be in the past",
+        "timeIncomplete": "Please fill in all date/time fields"
     },
     "ImageUpload": {
         "dragDropHere": "Drag and drop image here",
@@ -160,6 +165,7 @@
         "dangerZoneDesc": "Clear all local data and reset application",
         "clearAllData": "Clear All Data",
         "clearDataConfirm": "Are you sure you want to clear all data? This cannot be undone.",
+        "resetConfirmDesc": "Are you sure you want to reset all settings to default?",
         "exportDataTitle": "Export Data",
         "exportDataDesc": "Export {count} unlocked items",
         "exportJSON": "Export JSON",

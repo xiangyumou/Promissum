@@ -36,6 +36,7 @@ import { setCacheTTL } from '@/lib/cache-config';
 import { Link } from '@/i18n/routing';
 import { Bell } from 'lucide-react';
 import { notificationService } from '@/lib/services/notification-service';
+import ToggleSwitch from '@/components/ui/ToggleSwitch';
 
 export default function SettingsPage() {
     const t = useTranslations('Settings');
@@ -360,12 +361,11 @@ export default function SettingsPage() {
                                 </label>
                                 <p className="text-xs text-muted-foreground">{t('compactModeDesc')}</p>
                             </div>
-                            <button
-                                onClick={() => setCompactMode(!compactMode)}
-                                className={`w-12 h-6 rounded-full transition-colors relative ${compactMode ? 'bg-primary' : 'bg-muted'}`}
-                            >
-                                <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${compactMode ? 'translate-x-6' : 'translate-x-0'}`} />
-                            </button>
+                            <ToggleSwitch
+                                checked={compactMode}
+                                onChange={setCompactMode}
+                                aria-label={t('compactMode')}
+                            />
                         </div>
 
                         <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
@@ -480,22 +480,22 @@ export default function SettingsPage() {
 
                             <div className="flex items-center justify-between pl-6">
                                 <span className="text-sm text-foreground">{t('confirmDelete')}</span>
-                                <button
-                                    onClick={() => setConfirmDelete(!confirmDelete)}
-                                    className={`w-10 h-5 rounded-full transition-colors relative ${confirmDelete ? 'bg-primary' : 'bg-muted'}`}
-                                >
-                                    <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${confirmDelete ? 'translate-x-5' : 'translate-x-0'}`} />
-                                </button>
+                                <ToggleSwitch
+                                    checked={confirmDelete}
+                                    onChange={setConfirmDelete}
+                                    size="sm"
+                                    aria-label={t('confirmDelete')}
+                                />
                             </div>
 
                             <div className="flex items-center justify-between pl-6">
                                 <span className="text-sm text-foreground">{t('confirmExtend')}</span>
-                                <button
-                                    onClick={() => setConfirmExtend(!confirmExtend)}
-                                    className={`w-10 h-5 rounded-full transition-colors relative ${confirmExtend ? 'bg-primary' : 'bg-muted'}`}
-                                >
-                                    <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${confirmExtend ? 'translate-x-5' : 'translate-x-0'}`} />
-                                </button>
+                                <ToggleSwitch
+                                    checked={confirmExtend}
+                                    onChange={setConfirmExtend}
+                                    size="sm"
+                                    aria-label={t('confirmExtend')}
+                                />
                             </div>
                         </div>
 
@@ -553,15 +553,12 @@ export default function SettingsPage() {
                                 {notificationPermission === 'denied' && (
                                     <span className="text-xs text-red-500">{t('permissionDenied')}</span>
                                 )}
-                                <button
-                                    onClick={() => setNotificationEnabled(!notificationEnabled)}
+                                <ToggleSwitch
+                                    checked={notificationEnabled && notificationPermission === 'granted'}
+                                    onChange={setNotificationEnabled}
                                     disabled={notificationPermission !== 'granted'}
-                                    className={`w-12 h-6 rounded-full transition-colors relative ${notificationEnabled && notificationPermission === 'granted' ? 'bg-primary' : 'bg-muted'
-                                        } ${notificationPermission !== 'granted' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                >
-                                    <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${notificationEnabled && notificationPermission === 'granted' ? 'translate-x-6' : 'translate-x-0'
-                                        }`} />
-                                </button>
+                                    aria-label={t('enableNotifications')}
+                                />
                             </div>
                         </div>
 
@@ -605,13 +602,12 @@ export default function SettingsPage() {
                                         </label>
                                         <p className="text-xs text-muted-foreground">{t('soundEnabledDesc')}</p>
                                     </div>
-                                    <button
-                                        onClick={() => setSoundEnabled(!soundEnabled)}
-                                        className={`w-10 h-5 rounded-full transition-colors relative ${soundEnabled ? 'bg-primary' : 'bg-muted'}`}
-                                    >
-                                        <div className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${soundEnabled ? 'translate-x-5' : 'translate-x-0'
-                                            }`} />
-                                    </button>
+                                    <ToggleSwitch
+                                        checked={soundEnabled}
+                                        onChange={setSoundEnabled}
+                                        size="sm"
+                                        aria-label={t('soundEnabled')}
+                                    />
                                 </div>
 
                                 <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
@@ -691,12 +687,11 @@ export default function SettingsPage() {
                                 </label>
                                 <p className="text-xs text-muted-foreground">{t('privacyModeDesc')}</p>
                             </div>
-                            <button
-                                onClick={() => setPrivacyMode(!privacyMode)}
-                                className={`w-12 h-6 rounded-full transition-colors relative ${privacyMode ? 'bg-primary' : 'bg-muted'}`}
-                            >
-                                <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${privacyMode ? 'translate-x-6' : 'translate-x-0'}`} />
-                            </button>
+                            <ToggleSwitch
+                                checked={privacyMode}
+                                onChange={setPrivacyMode}
+                                aria-label={t('privacyMode')}
+                            />
                         </div>
 
                         {/* Auto Privacy Delay */}
@@ -834,7 +829,7 @@ export default function SettingsPage() {
                 <ConfirmDialog
                     isOpen={showResetConfirm}
                     title={t('resetDefaults')}
-                    description="Are you sure you want to reset all settings to default?"
+                    description={t('resetConfirmDesc')}
                     confirmLabel={t('resetDefaults')}
                     variant="warning"
                     onConfirm={confirmReset}

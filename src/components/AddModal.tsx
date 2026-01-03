@@ -90,9 +90,23 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
     // Calculate and format the unlock time
     const unlockTimeInfo = useMemo(() => {
         const info = calculateUnlockTimeInfo(calculatedDuration, timeMode, absoluteTime, timeService.now());
+
+        // Determine the specific error message based on errorReason
+        let errorMessage: string | null = null;
+        if (!info.isValid) {
+            if (info.errorReason === 'past') {
+                errorMessage = t('timePast');
+            } else if (info.errorReason === 'incomplete') {
+                errorMessage = t('timeIncomplete');
+            } else {
+                errorMessage = t('invalidTime');
+            }
+        }
+
         return {
             ...info,
-            remaining: info.isValid ? info.remaining : t('invalidTime'),
+            remaining: info.isValid ? info.remaining : errorMessage || t('invalidTime'),
+            errorMessage,
         };
     }, [calculatedDuration, timeMode, absoluteTime, t]);
 
@@ -623,12 +637,14 @@ function TimeInput({ value, onChange, placeholder }: { value: string, onChange: 
     return (
         <input
             type="text"
+            inputMode="numeric"
             maxLength={2}
-            className="w-10 p-1 text-center bg-transparent border-b-2 border-border focus:border-primary focus:outline-none font-mono font-medium rounded text-lg text-foreground placeholder-muted-foreground/50 transition-colors"
+            className="w-12 h-11 min-h-[44px] p-2 text-center bg-transparent border-b-2 border-border focus:border-primary focus:outline-none font-mono font-medium rounded text-lg text-foreground placeholder-muted-foreground/50 transition-colors"
             placeholder={placeholder}
             value={value}
             onChange={(e) => onChange(e.target.value.replace(/\D/g, ''))}
             onFocus={(e) => e.target.select()}
+            aria-label={placeholder}
         />
     );
 }
