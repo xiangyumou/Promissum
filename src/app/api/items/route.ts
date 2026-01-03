@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { apiClient } from '@/lib/api-client';
+import { createErrorResponse, logApiError } from '@/lib/api-error';
 
 // GET /api/items - List all items
 export async function GET(request: NextRequest) {
@@ -34,12 +35,11 @@ export async function GET(request: NextRequest) {
             lastDuration: 720 // Default 12 hours, could be stored in localStorage on client
         });
     } catch (error) {
-        console.error('Error fetching items from API:', error);
+        logApiError('Error fetching items from API', error);
         return NextResponse.json({
             items: [], // Return empty array on error to prevent crashes
             lastDuration: 720,
             error: 'Failed to fetch items',
-            details: error instanceof Error ? error.message : 'Unknown error'
         }, { status: 500 });
     }
 }
@@ -113,10 +113,7 @@ export async function POST(request: NextRequest) {
             }
         });
     } catch (error) {
-        console.error('Error creating item via API:', error);
-        return NextResponse.json({
-            error: 'Failed to create item',
-            details: error instanceof Error ? error.message : 'Unknown error'
-        }, { status: 500 });
+        logApiError('Error creating item via API', error);
+        return createErrorResponse(error, 'Failed to create item');
     }
 }

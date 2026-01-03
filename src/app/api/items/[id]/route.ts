@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { apiClient } from '@/lib/api-client';
+import { createErrorResponse, logApiError } from '@/lib/api-error';
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -39,12 +40,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: 'Item not found' }, { status: 404 });
         }
 
-        console.error('Error fetching item from API:', error);
+        logApiError('Error fetching item from API', error);
 
-        return NextResponse.json({
-            error: 'Failed to fetch item',
-            details: error instanceof Error ? error.message : 'Unknown error'
-        }, { status: 500 });
+        return createErrorResponse(error, 'Failed to fetch item');
     }
 }
 
@@ -63,11 +61,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: 'Item not found' }, { status: 404 });
         }
 
-        console.error('Error deleting item via API:', error);
+        logApiError('Error deleting item via API', error);
 
-        return NextResponse.json({
-            error: 'Failed to delete item',
-            details: error instanceof Error ? error.message : 'Unknown error'
-        }, { status: 500 });
+        return createErrorResponse(error, 'Failed to delete item');
     }
 }

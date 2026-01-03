@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { env } from '@/lib/env';
+import { logApiError } from '@/lib/api-error';
 
 /**
  * Health Check Endpoint
@@ -23,11 +24,12 @@ export async function GET(_request: NextRequest) {
         const data = await response.json();
         return NextResponse.json(data);
     } catch (error) {
-        console.error('Health check error:', error);
+        logApiError('Health check error', error);
+        const isProduction = process.env.NODE_ENV === 'production';
         return NextResponse.json(
             {
                 status: 'error',
-                message: error instanceof Error ? error.message : 'Unknown error'
+                message: isProduction ? 'Service unavailable' : (error instanceof Error ? error.message : 'Unknown error')
             },
             { status: 503 }
         );

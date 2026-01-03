@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { apiClient } from '@/lib/api-client';
 import { ExtendItemSchema, formatZodErrors } from '@/lib/validation';
+import { createErrorResponse, logApiError } from '@/lib/api-error';
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             layer_count: apiResponse.layer_count || 1,
         });
     } catch (error) {
-        console.error('Error extending lock via API:', error);
+        logApiError('Error extending lock via API', error);
 
         // Check for specific error types
         if (error instanceof Error) {
@@ -68,9 +69,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             }
         }
 
-        return NextResponse.json({
-            error: 'Failed to extend lock',
-            details: error instanceof Error ? error.message : 'Unknown error'
-        }, { status: 500 });
+        return createErrorResponse(error, 'Failed to extend lock');
     }
 }

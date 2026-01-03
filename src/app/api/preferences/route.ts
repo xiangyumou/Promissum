@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db/client';
 import { z } from 'zod';
+import { logApiError } from '@/lib/api-error';
 
 // Validation schema matching SettingsStore
 const PreferencesSchema = z.object({
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json(device.preferences);
     } catch (error) {
-        console.error('Error fetching preferences:', error);
+        logApiError('Error fetching preferences', error);
         return NextResponse.json(
             { error: 'Failed to fetch preferences' },
             { status: 500 }
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(preferences);
     } catch (error) {
-        console.error('Error updating preferences:', error);
+        logApiError('Error updating preferences', error);
         return NextResponse.json(
             { error: 'Failed to update preferences' },
             { status: 500 }
