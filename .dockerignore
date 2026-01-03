@@ -1,0 +1,41 @@
+# Dependencies
+node_modules
+
+# Build artifacts
+.next
+*.tsbuildinfo
+
+# Git
+.git
+.gitignore
+
+# IDE/Editor
+.idea
+.vscode
+*.swp
+*.swo
+.DS_Store
+
+# Test and coverage
+coverage
+tests
+*.test.ts
+*.test.tsx
+vitest.config.ts
+
+# Local development files
+.env.local
+.env.*.local
+data/*.db
+data/*.db-journal
+
+# Documentation
+docs
+*.md
+SOP
+
+# External projects (not part of this Docker image)
+Chaster
+
+# Misc
+coverage_report.txt

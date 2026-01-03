@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: chaster-app
+    container_name: promissum-app
     ports:
       - "3000:3000"
     volumes:
@@ -11,3 +11,43 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
+      - CHASTER_API_URL=http://chaster:3000/api/v1
+    depends_on:
+      - chaster
+
+  chaster:
+    image: ghcr.io/xiangyumou/chaster:latest
+    container_name: chaster-service
+    restart: always
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-chaster}:${POSTGRES_PASSWORD:-chaster_password}@chaster-db:5432/${POSTGRES_DB:-chaster}
+      NEXTAUTH_SECRET: your-secret-here
+      NEXTAUTH_URL: http://localhost:3001
+      MOCK_DRAND: "true"
+      # DB env vars for redundancy if needed by the app logic specifically, though usually DATABASE_URL suffices
+      POSTGRES_USER: ${POSTGRES_USER:-chaster}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chaster_password}
+      POSTGRES_DB: ${POSTGRES_DB:-chaster}
+    depends_on:
+      chaster-db:
+        condition: service_healthy
+
+  chaster-db:
+    image: postgres:16-alpine
+    container_name: chaster-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-chaster}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chaster_password}
+      POSTGRES_DB: ${POSTGRES_DB:-chaster}
+    volumes:
+      - chaster_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chaster} -d ${POSTGRES_DB:-chaster}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  chaster_postgres_data:

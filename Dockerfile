@@ -19,6 +19,9 @@ RUN npm ci
 # Copy source files
 COPY . .
 
+# Generate Prisma client
+RUN npx prisma generate
+
 # Build the Next.js application
 RUN npm run build
 
@@ -33,6 +36,7 @@ ENV NODE_ENV=PRODUCTION
 # Install production build dependencies for better-sqlite3 (runtime needs it if it wasn't pre-built for the target architecture, but slim should be fine if we copy correctly. However, to be safe for better-sqlite3, we might need some libs)
 RUN apt-get update && apt-get install -y \
     sqlite3 \
+    openssl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create data directory
@@ -45,6 +49,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/src ./src
+COPY --from=builder /app/prisma ./prisma
 
 # Expose the application port
 EXPOSE 3000
