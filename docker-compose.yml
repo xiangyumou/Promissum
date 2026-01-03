@@ -11,7 +11,8 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
-      - CHASTER_API_URL=http://chaster:3000/api/v1
+      - CHASTER_API_URL=${CHASTER_API_URL:-http://chaster:3000/api/v1}
+      # Map the shared API_TOKEN to the app's CHASTER_API_TOKEN
       - CHASTER_API_TOKEN=${API_TOKEN:-your_secure_token_here}
     depends_on:
       - chaster
@@ -20,15 +21,14 @@ services:
     image: ghcr.io/xiangyumou/chaster:latest
     container_name: chaster-service
     restart: always
-    ports:
-      - "3001:3000"
+
     environment:
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-chaster}:${POSTGRES_PASSWORD:-chaster_password}@chaster-db:5432/${POSTGRES_DB:-chaster}
       REDIS_URL: redis://chaster-redis:6379
       API_TOKEN: ${API_TOKEN:-your_secure_token_here}
       RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-100}
-      MOCK_DRAND: "true"
+      MOCK_DRAND: "${MOCK_DRAND:-true}"
     depends_on:
       chaster-db:
         condition: service_healthy
