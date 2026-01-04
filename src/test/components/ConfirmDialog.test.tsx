@@ -54,7 +54,7 @@ describe('ConfirmDialog', () => {
                 <ConfirmDialog {...defaultProps} variant="danger" />
             );
             const confirmBtn = screen.getByRole('button', { name: 'Confirm' });
-            expect(confirmBtn).toHaveClass('bg-red-500');
+            expect(confirmBtn).toHaveClass('bg-destructive');
         });
 
         it('should render warning variant correctly', () => {

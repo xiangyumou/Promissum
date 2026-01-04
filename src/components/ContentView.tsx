@@ -146,8 +146,8 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                         <div className={cn(
                             "w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-xl shadow-lg shrink-0",
                             item.type === 'text'
-                                ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
-                                : "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                                ? "bg-type-text/10 text-type-text border border-type-text/20"
+                                : "bg-type-image/10 text-type-image border border-type-image/20"
                         )}>
                             {item.type === 'text' ? <FileText size={20} className="md:w-6 md:h-6" /> : <ImageIcon size={20} className="md:w-6 md:h-6" />}
                         </div>
@@ -160,8 +160,8 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                                 <span className={cn(
                                     "flex items-center gap-1.5 px-2 py-0.5 rounded-md font-medium text-xs border",
                                     isUnlocked
-                                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                                        : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                                        ? "bg-success/10 text-success border-success/20"
+                                        : "bg-warning/10 text-warning border-warning/20"
                                 )}>
                                     {isUnlocked ? <Unlock size={10} /> : <Lock size={10} />}
                                     {isUnlocked ? tCommon('unlocked') : tCommon('locked')}

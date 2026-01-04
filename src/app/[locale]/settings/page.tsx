@@ -7,7 +7,6 @@ import {
     Settings as SettingsIcon,
     Save,
     RotateCcw,
-    Palette,
     Languages,
     Shield,
     Eye,
@@ -23,7 +22,8 @@ import {
     Lock,
     CheckCircle2,
     XCircle,
-    ArrowLeft
+    ArrowLeft,
+    Sun
 } from 'lucide-react';
 import { toast } from 'sonner';
 import ExportButton from '@/components/ExportButton';
@@ -76,9 +76,7 @@ export default function SettingsPage() {
         setApiUrl,
 
         // Actions
-        resetToDefaults,
-        themeConfig,
-        setThemeConfig
+        resetToDefaults
     } = useSettings();
 
     // Local state for inputs to avoid jitter / validation before save
@@ -108,49 +106,6 @@ export default function SettingsPage() {
             setCacheTTL(cacheTTLMinutes);
         }
     }, [cacheTTLMinutes, hasMounted]);
-
-    // Computed Styles Logic
-    const [computedStyles, setComputedStyles] = useState<Record<string, string>>({});
-
-    // Helper to convert RGB to Hex
-    const rgbToHex = (val: string) => {
-        if (!val) return '';
-        val = val.trim();
-        if (val.startsWith('#')) return val;
-
-        const rgb = val.match(/\d+/g);
-        if (rgb && rgb.length >= 3) {
-            return "#" +
-                ((1 << 24) + (parseInt(rgb[0]) << 16) + (parseInt(rgb[1]) << 8) + parseInt(rgb[2])).toString(16).slice(1);
-        }
-        return '';
-    };
-
-    useEffect(() => {
-        // Small delay to ensure theme is applied
-        const updateStyles = () => {
-            if (typeof window === 'undefined') return;
-            const style = getComputedStyle(document.documentElement);
-            const vars = [
-                '--primary', '--bg', '--surface-1', '--surface-2',
-                '--text', '--accent', '--warning', '--success'
-            ];
-            const newStyles: Record<string, string> = {};
-            vars.forEach(v => {
-                const val = style.getPropertyValue(v).trim();
-                newStyles[v] = rgbToHex(val) || val;
-            });
-            setComputedStyles(newStyles);
-        };
-
-        // Run immediately
-        updateStyles();
-
-        // Listen for theme changes using MutationObserver
-        const observer = new MutationObserver(updateStyles);
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] });
-        return () => observer.disconnect();
-    }, [t]); // Re-run if translations change
 
     // Handlers
     const handleSave = () => {
@@ -257,7 +212,7 @@ export default function SettingsPage() {
                 {/* Appearance Section */}
                 <section className="space-y-4">
                     <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-                        <Palette size={20} className="text-primary" />
+                        <Sun size={20} className="text-primary" />
                         {t('appearance')}
                     </h2>
 
@@ -265,7 +220,7 @@ export default function SettingsPage() {
                         {/* Theme */}
                         <div className="flex items-center justify-between">
                             <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <Palette size={16} />
+                                <Sun size={16} />
                                 {t('theme')}
                             </label>
                             <ThemeToggle />
@@ -317,75 +272,6 @@ export default function SettingsPage() {
                                 onChange={setCompactMode}
                                 aria-label={t('compactMode')}
                             />
-                        </div>
-
-                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
-                        {/* Theme Customization */}
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <div className="space-y-1">
-                                    <label className="text-sm font-medium text-foreground">
-                                        {t('themeCustomization')}
-                                    </label>
-                                    <p className="text-xs text-muted-foreground">{t('themeCustomizationDesc')}</p>
-                                </div>
-                                <button
-                                    onClick={() => setThemeConfig({})}
-                                    className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
-                                >
-                                    <RotateCcw size={12} />
-                                    {t('resetTheme')}
-                                </button>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {[
-                                    { key: '--primary', label: t('primaryColor') },
-                                    { key: '--bg', label: t('backgroundColor') },
-                                    { key: '--surface-1', label: t('surface1') },
-                                    { key: '--surface-2', label: t('surface2') },
-                                    { key: '--text', label: t('textColor') },
-                                    { key: '--accent', label: t('accentColor') },
-                                    { key: '--warning', label: t('warningStatus') },
-                                    { key: '--success', label: t('successStatus') },
-                                ].map((variable) => {
-                                    // Helper to ensure valid color for input
-                                    // If empty or invalid, color input shows black.
-                                    const val = themeConfig[variable.key] || computedStyles[variable.key] || '#000000';
-                                    return (
-                                        <div key={variable.key} className="flex items-center justify-between p-3 rounded-lg border border-border bg-background/50">
-                                            <div className="flex flex-col">
-                                                <span className="text-sm font-medium text-foreground">{variable.label}</span>
-                                                <span className="text-[10px] font-mono text-muted-foreground opacity-50">{variable.key}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <input
-                                                    type="color"
-                                                    value={val}
-                                                    onChange={(e) => {
-                                                        const newConfig = { ...themeConfig, [variable.key]: e.target.value };
-                                                        setThemeConfig(newConfig);
-                                                    }}
-                                                    className="w-8 h-8 rounded cursor-pointer border-0 p-0"
-                                                />
-                                                <input
-                                                    type="text"
-                                                    className="w-24 text-xs bg-transparent border-none text-right focus:outline-none font-mono"
-                                                    placeholder="Default"
-                                                    value={themeConfig[variable.key] || ''}
-                                                    onChange={(e) => {
-                                                        const newConfig = { ...themeConfig, [variable.key]: e.target.value };
-                                                        // Filter out empty
-                                                        if (!e.target.value) delete newConfig[variable.key];
-                                                        setThemeConfig(newConfig);
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
                         </div>
                     </div>
                 </section>

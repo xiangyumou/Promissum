@@ -312,8 +312,8 @@ function ItemCard({
                 "flex items-center justify-center rounded-lg shadow-sm text-sm transition-transform group-hover:scale-105",
                 compactMode ? "w-7 h-7" : "w-9 h-9",
                 item.type === 'text'
-                    ? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
-                    : "bg-purple-500/10 text-purple-400 border border-purple-500/20",
+                    ? "bg-type-text/10 text-type-text border border-type-text/20"
+                    : "bg-type-image/10 text-type-image border border-type-image/20",
                 privacyMode && !isSelected && "blur-sm grayscale opacity-50 group-hover:blur-0 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
             )}>
                 {item.type === 'text' ? <FileText size={compactMode ? 14 : 16} /> : <ImageIcon size={compactMode ? 14 : 16} />}
@@ -339,7 +339,7 @@ function ItemCard({
                 )}
                 <div className={cn(
                     "text-xs flex items-center gap-1.5 mt-1 font-medium truncate",
-                    isUnlocked ? "text-emerald-500" : "text-muted-foreground"
+                    isUnlocked ? "text-success" : "text-muted-foreground"
                 )}>
                     {isUnlocked ? (
                         <><Unlock size={10} /> {tCommon('unlocked')}</>

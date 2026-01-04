@@ -14,7 +14,6 @@ describe('settings-store', () => {
 
             expect(state.defaultDurationMinutes).toBe(60);
             expect(state.privacyMode).toBe(false);
-            expect(state.themeConfig).toEqual({});
             expect(state.dateTimeFormat).toBe('yyyy-MM-dd HH:mm');
             expect(state.compactMode).toBe(false);
             expect(state.sidebarOpen).toBe(true);
@@ -50,20 +49,6 @@ describe('settings-store', () => {
 
             useSettings.getState().setPrivacyMode(false);
             expect(useSettings.getState().privacyMode).toBe(false);
-        });
-    });
-
-    describe('Theme Configuration Actions', () => {
-        it('setThemeConfig should update theme configuration', () => {
-            const newConfig = { primary: '#ff0000', background: '#ffffff' };
-            useSettings.getState().setThemeConfig(newConfig);
-            expect(useSettings.getState().themeConfig).toEqual(newConfig);
-        });
-
-        it('setThemeConfig should replace entire config object', () => {
-            useSettings.getState().setThemeConfig({ primary: '#ff0000' });
-            useSettings.getState().setThemeConfig({ secondary: '#00ff00' });
-            expect(useSettings.getState().themeConfig).toEqual({ secondary: '#00ff00' });
         });
     });
 

@@ -37,10 +37,12 @@ export default function ConfirmDialog({
         >
             <div className="p-6 space-y-6">
                 <div className="flex flex-col items-center text-center space-y-3">
-                    <div className={`p-4 rounded-full ${variant === 'danger' ? 'bg-red-500/10 text-red-500' :
-                        variant === 'warning' ? 'bg-amber-500/10 text-amber-500' :
-                            'bg-blue-500/10 text-blue-500'
-                        }`}>
+                    <div className={cn(
+                        "p-4 rounded-full",
+                        variant === 'danger' ? 'bg-destructive/10 text-destructive' :
+                            variant === 'warning' ? 'bg-warning/10 text-warning' :
+                                'bg-info/10 text-info'
+                    )}>
                         <AlertTriangle size={32} />
                     </div>
                     <p className="text-muted-foreground leading-relaxed">
@@ -63,7 +65,7 @@ export default function ConfirmDialog({
                         className={cn(
                             "flex-1 py-2.5 rounded-xl font-medium shadow-lg transition-all transform active:scale-[0.98]",
                             variant === 'danger'
-                                ? 'bg-red-500 hover:bg-red-600 shadow-red-500/25 text-white'
+                                ? 'bg-destructive hover:bg-destructive/90 shadow-destructive/25 text-white'
                                 : 'premium-button'
                         )}
                     >

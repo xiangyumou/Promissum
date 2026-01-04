@@ -79,9 +79,9 @@ describe('ApiStatusIndicator', () => {
 
             const { container } = renderWithProviders(<ApiStatusIndicator />);
 
-            // Check for emerald color classes
+            // Check for success color classes
             const statusDiv = container.firstChild as HTMLElement;
-            expect(statusDiv.className).toContain('text-emerald-500');
+            expect(statusDiv.className).toContain('text-success');
         });
     });
 
@@ -122,7 +122,7 @@ describe('ApiStatusIndicator', () => {
             const { container } = renderWithProviders(<ApiStatusIndicator />);
 
             const statusDiv = container.firstChild as HTMLElement;
-            expect(statusDiv.className).toContain('text-red-500');
+            expect(statusDiv.className).toContain('text-destructive');
         });
     });
 

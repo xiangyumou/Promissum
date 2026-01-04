@@ -7,7 +7,6 @@ import { queryClient } from '@/lib/query-client';
 import { ReactNode, useEffect, useRef } from 'react';
 import { ThemeProvider, useTheme } from 'next-themes';
 import SecurityProvider from './SecurityProvider';
-import ThemeRegistry from './ThemeRegistry';
 import { initializeQueryPersistence } from '@/lib/cache-config';
 
 function ToasterProvider() {
@@ -45,7 +44,6 @@ export function Providers({ children }: { children: ReactNode }) {
         <QueryClientProvider client={queryClient}>
             <CachePersistenceInitializer />
             <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-                <ThemeRegistry />
                 <SecurityProvider />
                 {children}
                 <ToasterProvider />

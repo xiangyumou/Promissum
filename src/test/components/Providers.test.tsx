@@ -33,9 +33,6 @@ vi.mock('sonner', () => ({
 vi.mock('@/components/SecurityProvider', () => ({
     default: () => <div data-testid="security-provider" />
 }));
-vi.mock('@/components/ThemeRegistry', () => ({
-    default: () => <div data-testid="theme-registry" />
-}));
 
 describe('Providers', () => {
     it('should render children wrapped in providers', () => {
@@ -49,13 +46,11 @@ describe('Providers', () => {
         const queryProvider = screen.getByTestId('query-client-provider');
         const themeProvider = screen.getByTestId('theme-provider');
         const securityProvider = screen.getByTestId('security-provider');
-        const themeRegistry = screen.getByTestId('theme-registry');
         const child = screen.getByTestId('child');
         const toaster = screen.getByTestId('toaster');
 
         expect(queryProvider).toContainElement(themeProvider);
         expect(themeProvider).toContainElement(securityProvider);
-        expect(themeProvider).toContainElement(themeRegistry);
         expect(themeProvider).toContainElement(child);
         expect(themeProvider).toContainElement(toaster);
     });

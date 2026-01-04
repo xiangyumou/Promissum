@@ -25,8 +25,8 @@ export default function ApiStatusIndicator() {
             className={cn(
                 "flex items-center gap-2 px-2 py-1.5 text-xs rounded-md transition-colors",
                 isConnected
-                    ? "text-emerald-500 bg-emerald-500/10"
-                    : "text-red-500 bg-red-500/10"
+                    ? "text-success bg-success/10"
+                    : "text-destructive bg-destructive/10"
             )}
             title={isConnected ? t('connected') : t('disconnected')}
         >

@@ -9,9 +9,6 @@ interface SettingsState {
     defaultDurationMinutes: number;
     privacyMode: boolean;
 
-    // Theme Configuration
-    themeConfig: Record<string, string>;
-
     // Interface
     dateTimeFormat: string;
     compactMode: boolean;
@@ -37,7 +34,6 @@ interface SettingsState {
     // Actions
     setDefaultDuration: (minutes: number) => void;
     setPrivacyMode: (enabled: boolean) => void;
-    setThemeConfig: (config: Record<string, string>) => void;
 
     setDateTimeFormat: (format: string) => void;
     setCompactMode: (enabled: boolean) => void;
@@ -63,7 +59,7 @@ interface SettingsState {
  * Default Settings Values
  */
 const DEFAULT_SETTINGS: Omit<SettingsState,
-    'setDefaultDuration' | 'setPrivacyMode' | 'setThemeConfig' |
+    'setDefaultDuration' | 'setPrivacyMode' |
     'setDateTimeFormat' | 'setCompactMode' | 'setSidebarOpen' |
     'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' |
     'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' |
@@ -73,7 +69,6 @@ const DEFAULT_SETTINGS: Omit<SettingsState,
 > = {
     defaultDurationMinutes: 60,
     privacyMode: false,
-    themeConfig: {},
 
     dateTimeFormat: 'yyyy-MM-dd HH:mm',
     compactMode: false,
@@ -117,7 +112,6 @@ export const createSettingsStore = (
                 // Actions
                 setDefaultDuration: (minutes) => set({ defaultDurationMinutes: minutes }),
                 setPrivacyMode: (enabled) => set({ privacyMode: enabled }),
-                setThemeConfig: (config) => set({ themeConfig: config }),
 
                 // Interface
                 setDateTimeFormat: (format) => set({ dateTimeFormat: format }),

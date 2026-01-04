@@ -5,6 +5,9 @@
  * - Last hour: color gradient yellow → green
  * - Last 10 minutes: pulse animation
  * - Last minute: jumping/bouncing animation
+ * 
+ * NOTE: The infinite animations (jumping, pulsing) are intentional per UI.md §8.2
+ * as they serve critical feedback purposes for countdown urgency indication.
  */
 
 'use client';
@@ -56,10 +59,10 @@ export default function CountdownVisuals({
 
     // Dynamic color based on time remaining
     const getColorClass = (): string => {
-        if (timeLeft <= 0) return 'text-green-500 dark:text-green-400';
-        if (isLastMinute) return 'text-red-500 dark:text-red-400';
-        if (isLastTenMinutes) return 'text-orange-500 dark:text-orange-400';
-        if (isLastHour) return 'text-yellow-500 dark:text-yellow-400';
+        if (timeLeft <= 0) return 'text-success';
+        if (isLastMinute) return 'text-destructive';
+        if (isLastTenMinutes) return 'text-warning';
+        if (isLastHour) return 'text-warning';
         return 'text-muted-foreground';
     };
 
@@ -148,10 +151,7 @@ export default function CountdownVisuals({
                 <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="w-2 h-2 rounded-full bg-red-500 dark:bg-red-400"
-                    style={{
-                        boxShadow: '0 0 8px rgba(239, 68, 68, 0.6)',
-                    }}
+                    className="w-2 h-2 rounded-full bg-destructive shadow-[0_0_8px_var(--destructive)]"
                 />
             )}
         </div>
