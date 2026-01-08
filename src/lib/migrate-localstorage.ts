@@ -13,18 +13,13 @@ const SETTINGS_KEY = 'chaster-settings';
 interface LocalStorageSettings {
     state: {
         defaultDurationMinutes?: number;
-        privacyMode?: boolean;
         themeConfig?: Record<string, string>;
         dateTimeFormat?: string;
-        compactMode?: boolean;
         sidebarOpen?: boolean;
         confirmDelete?: boolean;
         confirmExtend?: boolean;
         autoRefreshInterval?: number;
         cacheTTLMinutes?: number;
-        autoPrivacyDelayMinutes?: number;
-        apiToken?: string;
-        apiUrl?: string;
     };
 }
 

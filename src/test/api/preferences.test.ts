@@ -83,7 +83,6 @@ describe('Preferences API', () => {
             const payload = {
                 deviceId: 'device-123',
                 defaultDurationMinutes: 120,
-                privacyMode: true,
             };
 
             const mockDevice = { id: '1', fingerprint: 'device-123' };

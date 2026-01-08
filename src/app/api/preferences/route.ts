@@ -14,18 +14,13 @@ import { logApiError } from '@/lib/api-error';
 const PreferencesSchema = z.object({
     deviceId: z.string(),
     defaultDurationMinutes: z.number().min(1).optional(),
-    privacyMode: z.boolean().optional(),
     themeConfig: z.string().optional(), // JSON string
     dateTimeFormat: z.string().optional(),
-    compactMode: z.boolean().optional(),
     sidebarOpen: z.boolean().optional(),
     confirmDelete: z.boolean().optional(),
     confirmExtend: z.boolean().optional(),
     autoRefreshInterval: z.number().min(0).optional(),
     cacheTTLMinutes: z.number().min(1).optional(),
-    autoPrivacyDelayMinutes: z.number().min(0).optional(),
-    apiToken: z.string().optional(),
-    apiUrl: z.string().optional(),
 });
 
 /**

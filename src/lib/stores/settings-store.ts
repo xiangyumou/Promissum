@@ -7,11 +7,9 @@ import { persist } from 'zustand/middleware';
 interface SettingsState {
     // Default Behavior
     defaultDurationMinutes: number;
-    privacyMode: boolean;
 
     // Interface
     dateTimeFormat: string;
-    compactMode: boolean;
     sidebarOpen: boolean;
 
     // Behavior
@@ -22,21 +20,14 @@ interface SettingsState {
     // Caching
     cacheTTLMinutes: number;
 
-    // Security
-    autoPrivacyDelayMinutes: number; // 0 = disabled
-    apiToken: string; // Custom API token overrides env
-    apiUrl: string; // Custom API URL overrides env
-
     // Unlock Effects
     enableUnlockSound: boolean;
     enableUnlockConfetti: boolean;
 
     // Actions
     setDefaultDuration: (minutes: number) => void;
-    setPrivacyMode: (enabled: boolean) => void;
 
     setDateTimeFormat: (format: string) => void;
-    setCompactMode: (enabled: boolean) => void;
     setSidebarOpen: (open: boolean) => void;
 
     setConfirmDelete: (enabled: boolean) => void;
@@ -44,10 +35,6 @@ interface SettingsState {
     setAutoRefreshInterval: (seconds: number) => void;
 
     setCacheTTLMinutes: (minutes: number) => void;
-
-    setAutoPrivacyDelayMinutes: (minutes: number) => void;
-    setApiToken: (token: string) => void;
-    setApiUrl: (url: string) => void;
 
     setEnableUnlockSound: (enabled: boolean) => void;
     setEnableUnlockConfetti: (enabled: boolean) => void;
@@ -59,19 +46,16 @@ interface SettingsState {
  * Default Settings Values
  */
 const DEFAULT_SETTINGS: Omit<SettingsState,
-    'setDefaultDuration' | 'setPrivacyMode' |
-    'setDateTimeFormat' | 'setCompactMode' | 'setSidebarOpen' |
+    'setDefaultDuration' |
+    'setDateTimeFormat' | 'setSidebarOpen' |
     'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' |
-    'setCacheTTLMinutes' | 'setAutoPrivacyDelayMinutes' |
-    'setApiToken' | 'setApiUrl' |
+    'setCacheTTLMinutes' |
     'setEnableUnlockSound' | 'setEnableUnlockConfetti' |
     'resetToDefaults'
 > = {
     defaultDurationMinutes: 60,
-    privacyMode: false,
 
     dateTimeFormat: 'yyyy-MM-dd HH:mm',
-    compactMode: false,
     sidebarOpen: true,
 
     confirmDelete: true,
@@ -79,10 +63,6 @@ const DEFAULT_SETTINGS: Omit<SettingsState,
     autoRefreshInterval: 60,
 
     cacheTTLMinutes: 5,
-
-    autoPrivacyDelayMinutes: 5,
-    apiToken: '',
-    apiUrl: '',
 
     enableUnlockSound: false,
     enableUnlockConfetti: true,
@@ -111,11 +91,9 @@ export const createSettingsStore = (
 
                 // Actions
                 setDefaultDuration: (minutes) => set({ defaultDurationMinutes: minutes }),
-                setPrivacyMode: (enabled) => set({ privacyMode: enabled }),
 
                 // Interface
                 setDateTimeFormat: (format) => set({ dateTimeFormat: format }),
-                setCompactMode: (enabled) => set({ compactMode: enabled }),
                 setSidebarOpen: (open) => set({ sidebarOpen: open }),
 
                 // Behavior
@@ -125,11 +103,6 @@ export const createSettingsStore = (
 
                 // Caching
                 setCacheTTLMinutes: (minutes) => set({ cacheTTLMinutes: minutes }),
-
-                // Security
-                setAutoPrivacyDelayMinutes: (minutes) => set({ autoPrivacyDelayMinutes: minutes }),
-                setApiToken: (token) => set({ apiToken: token }),
-                setApiUrl: (url) => set({ apiUrl: url }),
 
                 // Unlock Effects
                 setEnableUnlockSound: (enabled) => set({ enableUnlockSound: enabled }),

@@ -8,25 +8,15 @@ import {
     Save,
     RotateCcw,
     Languages,
-    Shield,
-    Eye,
-    EyeOff,
-    Trash2,
-    ExternalLink,
     Clock,
-    LayoutList,
     AlertCircle,
     RefreshCw,
     Database,
     Zap,
-    Lock,
-    CheckCircle2,
-    XCircle,
     ArrowLeft,
     Sun
 } from 'lucide-react';
 import { toast } from 'sonner';
-import ExportButton from '@/components/ExportButton';
 import ThemeToggle from '@/components/ThemeToggle';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { queryClient } from '@/lib/query-client';
@@ -39,7 +29,6 @@ import ToggleSwitch from '@/components/ui/ToggleSwitch';
 
 export default function SettingsPage() {
     const t = useTranslations('Settings');
-    const tCommon = useTranslations('Common');
 
     // Destructure all settings
     const {
@@ -50,8 +39,6 @@ export default function SettingsPage() {
         // Interface
         dateTimeFormat,
         setDateTimeFormat,
-        compactMode,
-        setCompactMode,
 
         // Behavior
         confirmDelete,
@@ -65,40 +52,17 @@ export default function SettingsPage() {
         cacheTTLMinutes,
         setCacheTTLMinutes,
 
-        // Security
-        privacyMode,
-        setPrivacyMode,
-        autoPrivacyDelayMinutes,
-        setAutoPrivacyDelayMinutes,
-        apiToken,
-        setApiToken,
-        apiUrl,
-        setApiUrl,
-
         // Actions
         resetToDefaults
     } = useSettings();
 
     // Local state for inputs to avoid jitter / validation before save
     const [durationInput, setDurationInput] = useState(defaultDurationMinutes.toString());
-    const [apiUrlInput, setApiUrlInput] = useState(apiUrl);
-
-    // API Check State
-    const [isCheckingApi, setIsCheckingApi] = useState(false);
-    const [apiStatus, setApiStatus] = useState<'idle' | 'ok' | 'error'>('idle');
-
-    // Clear Data State
-    const [isClearing, setIsClearing] = useState(false);
-
-
 
     // Confirmation Dialog States
     const [showResetConfirm, setShowResetConfirm] = useState(false);
-    const [showClearConfirm, setShowClearConfirm] = useState(false);
 
     const hasMounted = useHasMounted();
-
-
 
     // Sync TTL changes to cache config
     useEffect(() => {
@@ -127,35 +91,8 @@ export default function SettingsPage() {
         // Sync local state
         setTimeout(() => {
             setDurationInput('60');
-            setApiStatus('idle');
         }, 0);
         toast.success(t('changesSaved'));
-    };
-
-    const handleClearData = () => {
-        setShowClearConfirm(true);
-    };
-
-    const confirmClearData = async () => {
-        setIsClearing(true);
-        try {
-            await Promise.all([
-                queryClient.cancelQueries(),
-                queryClient.invalidateQueries(),
-                queryClient.removeQueries()
-            ]);
-
-            // Clear all storage
-            localStorage.clear();
-            sessionStorage.clear();
-
-            // Hard reload to reset everything
-            window.location.reload();
-        } catch (error) {
-            console.error('Failed to clear data', error);
-            toast.error(tCommon('error'));
-            setIsClearing(false);
-        }
     };
 
     // Helper for clearing cache (kept simple as it's less destructive)
@@ -163,34 +100,6 @@ export default function SettingsPage() {
         queryClient.removeQueries();
         toast.success(t('cacheCleared'));
     };
-
-    const handleCheckConnection = async () => {
-        setIsCheckingApi(true);
-        setApiStatus('idle');
-        try {
-            const res = await fetch('/api/stats');
-            if (res.ok) {
-                setApiStatus('ok');
-                toast.success(t('connectionOk'));
-            } else {
-                setApiStatus('error');
-                toast.error(t('connectionFailed'));
-            }
-        } catch (_error) {
-            setApiStatus('error');
-            toast.error(t('connectionFailed'));
-        } finally {
-            setIsCheckingApi(false);
-        }
-    };
-
-    const handleApiTokenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setApiToken(e.target.value);
-        // Reset status on change
-        setApiStatus('idle');
-    };
-
-
 
     return (
         <div className="h-full overflow-y-auto bg-background custom-scrollbar">
@@ -254,24 +163,6 @@ export default function SettingsPage() {
                                 <option value="dd/MM/yyyy HH:mm">DD/MM/YYYY HH:mm</option>
                                 <option value="MM/dd/yyyy HH:mm">MM/DD/YYYY HH:mm</option>
                             </select>
-                        </div>
-
-                        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
-                        {/* Compact Mode */}
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-1">
-                                <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                    <LayoutList size={16} />
-                                    {t('compactMode')}
-                                </label>
-                                <p className="text-xs text-muted-foreground">{t('compactModeDesc')}</p>
-                            </div>
-                            <ToggleSwitch
-                                checked={compactMode}
-                                onChange={setCompactMode}
-                                aria-label={t('compactMode')}
-                            />
                         </div>
                     </div>
                 </section>
@@ -401,144 +292,6 @@ export default function SettingsPage() {
                     </div>
                 </section>
 
-                {/* Privacy & Security Section */}
-                <section className="space-y-4">
-                    <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-                        <Shield size={20} className="text-primary" />
-                        {t('privacySecurity')}
-                    </h2>
-
-                    <div className="glass-card rounded-xl p-6 space-y-6">
-                        {/* Privacy Mode */}
-                        <div className="flex items-center justify-between">
-                            <div className="space-y-1">
-                                <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                    {privacyMode ? <EyeOff size={16} /> : <Eye size={16} />}
-                                    {t('privacyMode')}
-                                </label>
-                                <p className="text-xs text-muted-foreground">{t('privacyModeDesc')}</p>
-                            </div>
-                            <ToggleSwitch
-                                checked={privacyMode}
-                                onChange={setPrivacyMode}
-                                aria-label={t('privacyMode')}
-                            />
-                        </div>
-
-                        {/* Auto Privacy Delay */}
-                        <div className="flex items-center justify-between pl-6 mt-2">
-                            <div className="space-y-1">
-                                <label className="text-sm font-medium text-foreground">
-                                    {t('autoPrivacy')}
-                                </label>
-                                <p className="text-xs text-muted-foreground">{t('autoPrivacyDesc')}</p>
-                            </div>
-                            <select
-                                value={autoPrivacyDelayMinutes}
-                                onChange={(e) => setAutoPrivacyDelayMinutes(Number(e.target.value))}
-                                className="premium-select"
-                            >
-                                <option value={0}>{t('off')}</option>
-                                <option value={1}>1 min</option>
-                                <option value={5}>5 min</option>
-                                <option value={15}>15 min</option>
-                            </select>
-                        </div>
-
-                        {/* API URL */}
-                        <div className="space-y-3">
-                            <div className="space-y-1">
-                                <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                    <ExternalLink size={16} />
-                                    {t('apiUrl')}
-                                </label>
-                                <p className="text-xs text-muted-foreground">{t('apiUrlDesc')}</p>
-                            </div>
-                            <input
-                                type="url"
-                                value={apiUrlInput}
-                                onChange={(e) => setApiUrlInput(e.target.value)}
-                                onBlur={() => setApiUrl(apiUrlInput)}
-                                className="flex-1 px-4 py-2 bg-muted/30 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 w-full"
-                                placeholder="http://localhost:3000/api/v1"
-                            />
-                        </div>
-
-                        {/* API Token */}
-                        <div className="space-y-3">
-                            <div className="space-y-1">
-                                <label className="text-sm font-medium text-foreground flex items-center gap-2">
-                                    <Lock size={16} />
-                                    {t('token')}
-                                </label>
-                                <p className="text-xs text-muted-foreground">{t('tokenDesc')}</p>
-                            </div>
-                            <div className="flex gap-2">
-                                <input
-                                    type="password"
-                                    value={apiToken}
-                                    onChange={handleApiTokenChange}
-                                    className="flex-1 px-4 py-2 bg-muted/30 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                    placeholder="Use system default"
-                                />
-                                <button
-                                    onClick={handleCheckConnection}
-                                    disabled={isCheckingApi}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2
-                                        ${apiStatus === 'ok' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
-                                            apiStatus === 'error' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
-                                                'bg-muted hover:bg-muted/80 text-foreground'}`}
-                                >
-                                    {isCheckingApi ? (
-                                        <RefreshCw size={16} className="animate-spin" />
-                                    ) : apiStatus === 'ok' ? (
-                                        <CheckCircle2 size={16} />
-                                    ) : apiStatus === 'error' ? (
-                                        <XCircle size={16} />
-                                    ) : (
-                                        <RefreshCw size={16} />
-                                    )}
-                                    {t('checkConnection')}
-                                </button>
-                            </div>
-                            {apiStatus === 'ok' && <p className="text-xs text-green-500">{t('connectionOk')}</p>}
-                            {apiStatus === 'error' && <p className="text-xs text-red-500">{t('connectionFailed')}</p>}
-                        </div>
-
-                    </div>
-                </section>
-
-                {/* Data Management Section */}
-                <section className="space-y-4">
-                    <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-                        <Save size={20} className="text-primary" />
-                        {t('dataManagement')}
-                    </h2>
-
-                    <div className="space-y-4">
-                        {hasMounted && <ExportButton />}
-
-                        <div className="glass-card rounded-xl p-6 border border-red-500/20 bg-red-500/5">
-                            <div className="flex items-center justify-between">
-                                <div className="space-y-1">
-                                    <h3 className="text-sm font-semibold text-red-500 flex items-center gap-2">
-                                        <Trash2 size={16} />
-                                        {t('dangerZone')}
-                                    </h3>
-                                    <p className="text-xs text-muted-foreground">{t('dangerZoneDesc')}</p>
-                                </div>
-                                <button
-                                    onClick={handleClearData}
-                                    disabled={isClearing}
-                                    className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-lg text-sm font-medium transition-colors"
-                                >
-                                    {t('clearAllData')}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
                 {/* Save and Reset Actions */}
                 <div className="flex items-center gap-4 pt-4 pb-12">
                     <button
@@ -565,16 +318,6 @@ export default function SettingsPage() {
                     variant="warning"
                     onConfirm={confirmReset}
                     onCancel={() => setShowResetConfirm(false)}
-                />
-
-                <ConfirmDialog
-                    isOpen={showClearConfirm}
-                    title={t('clearAllData')}
-                    description={t('clearDataConfirm')}
-                    confirmLabel={t('clearAllData')}
-                    variant="danger"
-                    onConfirm={confirmClearData}
-                    onCancel={() => setShowClearConfirm(false)}
                 />
             </div>
         </div>

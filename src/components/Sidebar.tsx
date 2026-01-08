@@ -41,7 +41,7 @@ export default function Sidebar({
 }: SidebarProps) {
     const t = useTranslations('Sidebar');
     const tCommon = useTranslations('Common');
-    const { compactMode, sidebarOpen, setSidebarOpen } = useSettings();
+    const { sidebarOpen, setSidebarOpen } = useSettings();
     const hasMounted = useHasMounted();
 
     // Sidebar motion variants
@@ -148,8 +148,6 @@ export default function Sidebar({
                             filters={filters}
                             onFilterChange={onFilterChange}
                             isLoading={isLoading}
-                            compactMode={compactMode}
-                            setSidebarOpen={setSidebarOpen}
                         />
                     )}
                 </motion.div>
@@ -168,8 +166,6 @@ interface SidebarContentProps {
     filters: FilterParams;
     onFilterChange: (filters: FilterParams) => void;
     isLoading: boolean;
-    compactMode: boolean;
-    setSidebarOpen: (open: boolean) => void;
 }
 
 function SidebarContent({
@@ -180,9 +176,7 @@ function SidebarContent({
     onClose,
     filters,
     onFilterChange,
-    isLoading,
-    compactMode,
-    setSidebarOpen: _setSidebarOpen
+    isLoading
 }: SidebarContentProps) {
     const t = useTranslations('Sidebar');
     const tCommon = useTranslations('Common');
@@ -199,15 +193,12 @@ function SidebarContent({
             </button>
 
             {/* Primary Actions Group */}
-            <div className={cn("space-y-3", compactMode ? "p-3 pb-1" : "p-4 pb-2")}>
+            <div className="space-y-3 p-4 pb-2">
                 <button
-                    className={cn(
-                        "premium-button w-full",
-                        compactMode ? "px-3 py-2 text-xs" : "px-4 py-3 text-sm"
-                    )}
+                    className="premium-button w-full px-4 py-3 text-sm"
                     onClick={onAddClick}
                 >
-                    <Plus size={compactMode ? 16 : 18} />
+                    <Plus size={18} />
                     {tCommon('newEntry')}
                 </button>
             </div>
@@ -219,13 +210,13 @@ function SidebarContent({
             <FilterBar filters={filters} onFilterChange={onFilterChange} />
 
             {/* Items List */}
-            <div className={cn("flex-1 overflow-y-auto space-y-1.5 custom-scrollbar", compactMode ? "px-2 py-1" : "px-3 py-2")}>
+            <div className="flex-1 overflow-y-auto space-y-1.5 custom-scrollbar px-3 py-2">
                 {
                     isLoading ? (
                         // Loading Skeletons
                         Array.from({ length: 5 }).map((_, i) => (
-                            <div key={i} className={cn("flex items-center gap-3 rounded-xl bg-accent/50 animate-pulse", compactMode ? "p-2" : "p-3")}>
-                                <div className={cn("rounded-full bg-accent", compactMode ? "h-6 w-6" : "h-8 w-8")} />
+                            <div key={i} className="flex items-center gap-3 rounded-xl bg-accent/50 animate-pulse p-3">
+                                <div className="rounded-full bg-accent h-8 w-8" />
                                 <div className="space-y-2 flex-1">
                                     <div className="h-3 w-3/4 bg-accent rounded" />
                                     <div className="h-2 w-1/2 bg-accent/50 rounded" />
@@ -247,7 +238,6 @@ function SidebarContent({
                                     item={item}
                                     isSelected={item.id === selectedId}
                                     onClick={() => onSelectItem(item.id)}
-                                    compactMode={compactMode}
                                 />
                             ))}
                         </AnimatePresence>
@@ -256,13 +246,10 @@ function SidebarContent({
             </div>
 
             {/* Footer - Settings Button */}
-            <div className={cn("border-t border-border", compactMode ? "p-2" : "p-4")}>
+            <div className="border-t border-border p-4">
                 <Link href="/settings">
-                    <button className={cn(
-                        "w-full flex items-center gap-3 rounded-xl font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200",
-                        compactMode ? "px-3 py-2 text-xs" : "px-4 py-3 text-sm"
-                    )}>
-                        <Settings size={compactMode ? 16 : 18} />
+                    <button className="w-full flex items-center gap-3 rounded-xl font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200 px-4 py-3 text-sm">
+                        <Settings size={18} />
                         {t('settings')}
                     </button>
                 </Link>
@@ -276,21 +263,18 @@ interface ItemCardProps {
     item: ApiItemListView;
     isSelected: boolean;
     onClick: () => void;
-    compactMode?: boolean;
 }
 
 function ItemCard({
     item,
     isSelected,
-    onClick,
-    compactMode = false
+    onClick
 }: ItemCardProps) {
     const hasMounted = useHasMounted();
 
     const isUnlocked = hasMounted ? timeService.now() >= item.decrypt_at : false;
     const timeRemaining = hasMounted ? getTimeRemaining(item.decrypt_at) : '...';
     const tCommon = useTranslations('Common');
-    const { privacyMode } = useSettings();
 
     return (
         <motion.div
@@ -300,8 +284,7 @@ function ItemCard({
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
             className={cn(
-                "flex items-center gap-3 rounded-xl cursor-pointer transition-all duration-300 group relative border",
-                compactMode ? "px-2 py-2" : "px-3 py-3",
+                "flex items-center gap-3 rounded-xl cursor-pointer transition-all duration-300 group relative border px-3 py-3",
                 isSelected
                     ? "bg-accent border-primary/50 shadow-md shadow-primary/10"
                     : "border-transparent hover:bg-accent/50 hover:border-border/50 hover:-translate-y-0.5"
@@ -309,34 +292,24 @@ function ItemCard({
             onClick={onClick}
         >
             <div className={cn(
-                "flex items-center justify-center rounded-lg shadow-sm text-sm transition-transform group-hover:scale-105",
-                compactMode ? "w-7 h-7" : "w-9 h-9",
+                "flex items-center justify-center rounded-lg shadow-sm text-sm transition-transform group-hover:scale-105 w-9 h-9",
                 item.type === 'text'
                     ? "bg-type-text/10 text-type-text border border-type-text/20"
-                    : "bg-type-image/10 text-type-image border border-type-image/20",
-                privacyMode && !isSelected && "blur-sm grayscale opacity-50 group-hover:blur-0 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+                    : "bg-type-image/10 text-type-image border border-type-image/20"
             )}>
-                {item.type === 'text' ? <FileText size={compactMode ? 14 : 16} /> : <ImageIcon size={compactMode ? 14 : 16} />}
+                {item.type === 'text' ? <FileText size={16} /> : <ImageIcon size={16} />}
             </div>
 
             <div className="flex-1 min-w-0">
                 <div
                     className={cn(
                         "text-sm font-medium truncate transition-all duration-300",
-                        isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground",
-                        privacyMode && !isSelected && "blur-sm group-hover:blur-0"
+                        isSelected ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                     )}
-                    aria-hidden={privacyMode && !isSelected}
                 >
                     {item.metadata?.title ||
                         (item.type === 'text' ? tCommon('textNote') : tCommon('image'))}
                 </div>
-                {/* Screen reader accessible alternative when blurred */}
-                {privacyMode && !isSelected && (
-                    <span className="sr-only">
-                        {item.type === 'text' ? tCommon('textNote') : tCommon('image')} - {tCommon('locked')}
-                    </span>
-                )}
                 <div className={cn(
                     "text-xs flex items-center gap-1.5 mt-1 font-medium truncate",
                     isUnlocked ? "text-success" : "text-muted-foreground"

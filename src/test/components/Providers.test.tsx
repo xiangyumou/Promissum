@@ -29,10 +29,7 @@ vi.mock('next-themes', () => ({
 vi.mock('sonner', () => ({
     Toaster: () => <div data-testid="toaster" />
 }));
-// Mock internal components that might have complex dependencies
-vi.mock('@/components/SecurityProvider', () => ({
-    default: () => <div data-testid="security-provider" />
-}));
+
 
 describe('Providers', () => {
     it('should render children wrapped in providers', () => {
@@ -45,12 +42,11 @@ describe('Providers', () => {
         // Check nesting structure
         const queryProvider = screen.getByTestId('query-client-provider');
         const themeProvider = screen.getByTestId('theme-provider');
-        const securityProvider = screen.getByTestId('security-provider');
+
         const child = screen.getByTestId('child');
         const toaster = screen.getByTestId('toaster');
 
         expect(queryProvider).toContainElement(themeProvider);
-        expect(themeProvider).toContainElement(securityProvider);
         expect(themeProvider).toContainElement(child);
         expect(themeProvider).toContainElement(toaster);
     });

@@ -13,17 +13,12 @@ describe('settings-store', () => {
             const state = useSettings.getState();
 
             expect(state.defaultDurationMinutes).toBe(60);
-            expect(state.privacyMode).toBe(false);
             expect(state.dateTimeFormat).toBe('yyyy-MM-dd HH:mm');
-            expect(state.compactMode).toBe(false);
             expect(state.sidebarOpen).toBe(true);
             expect(state.confirmDelete).toBe(true);
             expect(state.confirmExtend).toBe(true);
             expect(state.autoRefreshInterval).toBe(60);
             expect(state.cacheTTLMinutes).toBe(5);
-            expect(state.autoPrivacyDelayMinutes).toBe(5);
-            expect(state.apiToken).toBe('');
-            expect(state.apiUrl).toBe('');
         });
     });
 
@@ -40,27 +35,12 @@ describe('settings-store', () => {
             useSettings.getState().setDefaultDuration(10080); // 1 week
             expect(useSettings.getState().defaultDurationMinutes).toBe(10080);
         });
-
-        it('setPrivacyMode should toggle privacy mode', () => {
-            expect(useSettings.getState().privacyMode).toBe(false);
-
-            useSettings.getState().setPrivacyMode(true);
-            expect(useSettings.getState().privacyMode).toBe(true);
-
-            useSettings.getState().setPrivacyMode(false);
-            expect(useSettings.getState().privacyMode).toBe(false);
-        });
     });
 
     describe('Interface Actions', () => {
         it('setDateTimeFormat should update format string', () => {
             useSettings.getState().setDateTimeFormat('dd/MM/yyyy HH:mm');
             expect(useSettings.getState().dateTimeFormat).toBe('dd/MM/yyyy HH:mm');
-        });
-
-        it('setCompactMode should toggle compact mode', () => {
-            useSettings.getState().setCompactMode(true);
-            expect(useSettings.getState().compactMode).toBe(true);
         });
 
         it('setSidebarOpen should toggle sidebar state', () => {
@@ -112,35 +92,11 @@ describe('settings-store', () => {
         });
     });
 
-    describe('Security Actions', () => {
-        it('setAutoPrivacyDelayMinutes should update delay', () => {
-            useSettings.getState().setAutoPrivacyDelayMinutes(10);
-            expect(useSettings.getState().autoPrivacyDelayMinutes).toBe(10);
-        });
-
-        it('setAutoPrivacyDelayMinutes should handle 0 (disabled)', () => {
-            useSettings.getState().setAutoPrivacyDelayMinutes(0);
-            expect(useSettings.getState().autoPrivacyDelayMinutes).toBe(0);
-        });
-
-        it('setApiToken should update API token', () => {
-            useSettings.getState().setApiToken('my-secret-token');
-            expect(useSettings.getState().apiToken).toBe('my-secret-token');
-        });
-
-        it('setApiUrl should update API URL', () => {
-            useSettings.getState().setApiUrl('https://api.example.com');
-            expect(useSettings.getState().apiUrl).toBe('https://api.example.com');
-        });
-    });
-
     describe('resetToDefaults', () => {
         it('should reset all values to defaults', () => {
             // Modify several settings
             useSettings.getState().setDefaultDuration(999);
-            useSettings.getState().setPrivacyMode(true);
             useSettings.getState().setCacheTTLMinutes(100);
-            useSettings.getState().setApiToken('token');
 
             // Reset
             useSettings.getState().resetToDefaults();
@@ -148,9 +104,7 @@ describe('settings-store', () => {
             // Verify all are back to defaults
             const state = useSettings.getState();
             expect(state.defaultDurationMinutes).toBe(60);
-            expect(state.privacyMode).toBe(false);
             expect(state.cacheTTLMinutes).toBe(5);
-            expect(state.apiToken).toBe('');
         });
     });
 
@@ -174,5 +128,3 @@ describe('settings-store', () => {
         });
     });
 });
-
-
