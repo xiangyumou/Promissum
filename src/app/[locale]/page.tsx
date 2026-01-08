@@ -7,13 +7,13 @@ import AddModal from '@/components/AddModal';
 import ContentView from '@/components/ContentView';
 import { FilterParams } from '@/lib/api-client';
 import { useItems, useCreateItem, useItem, useExtendItem, useDeleteItem } from '@/lib/queries';
-import { useSettings } from '@/lib/stores/settings-store';
+
 
 export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { defaultDurationMinutes } = useSettings();
+  // const { } = useSettings(); // No settings needed here anymore
   const [filters, setFilters] = useState<FilterParams>({ status: 'all', sort: 'created_desc' });
 
   // Fetch items with automatic caching and refetching
@@ -120,7 +120,7 @@ export default function Home() {
 
       <AddModal
         isOpen={showAddModal}
-        defaultDuration={defaultDurationMinutes}
+        defaultDuration={0}
         onClose={() => setShowAddModal(false)}
         onSubmit={handleAddSubmit}
       />

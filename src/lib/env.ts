@@ -21,6 +21,24 @@ export const env = {
    * Next.js public app URL (for client-side)
    */
   appUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+
+  /**
+   * Date and time format for display
+   * @default 'yyyy-MM-dd HH:mm'
+   */
+  dateFormat: process.env.NEXT_PUBLIC_DATE_FORMAT || 'yyyy-MM-dd HH:mm',
+
+  /**
+   * Auto-refresh interval in seconds
+   * @default 60
+   */
+  autoRefreshInterval: parseInt(process.env.NEXT_PUBLIC_AUTO_REFRESH_INTERVAL || '60', 10),
+
+  /**
+   * Cache TTL in minutes
+   * @default 5
+   */
+  cacheTTLMinutes: parseInt(process.env.NEXT_PUBLIC_CACHE_TTL || '5', 10),
 } as const;
 
 /**

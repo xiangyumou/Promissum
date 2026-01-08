@@ -1,78 +1,47 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { env } from '@/lib/env';
 
 /**
  * Settings State Interface
  */
 interface SettingsState {
-    // Default Behavior
-    defaultDurationMinutes: number;
-
     // Interface
-    dateTimeFormat: string;
     sidebarOpen: boolean;
 
-    // Behavior
-    confirmDelete: boolean;
-    confirmExtend: boolean;
-    autoRefreshInterval: number; // seconds
+    // Behavior (Read-only from Env or Hardcoded)
+    readonly dateTimeFormat: string;
+    readonly confirmDelete: boolean;
+    readonly confirmExtend: boolean;
+    readonly autoRefreshInterval: number; // seconds
+    readonly cacheTTLMinutes: number;
 
-    // Caching
-    cacheTTLMinutes: number;
-
-    // Unlock Effects
-    enableUnlockSound: boolean;
-    enableUnlockConfetti: boolean;
+    // Unlock Effects (Still configurable by user logic? Or should this be removed too?
+    // User request: "Settings page not needed". Keeping these might be confusing if there's no UI to change them.
+    // However, user didn't explicitly ask to remove unlock effects *logic*, just the page.
+    // I will keep them as internal state or remove if they were purely UI settings.
+    // The prompt says "Settings page not needed, main page settings button not needed".
+    // This implies inability to change these. I will hardcode defaults or remove them.
+    // I'll keep them as simple state if needed, but for now I'll assume they default to their values and are not changeable.
+    // Actually, let's keep them as state but with no setters exposed in the interface if we strictly follow "settings page gone".
+    // But if we can't change them, why keep them in store?
+    // Let's simplified to just returning the values.
+    readonly enableUnlockSound: boolean;
+    readonly enableUnlockConfetti: boolean;
 
     // Actions
-    setDefaultDuration: (minutes: number) => void;
-
-    setDateTimeFormat: (format: string) => void;
     setSidebarOpen: (open: boolean) => void;
+    // No other setters needed as settings page is gone.
 
-    setConfirmDelete: (enabled: boolean) => void;
-    setConfirmExtend: (enabled: boolean) => void;
-    setAutoRefreshInterval: (seconds: number) => void;
-
-    setCacheTTLMinutes: (minutes: number) => void;
-
-    setEnableUnlockSound: (enabled: boolean) => void;
-    setEnableUnlockConfetti: (enabled: boolean) => void;
-
+    // Test helper
     resetToDefaults: () => void;
 }
-
-/**
- * Default Settings Values
- */
-const DEFAULT_SETTINGS: Omit<SettingsState,
-    'setDefaultDuration' |
-    'setDateTimeFormat' | 'setSidebarOpen' |
-    'setConfirmDelete' | 'setConfirmExtend' | 'setAutoRefreshInterval' |
-    'setCacheTTLMinutes' |
-    'setEnableUnlockSound' | 'setEnableUnlockConfetti' |
-    'resetToDefaults'
-> = {
-    defaultDurationMinutes: 60,
-
-    dateTimeFormat: 'yyyy-MM-dd HH:mm',
-    sidebarOpen: true,
-
-    confirmDelete: true,
-    confirmExtend: true,
-    autoRefreshInterval: 60,
-
-    cacheTTLMinutes: 5,
-
-    enableUnlockSound: false,
-    enableUnlockConfetti: true,
-};
 
 /**
  * Settings Store
  * 
  * Persists user preferences to localStorage.
- * Uses a factory pattern to allow for test isolation.
+ * Now mostly read-only for env vars, but keeps sidebar state.
  */
 
 import { StoreApi, UseBoundStore } from 'zustand';
@@ -85,33 +54,30 @@ export const createSettingsStore = (
     return create<SettingsState>()(
         persist(
             (set) => ({
-                // Default values
-                ...DEFAULT_SETTINGS,
+                // Persistent State
+                sidebarOpen: true,
+
+                // Read-only / Environment Driven
+                dateTimeFormat: env.dateFormat,
+                confirmDelete: true, // "Operation confirmation default want" -> always true
+                confirmExtend: true, // "Operation confirmation default want" -> always true
+                autoRefreshInterval: env.autoRefreshInterval,
+                cacheTTLMinutes: env.cacheTTLMinutes,
+
+                // Defaults for effects (hardcoded as we have no UI to change them anymore)
+                enableUnlockSound: false,
+                enableUnlockConfetti: true,
+
                 ...initialState,
 
                 // Actions
-                setDefaultDuration: (minutes) => set({ defaultDurationMinutes: minutes }),
-
-                // Interface
-                setDateTimeFormat: (format) => set({ dateTimeFormat: format }),
                 setSidebarOpen: (open) => set({ sidebarOpen: open }),
 
-                // Behavior
-                setConfirmDelete: (enabled) => set({ confirmDelete: enabled }),
-                setConfirmExtend: (enabled) => set({ confirmExtend: enabled }),
-                setAutoRefreshInterval: (seconds) => set({ autoRefreshInterval: seconds }),
-
-                // Caching
-                setCacheTTLMinutes: (minutes) => set({ cacheTTLMinutes: minutes }),
-
-                // Unlock Effects
-                setEnableUnlockSound: (enabled) => set({ enableUnlockSound: enabled }),
-                setEnableUnlockConfetti: (enabled) => set({ enableUnlockConfetti: enabled }),
-
-                resetToDefaults: () => set(DEFAULT_SETTINGS),
+                resetToDefaults: () => set({ sidebarOpen: true }),
             }),
             {
                 name: 'chaster-settings',
+                partialize: (state) => ({ sidebarOpen: state.sidebarOpen }), // Only persist sidebar state
             }
         )
     );
@@ -122,5 +88,5 @@ export const useSettings = createSettingsStore();
 
 // Reset helper for tests
 export function resetSettingsStore() {
-    useSettings.setState(DEFAULT_SETTINGS);
+    useSettings.setState({ sidebarOpen: true });
 }

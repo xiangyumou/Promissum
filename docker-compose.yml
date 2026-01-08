@@ -10,8 +10,10 @@ services:
     environment:
       - NODE_ENV=production
       - CHASTER_API_URL=${CHASTER_API_URL:-http://chaster:3000/api/v1}
-      # Map the shared API_TOKEN to the app's CHASTER_API_TOKEN
       - CHASTER_API_TOKEN=${API_TOKEN:-your_secure_token_here}
+      - NEXT_PUBLIC_DATE_FORMAT=${NEXT_PUBLIC_DATE_FORMAT:-yyyy-MM-dd HH:mm}
+      - NEXT_PUBLIC_AUTO_REFRESH_INTERVAL=${NEXT_PUBLIC_AUTO_REFRESH_INTERVAL:-60}
+      - NEXT_PUBLIC_CACHE_TTL=${NEXT_PUBLIC_CACHE_TTL:-5}
     depends_on:
       - chaster
 

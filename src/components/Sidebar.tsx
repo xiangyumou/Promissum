@@ -5,11 +5,11 @@ import { ApiItemListView } from '@/lib/types';
 import { FilterParams } from '@/lib/api-client';
 import FilterBar from './FilterBar';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, Settings, PanelLeftClose } from 'lucide-react';
+import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, PanelLeftClose } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/routing';
+
 import { useSettings } from '@/lib/stores/settings-store';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { timeService } from '@/lib/services/time-service';
@@ -245,15 +245,7 @@ function SidebarContent({
                 }
             </div>
 
-            {/* Footer - Settings Button */}
-            <div className="border-t border-border p-4">
-                <Link href="/settings">
-                    <button className="w-full flex items-center gap-3 rounded-xl font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all duration-200 px-4 py-3 text-sm">
-                        <Settings size={18} />
-                        {t('settings')}
-                    </button>
-                </Link>
-            </div>
+
         </>
     );
 }

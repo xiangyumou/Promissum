@@ -11,6 +11,9 @@ import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
 
+import ThemeToggle from './ThemeToggle';
+import LanguageSwitcher from './LanguageSwitcher';
+
 import { useSettings } from '@/lib/stores/settings-store';
 
 import ConfirmDialog from './ConfirmDialog';
@@ -69,6 +72,12 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     if (!selectedId) {
         return (
             <div className="h-full overflow-y-auto bg-background custom-scrollbar relative flex-1 w-full">
+                {/* Global Controls */}
+                <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+                    <ThemeToggle />
+                    <LanguageSwitcher />
+                </div>
+
                 {/* Menu Button - Mobile Only */}
                 <div className="absolute top-4 left-4 z-50 md:hidden">
                     <button
@@ -175,6 +184,12 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                     </div>
 
                     <div className="flex items-center gap-2 ml-auto md:ml-0 shrink-0">
+                        {/* Theme & Language Controls */}
+                        <div className="hidden md:flex items-center gap-1 border-r border-border pr-2 mr-2">
+                            <ThemeToggle />
+                            <LanguageSwitcher />
+                        </div>
+
                         <ExtendButton onExtend={(mins) => onExtend(item.id, mins)} />
                         <DeleteButton id={item.id} onDelete={onDelete} />
                     </div>
@@ -263,7 +278,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
             </div>
 
 
-        </div>
+        </div >
     );
 }
 
