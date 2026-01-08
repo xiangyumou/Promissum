@@ -258,7 +258,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                                             ? "bg-primary text-primary-foreground cursor-pointer hover:scale-105"
                                             : step === currentStep
                                                 ? "bg-primary text-primary-foreground ring-4 ring-primary/20"
-                                                : "bg-muted text-muted-foreground cursor-not-allowed"
+                                                : "bg-primary/20 text-primary/60 cursor-not-allowed border-2 border-primary/30"
                                     )}
                                 >
                                     {step < currentStep ? <Check size={18} /> : step}
@@ -266,7 +266,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                                 {step < 4 && (
                                     <div className={cn(
                                         "flex-1 h-1 mx-2 rounded-full transition-all",
-                                        step < currentStep ? "bg-primary" : "bg-muted"
+                                        step < currentStep ? "bg-primary" : "bg-primary/30"
                                     )} />
                                 )}
                             </div>

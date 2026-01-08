@@ -1,8 +1,6 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/xiangyumou/promissum:latest
     container_name: promissum-app
     ports:
       - "3000:3000"
