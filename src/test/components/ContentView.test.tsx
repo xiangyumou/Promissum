@@ -24,6 +24,22 @@ vi.mock('next-intl', async () => {
     };
 });
 
+// Mock next-themes
+vi.mock('next-themes', () => ({
+    useTheme: () => ({ theme: 'light', setTheme: vi.fn() }),
+    ThemeProvider: ({ children }: any) => <>{children}</>,
+}));
+
+// Mock i18n routing
+vi.mock('@/i18n/routing', () => ({
+    usePathname: () => '/test-path',
+    useRouter: () => ({
+        replace: vi.fn(),
+        push: vi.fn(),
+    }),
+    Link: ({ children, href }: any) => <a href={href}>{children}</a>
+}));
+
 // Mock framer-motion
 vi.mock('framer-motion', async () => {
     const actual = await vi.importActual('framer-motion');
