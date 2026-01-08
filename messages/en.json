@@ -14,7 +14,8 @@
         "unlocksAt": "Unlocks at",
         "layers": "layers",
         "locked": "Locked",
-        "unlocked": "Unlocked"
+        "unlocked": "Unlocked",
+        "dashboard": "Dashboard"
     },
     "Sidebar": {
         "noItems": "No items yet",

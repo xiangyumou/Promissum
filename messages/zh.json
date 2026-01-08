@@ -14,7 +14,8 @@
         "unlocksAt": "解锁时间",
         "layers": "层加密",
         "locked": "锁定中",
-        "unlocked": "已解锁"
+        "unlocked": "已解锁",
+        "dashboard": "仪表盘"
     },
     "Sidebar": {
         "noItems": "暂无项目",
