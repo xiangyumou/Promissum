@@ -59,8 +59,8 @@ Promissum 是一个时间锁加密内容保护系统，允许用户将文本或�
 git clone https://github.com/xiangyumou/Promissum.git
 cd Promissum
 
-# 安装依赖
-npm install
+# 安装依赖（推荐使用 pnpm）
+pnpm install
 ```
 
 ### 配置
@@ -77,21 +77,16 @@ nano .env
 
 ```bash
 # 启动数据库服务（PostgreSQL + Redis）
-# 端口已映射到宿主机，应用可通过 localhost 访问
-docker compose up -d db redis
+docker compose up -d
 
 # 运行数据库迁移
 npx prisma migrate dev
 
 # 启动开发服务器
-npm run dev
+pnpm run dev
 ```
 
 访问 http://localhost:3000
-
-**环境说明**：
-- **开发环境**: 上述命令，应用在本地运行 `npm run dev`，数据库在 Docker 中
-- **生产环境**: `docker compose up -d` 启动所有服务（包括应用）
 
 ## Docker 部署
 

@@ -11,7 +11,7 @@ This guide covers setting up a local development environment for Promissum, incl
 ## Prerequisites / 前置要求
 
 - **Node.js**: 22+ / **Node.js**: 22+
-- **npm**: Latest (package manager) / **npm**: 最新版本（包管理器）
+- **pnpm**: 9+ (package manager) / **pnpm**: 9+（包管理器）
 - **Docker**: 20.10+ (for database) / **Docker**: 20.10+（用于数据库）
 - **Docker Compose**: 2.0+ / **Docker Compose**: 2.0+
 - **Git**: Latest / **Git**: 最新版本
@@ -28,19 +28,17 @@ This guide covers setting up a local development environment for Promissum, incl
 git clone https://github.com/xiangyumou/Promissum.git
 cd Promissum
 
-# Install dependencies
-# 安装依赖
-npm install
+# Install dependencies (using pnpm)
+# 安装依赖（使用 pnpm）
+pnpm install
 ```
 
 ### 2. Start Database Services / 启动数据库服务
 
 ```bash
-# Start database services (PostgreSQL + Redis)
-# Ports are mapped to host for localhost access
-# 启动数据库服务（PostgreSQL + Redis）
-# 端口已映射到宿主机，可通过 localhost 访问
-docker compose up -d db redis
+# Start PostgreSQL and Redis
+# 启动 PostgreSQL 和 Redis
+docker compose up -d
 
 # Verify services are running
 # 验证服务运行状态
@@ -79,7 +77,7 @@ npx prisma migrate dev
 ### 5. Start Development Server / 启动开发服务器
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Visit http://localhost:3000
@@ -169,14 +167,14 @@ promissum/
 
 | Script / 脚本 | Description / 描述 |
 |---------------|-------------------|
-| `npm run dev` | Start development server / 启动开发服务器 |
-| `npm run build` | Build for production / 生产构建 |
-| `npm run start` | Start production server / 启动生产服务器 |
-| `npm run lint` | Run ESLint / 运行 ESLint |
-| `npm run type-check` | Run TypeScript type check / 运行 TypeScript 类型检查 |
-| `npm run test` | Run tests / 运行测试 |
-| `npm run test:ui` | Run tests with UI / 使用 UI 运行测试 |
-| `npm run test:coverage` | Run tests with coverage / 运行测试并生成覆盖率 |
+| `pnpm run dev` | Start development server / 启动开发服务器 |
+| `pnpm run build` | Build for production / 生产构建 |
+| `pnpm run start` | Start production server / 启动生产服务器 |
+| `pnpm run lint` | Run ESLint / 运行 ESLint |
+| `pnpm run type-check` | Run TypeScript type check / 运行 TypeScript 类型检查 |
+| `pnpm run test` | Run tests / 运行测试 |
+| `pnpm run test:ui` | Run tests with UI / 使用 UI 运行测试 |
+| `pnpm run test:coverage` | Run tests with coverage / 运行测试并生成覆盖率 |
 
 ---
 
@@ -316,19 +314,19 @@ describe('AddModal', () => {
 ```bash
 # Run all tests
 # 运行所有测试
-npm test
+pnpm test
 
 # Run tests in watch mode
 # 以监听模式运行测试
-npm test -- --watch
+pnpm test -- --watch
 
 # Run tests with UI
 # 使用 UI 运行测试
-npm run test:ui
+pnpm run test:ui
 
 # Run tests with coverage
 # 运行测试并生成覆盖率
-npm run test:coverage
+pnpm run test:coverage
 ```
 
 ---
@@ -407,7 +405,7 @@ Create `.vscode/launch.json`:
       "name": "Next.js: debug server-side",
       "type": "node-terminal",
       "request": "launch",
-      "command": "npm run dev"
+      "command": "pnpm run dev"
     },
     {
       "name": "Next.js: debug client-side",
@@ -419,7 +417,7 @@ Create `.vscode/launch.json`:
       "name": "Next.js: debug full stack",
       "type": "node-terminal",
       "request": "launch",
-      "command": "npm run dev",
+      "command": "pnpm run dev",
       "serverReadyAction": {
         "pattern": "- Local:.+(https?://.+)",
         "uriFormat": "%s",
@@ -477,7 +475,7 @@ lsof -ti:3000 | xargs kill -9
 
 # Or use a different port
 # 或使用不同的端口
-PORT=3001 npm run dev
+PORT=3001 pnpm run dev
 ```
 
 ### Database Connection Issues / 数据库连接问题
@@ -529,28 +527,28 @@ function MyComponent() {
 ```bash
 # Update dependencies
 # 更新依赖
-npm update
+pnpm update
 
 # Check for outdated dependencies
 # 检查过时的依赖
-npm outdated
+pnpm outdated
 
 # Clean node_modules and reinstall
 # 清理 node_modules 并重新安装
-rm -rf node_modules npm-lock.yaml
-npm install
+rm -rf node_modules pnpm-lock.yaml
+pnpm install
 
 # View dependency tree
 # 查看依赖树
-npm list --depth=0
+pnpm list --depth=0
 
 # Run type check
 # 运行类型检查
-npm run type-check
+pnpm run type-check
 
 # Fix lint issues
 # 修复 lint 问题
-npm run lint --fix
+pnpm run lint --fix
 ```
 
 ---

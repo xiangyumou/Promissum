@@ -61,8 +61,8 @@ Promissum is a time-lock encryption system that allows users to encrypt content 
 git clone https://github.com/xiangyumou/Promissum.git
 cd Promissum
 
-# Install dependencies
-npm install
+# Install dependencies (using pnpm)
+pnpm install
 ```
 
 ### Configuration
@@ -79,21 +79,16 @@ nano .env
 
 ```bash
 # Start database services (PostgreSQL + Redis)
-# Ports are mapped to host, app can access via localhost
-docker compose up -d db redis
+docker compose up -d
 
 # Run database migrations
 npx prisma migrate dev
 
 # Start development server
-npm run dev
+pnpm run dev
 ```
 
 Visit http://localhost:3000
-
-**Environment Notes**:
-- **Development**: Commands above, app runs locally with `npm run dev`, databases in Docker
-- **Production**: `docker compose up -d` starts all services (including app)
 
 ## Docker Deployment
 
