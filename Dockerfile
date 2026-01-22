@@ -11,10 +11,10 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install -g pnpm@9 && pnpm install --frozen-lockfile
 
 # Copy source files
 COPY . .
@@ -23,7 +23,7 @@ COPY . .
 RUN npx prisma generate
 
 # Build the Next.js application
-RUN npm run build
+RUN pnpm run build
 
 # =============================================================================
 # Runner Stage
@@ -65,4 +65,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Start the application
-CMD ["npm", "run", "start"]
+CMD ["pnpm", "run", "start"]
