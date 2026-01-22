@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { env, validateEnv } from '@/lib/env';
+import { env as _env, validateEnv as _validateEnv } from '@/lib/env';
 
 describe('env', () => {
     const originalEnv = process.env;
