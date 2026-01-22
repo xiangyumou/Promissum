@@ -1,125 +1,94 @@
-# Chaster - 时间锁加密内容保护应用
+# Promissum
 
-基于**时间锁加密技术 (Timelock Encryption)** 和 **drand 去中心化随机信标网络**的内容保护应用客户端。
+基于时间锁加密技术（Timelock Encryption）和 drand 去中心化随机信标网络的内容保护应用。
 
-## ✨ 核心特性
+## 概述
 
-- 🔐 **真正的强制时间锁**：基于密码学，无法提前解密
-- 🌐 **远程加密服务**：调用独立的加密 API 服务
-- 🔄 **多层加密**：支持延长锁定时间
-- 📱 **全平台响应式**：完美适配桌面和移动设备
-- 🎨 **现代化 UI**：
-  - 支持浅色/深色/系统跟随模式
-  - 可自定义主题色
-  - 优雅的毛玻璃效果与动画交互
-- 🌍 **国际化支持**：完整的中英文界面 (i18n)
-- 📊 **仪表盘统计**：可视化展示加密数据统计
-- 💾 **本地持久化**：自定义缓存策略与数据持久化
-- 🔄 **自动同步**：基于智能轮询 (Smart Polling) 的状态自动刷新
-- 🔍 **高级筛选与搜索**：支持模糊搜索、时间范围筛选及常用预设保存
-- 🎉 **解锁特效**：解锁时刻的庆祝动画与音效
+Promissum 是一个时间锁加密内容保护系统，允许用户将文本或图片加密并在指定时间后才能解密。系统基于 BLS12-381 曲线的身份基加密（IBE）和 drand 去中心化随机性网络，确保即使在服务端也无法提前解密内容。
 
-## 🏗️ 架构说明
+## 特性
 
-### 智能轮询架构 (Smart Polling Sync)
+- **强制时间锁**：基于密码学保证，无法提前解密
+- **多种时间模式**：支持持续时长和绝对时间两种设定方式
+- **延长锁定**：通过多层加密支持延长锁定时间
+- **响应式设计**：支持桌面和移动设备
+- **主题定制**：支持浅色/深色模式，可自定义主题色
+- **国际化**：完整的中英文界面
+- **自动同步**：基于智能轮询的状态自动刷新机制
+- **仪表盘**：可视化展示加密数据统计
+- **数据导出**：支持导出所有加密数据
 
-```mermaid
-graph TD
-    ClientA[Client A] <-->|Polling / API| Server[Next.js Server]
-    ClientB[Client B] <-->|Polling / API| Server
-    Server <-->|Prisma_ORM| DB[(SQLite/Postgres)]
-    
-    subgraph Data Flow
-        ClientA --Update Item--> Server
-        Server --Save to DB--> DB
-        ClientB --Poll Status--> Server
-    end
-```
-
-**同步特性**:
-- **智能轮询**: 根据解锁剩余时间动态调整刷新频率 (1s - 60s)
-- **自动刷新**: 列表和详情页自动保持最新状态
-- **双写策略**: 本地优先 + 云端同步，保证极致响应速度
-- **隐私优先**: 无需强制账户体系
-
-### 原有架构（基于远程 API）
+## 架构
 
 ```
-前端 UI (Next.js)
-    ↓
-本地 API Routes (代理层)
-    ↓
-远程加密服务 API
-    ↓
-时间锁加密 + drand 网络
+┌─────────────┐      ┌──────────────┐      ┌─────────────────┐
+│   Browser   │ ───> │ Next.js App  │ ───> │ PostgreSQL DB   │
+└─────────────┘      └──────────────┘      └─────────────────┘
+                            │
+                            v
+                     ┌──────────────┐
+                     │ Chaster API  │
+                     │ (Encryption) │
+                     └──────────────┘
+                            │
+                            v
+                     ┌──────────────┐
+                     │ drand Network│
+                     └──────────────┘
 ```
 
-**特点**:
-- 前端代码与原来完全兼容
-- 后端 API Routes 作为代理层
-- Token 安全存储在服务端
-- 加密逻辑由远程服务处理
-- 状态管理采用 Zustand + React Query
+**同步机制**：
+- 智能轮询：根据解锁剩余时间动态调整刷新频率（1s - 60s）
+- 自动刷新：列表和详情页自动保持最新状态
+- 本地优先：本地状态管理 + 云端数据同步
 
-## 🚀 快速开始
+## 快速开始
 
-### 1. 环境配置
+### 环境要求
 
-复制环境变量模板：
+- Node.js 22+
+- Docker & Docker Compose（用于数据库服务）
+- npm 或 pnpm
+
+### 安装
 
 ```bash
-cp .env.example .env
-```
+# 克隆仓库
+git clone https://github.com/xiangyumou/Promissum.git
+cd Promissum
 
-编辑 `.env` 文件配置必要的环境变量。
-
-### 2. 本地开发 (推荐)
-
-启动 PostgreSQL 数据库服务：
-
-```bash
-docker compose up -d promissum-db chaster chaster-db chaster-redis
-```
-
-安装依赖并启动开发服务器：
-
-```bash
+# 安装依赖
 npm install
-npm run dev
 ```
 
-访问 `http://localhost:3000`
-
-### 3. 数据库迁移
-
-首次运行需要初始化数据库：
+### 配置
 
 ```bash
-npx prisma migrate dev
+# 复制环境变量模板
+cp .env.example .env
+
+# 编辑 .env 文件，配置必要的环境变量
+nano .env
 ```
 
-### 4. 生产构建
+### 启动开发环境
 
 ```bash
-npm run build
-npm start
-```
-
-## 🐳 Docker 部署
-
-### 本地开发
-
-```bash
-# 启动数据库服务
+# 启动数据库服务（PostgreSQL + Chaster 服务）
 docker compose up -d promissum-db chaster chaster-db chaster-redis
 
-# 运行应用
+# 运行数据库迁移
+npx prisma migrate dev
+
+# 启动开发服务器
 npm run dev
 ```
 
-### 生产部署
+访问 http://localhost:3000
 
-#### 方法 1: 使用预构建镜像 (推荐)
+## Docker 部署
+
+### 生产环境部署
 
 ```bash
 # 1. 准备环境变量
@@ -133,17 +102,7 @@ docker compose up -d
 docker compose exec app npx prisma migrate deploy
 ```
 
-#### 方法 2: 本地构建
-
-```bash
-# 构建镜像
-docker build -t promissum:latest .
-
-# 使用本地镜像
-docker compose up -d
-```
-
-### 环境变量说明
+### 环境变量
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
@@ -152,7 +111,7 @@ docker compose up -d
 | `CHASTER_API_TOKEN` | Chaster API 认证令牌 | (必填) |
 | `NEXT_PUBLIC_APP_URL` | 应用公开地址 | `http://localhost:3000` |
 
-更多配置选项请查看 [`.env.example`](./.env.example)。
+完整配置选项请查看 [`.env.example`](./.env.example)。
 
 ### 更新部署
 
@@ -162,122 +121,91 @@ docker compose up -d
 docker compose exec app npx prisma migrate deploy
 ```
 
-## 🧪 Testing
+## 开发
 
-The project has comprehensive unit test coverage using Vitest.
-
-### Run Tests
+### 可用脚本
 
 ```bash
-# Run all tests
-npm test
-
-# Run tests with coverage report
-npm run test:coverage
-
-# Run tests in watch mode
-npm test -- --watch
+npm run dev          # 启动开发服务器
+npm run build        # 构建生产版本
+npm run start        # 启动生产服务器
+npm run lint         # 运行 ESLint
+npm run type-check   # 运行 TypeScript 类型检查
+npm run test         # 运行测试
+npm run test:coverage # 运行测试并生成覆盖率报告
 ```
 
-### Test Coverage
+### 数据库操作
 
-- **Overall Coverage**: ~66% code coverage
-- **97 Unit Tests** covering:
-  - ✅ All lib utilities and services
-  - ✅ All custom React hooks
-  - ✅ Major UI components
-  - ✅ Edge cases and error handling
-
-### Test Structure
-
+```bash
+npx prisma migrate dev    # 创建并应用新迁移
+npx prisma migrate deploy # 部署迁移（生产环境）
+npx prisma studio         # 打开 Prisma Studio
+npx prisma generate       # 生成 Prisma Client
 ```
-src/test/
-├── components/        # Component tests (AddModal, Dashboard, etc.)
-├── unit/
-│   ├── hooks/         # Custom hooks tests
-│   └── lib/           # Utility library tests
-└── utils.tsx          # Test utilities and providers
-```
-
-## 📚 技术栈
-
-- **前端框架**：Next.js 16 + React 19
-- **语言**：TypeScript 5
-- **样式**：Tailwind CSS 4
-- **状态管理**：Zustand 5
-- **数据获取**：React Query 5 (TanStack Query)
-- **UI 组件**：Radix UI (Dialog, Slot), Framer Motion
-- **工具库**：
-  - `date-fns`: 日期格式化
-  - `zod`: 数据验证
-  - `react-use`: 常用 Hooks
-  - `next-intl`: 国际化
-  - `yet-another-react-lightbox`: 图片预览
-
-## 📖 文档
-
-- [产品需求文档 (PRD)](docs/PRD.md) - 完整的产品规格说明
-- [API 参考文档](docs/API_REFERENCE.md) - 远程加密服务 API 说明
-- [架构迁移指南](docs/MIGRATION_GUIDE.md) - 数据库迁移说明
-
-## 🔒 安全性
-
-- **Token 保护**：API Token 存储在服务端环境变量
-- **代理模式**：前端不直接暴露 Token
-- **加密强度**：使用 BLS12-381 曲线的 IBE (Identity-Based Encryption)
-- **去中心化**：依赖 drand 网络，无单点故障
-
-## 🛣️ 功能状态
-
-### 已完成
-- ✅ 文本/图片时间锁加密
-- ✅ 双模式时间设定（持续时长/绝对时间）
-- ✅ 实时倒计时与自动解锁
-- ✅ 延长锁定功能（多层加密）
-- ✅ 响应式移动端适配
-- ✅ 远程 API 服务集成
-- ✅ 仪表盘统计视图
-- ✅ 完整设置页面 (偏好/主题/安全)
-- ✅ 深色模式与主题自定义
-- ✅ 国际化 (中/英)
-- ✅ 数据导出功能
-
-### 规划中
-- 🔮 批量操作功能
-- 🔮 通知提醒系统
-- 🔮 多用户账号系统
-
-## 🔧 开发说明
 
 ### 项目结构
 
 ```
-├── src/
-│   ├── app/
-│   │   ├── [locale]/     # 国际化路由页面
-│   │   ├── api/          # API Routes (代理层)
-│   │   └── globals.css   # 全局样式
-│   ├── components/       # UI 组件
-│   │   ├── ui/           # 基础 UI 组件 (Button, Input等)
-│   │   ├── AddModal.tsx  # 创建项目弹窗
-│   │   ├── Sidebar.tsx   # 侧边栏
-│   │   └── ...
-│   ├── lib/
-│   │   ├── stores/       # Zustand 状态存储
-│   │   ├── api-client.ts # API 客户端封装
-│   │   └── queries.ts    # React Query 查询
-│   ├── hooks/            # 自定义 Hooks
-│   ├── i18n/             # 国际化配置
-│   └── messages/         # 翻译文件 (en.json, zh.json)
-├── docs/                 # 项目文档
-└── public/               # 静态资源
+src/
+├── app/                 # Next.js App Router
+│   ├── [locale]/       # 国际化路由
+│   ├── api/            # API Routes
+│   └── globals.css     # 全局样式
+├── components/         # React 组件
+│   └── ui/             # 基础 UI 组件
+├── hooks/              # 自定义 Hooks
+├── lib/                # 工具库和状态管理
+│   └── stores/         # Zustand stores
+├── i18n/               # 国际化配置
+└── test/               # 测试文件
 ```
 
-## 📄 许可证
+## 测试
+
+项目使用 Vitest 进行单元测试，当前覆盖率约 66%。
+
+```bash
+# 运行所有测试
+npm test
+
+# 运行测试并生成覆盖率报告
+npm run test:coverage
+
+# 监听模式
+npm test -- --watch
+```
+
+## 技术栈
+
+- **框架**: Next.js 16 + React 19
+- **语言**: TypeScript 5
+- **样式**: Tailwind CSS 4
+- **状态管理**: Zustand 5
+- **数据获取**: React Query 5
+- **数据库**: PostgreSQL + Prisma ORM
+- **国际化**: next-intl
+- **UI 组件**: Radix UI
+- **加密**: Chaster API (IBE + drand)
+
+## 安全性
+
+- API Token 存储在服务端环境变量，前端通过 API Routes 代理访问
+- 使用 BLS12-381 曲线的身份基加密（IBE）
+- 依赖 drand 去中心化随机性网络，无单点故障
+- 所有敏感操作均在服务端进行
+
+## 文档
+
+- [产品需求文档](docs/PRD.md)
+- [API 参考文档](docs/API_REFERENCE.md)
+- [PostgreSQL 迁移指南](docs/POSTGRES_MIGRATION.md)
+
+## License
 
 MIT License
 
 ---
 
-**更新时间**：2025-12-28
-**版本**：v0.3.0 (Feature Complete)
+**更新时间**: 2025-12-28
+**版本**: v0.3.0
