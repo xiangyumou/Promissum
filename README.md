@@ -1,5 +1,7 @@
 # Promissum
 
+[中文文档](./README.md) | [English Documentation](./README_EN.md)
+
 基于时间锁加密技术（Timelock Encryption）和 drand 去中心化随机信标网络的内容保护应用。
 
 ## 概述
@@ -11,27 +13,27 @@ Promissum 是一个时间锁加密内容保护系统，允许用户将文本或�
 - **强制时间锁**：基于密码学保证，无法提前解密
 - **多种时间模式**：支持持续时长和绝对时间两种设定方式
 - **延长锁定**：通过多层加密支持延长锁定时间
+- **多设备同步**：设备间状态实时同步，支持多端使用
+- **实时更新**：基于 Server-Sent Events (SSE) 的实时状态推送
+- **会话追踪**：实时查看其他设备正在查看的项目
+- **高级筛选**：时间范围筛选（今日/本周/本月）、筛选预设、模糊搜索
+- **解锁特效**：彩带和音效庆祝解锁
+- **倒计时视觉**：即将解锁项目的渐变色彩和脉冲动画
 - **响应式设计**：支持桌面和移动设备
 - **主题定制**：支持浅色/深色模式，可自定义主题色
 - **国际化**：完整的中英文界面
-- **自动同步**：基于智能轮询的状态自动刷新机制
 - **仪表盘**：可视化展示加密数据统计
 - **数据导出**：支持导出所有加密数据
 
 ## 架构
 
 ```
-┌─────────────┐      ┌──────────────┐      ┌─────────────────┐
-│   Browser   │ ───> │ Next.js App  │ ───> │ PostgreSQL DB   │
-└─────────────┘      └──────────────┘      └─────────────────┘
-                            │
-                            v
-                     ┌──────────────┐
-                     │ Chaster API  │
-                     │ (Encryption) │
-                     └──────────────┘
-                            │
-                            v
+┌─────────────┐      ┌──────────────────────────┐      ┌─────────────────┐
+│   Browser   │ ───> │    Promissum App         │ ───> │ PostgreSQL DB   │
+└─────────────┘      │  (Next.js + Encryption)  │      └─────────────────┘
+                     └──────────────────────────┘                │
+                            │                                  Redis
+                            v                                  (Rate Limit)
                      ┌──────────────┐
                      │ drand Network│
                      └──────────────┘
@@ -57,8 +59,8 @@ Promissum 是一个时间锁加密内容保护系统，允许用户将文本或�
 git clone https://github.com/xiangyumou/Promissum.git
 cd Promissum
 
-# 安装依赖
-npm install
+# 安装依赖（推荐使用 pnpm）
+pnpm install
 ```
 
 ### 配置
@@ -74,14 +76,14 @@ nano .env
 ### 启动开发环境
 
 ```bash
-# 启动数据库服务（PostgreSQL + Chaster 服务）
-docker compose up -d promissum-db chaster chaster-db chaster-redis
+# 启动数据库服务（PostgreSQL + Redis）
+docker compose up -d
 
 # 运行数据库迁移
 npx prisma migrate dev
 
 # 启动开发服务器
-npm run dev
+pnpm run dev
 ```
 
 访问 http://localhost:3000
@@ -107,9 +109,15 @@ docker compose exec app npx prisma migrate deploy
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
 | `DATABASE_URL` | PostgreSQL 连接字符串 | `postgresql://promissum:promissum_password@promissum-db:5432/promissum` |
-| `CHASTER_API_URL` | Chaster API 地址 | `http://chaster:3000/api/v1` |
-| `CHASTER_API_TOKEN` | Chaster API 认证令牌 | (必填) |
+| `REDIS_URL` | Redis 连接字符串（限流） | `redis://redis:6379` |
+| `RATE_LIMIT_MAX` | 限流请求数 | `100` |
+| `RATE_LIMIT_WINDOW_MS` | 限流时间窗口（毫秒） | `60000` |
+| `MOCK_DRAND` | 是否模拟 drand 网络（开发环境） | `true` |
+| `DRAND_CHAIN_URL` | drand 链 URL | `https://api.drand.sh/...` |
 | `NEXT_PUBLIC_APP_URL` | 应用公开地址 | `http://localhost:3000` |
+| `NEXT_PUBLIC_DATE_FORMAT` | 日期格式 | `yyyy-MM-dd HH:mm` |
+| `NEXT_PUBLIC_AUTO_REFRESH_INTERVAL` | 自动刷新间隔（秒） | `60` |
+| `NEXT_PUBLIC_CACHE_TTL` | 缓存时间（分钟） | `5` |
 
 完整配置选项请查看 [`.env.example`](./.env.example)。
 
@@ -126,13 +134,13 @@ docker compose exec app npx prisma migrate deploy
 ### 可用脚本
 
 ```bash
-npm run dev          # 启动开发服务器
-npm run build        # 构建生产版本
-npm run start        # 启动生产服务器
-npm run lint         # 运行 ESLint
-npm run type-check   # 运行 TypeScript 类型检查
-npm run test         # 运行测试
-npm run test:coverage # 运行测试并生成覆盖率报告
+pnpm run dev          # 启动开发服务器
+pnpm run build        # 构建生产版本
+pnpm run start        # 启动生产服务器
+pnpm run lint         # 运行 ESLint
+pnpm run type-check   # 运行 TypeScript 类型检查
+pnpm run test         # 运行测试
+pnpm run test:coverage # 运行测试并生成覆盖率报告
 ```
 
 ### 数据库操作
@@ -163,43 +171,50 @@ src/
 
 ## 测试
 
-项目使用 Vitest 进行单元测试，当前覆盖率约 66%。
+项目使用 Vitest 进行单元测试。
 
 ```bash
 # 运行所有测试
-npm test
+pnpm test
 
 # 运行测试并生成覆盖率报告
-npm run test:coverage
+pnpm run test:coverage
 
 # 监听模式
-npm test -- --watch
+pnpm test -- --watch
 ```
+
+**测试覆盖**：~272 个测试用例，全面覆盖核心功能。
 
 ## 技术栈
 
 - **框架**: Next.js 16 + React 19
 - **语言**: TypeScript 5
 - **样式**: Tailwind CSS 4
-- **状态管理**: Zustand 5
-- **数据获取**: React Query 5
+- **状态管理**: Zustand 5 + React Query 5
 - **数据库**: PostgreSQL + Prisma ORM
+- **缓存**: Redis（限流）
 - **国际化**: next-intl
 - **UI 组件**: Radix UI
-- **加密**: Chaster API (IBE + drand)
+- **加密**: tlock-js (IBE + drand)
+- **实时通信**: Server-Sent Events (SSE)
 
 ## 安全性
 
-- API Token 存储在服务端环境变量，前端通过 API Routes 代理访问
+- 集成加密服务，所有加密操作在服务端进行
 - 使用 BLS12-381 曲线的身份基加密（IBE）
 - 依赖 drand 去中心化随机性网络，无单点故障
-- 所有敏感操作均在服务端进行
+- Redis 实现请求限流保护
+- PostgreSQL 数据持久化，支持多设备同步
 
 ## 文档
 
 - [产品需求文档](docs/PRD.md)
 - [API 参考文档](docs/API_REFERENCE.md)
-- [PostgreSQL 迁移指南](docs/POSTGRES_MIGRATION.md)
+- [系统架构文档](docs/ARCHITECTURE.md)
+- [部署指南](docs/DEPLOYMENT.md)
+- [开发指南](docs/DEVELOPMENT.md)
+- [数据库指南](docs/POSTGRES_MIGRATION.md)
 
 ## License
 
@@ -208,4 +223,4 @@ MIT License
 ---
 
 **更新时间**: 2025-12-28
-**版本**: v0.3.0
+**版本**: v0.5.0

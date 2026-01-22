@@ -1,212 +1,328 @@
-# PostgreSQL 迁移指南
+# PostgreSQL Database Guide / PostgreSQL 数据库指南
 
-## 概述
+## Overview / 概述
 
-本文档描述了 Promissum 从 SQLite 迁移到 PostgreSQL 的过程和最佳实践。
+Promissum uses PostgreSQL as its primary database. The Prisma schema includes models for both the application layer (Promissum) and the encryption layer (Chaster), all unified in a single PostgreSQL database.
 
-## 为什么选择 PostgreSQL？
+Promissum 使用 PostgreSQL 作为主数据库。Prisma schema 包含应用层（Promissum）和加密层（Chaster）的模型，统一存储在一个 PostgreSQL 数据库中。
 
-- **更好的并发支持**：处理多用户访问时性能更优
-- **完整的 SQL 特性**：支持更复杂的查询和事务
-- **生产环境可靠性**：经过大规模验证的数据库
-- **更好的连接池**：支持高并发连接管理
-- **数据完整性**：更严格的外键约束和级联操作
+---
 
-## 迁移步骤
+## Database Schema / 数据库结构
 
-### 1. 更新环境变量
+### Promissum Models / Promissum 模型
+
+These models manage the application state and user preferences:
+
+这些模型管理应用状态和用户偏好设置：
+
+#### Device / 设备
+- Represents a unique browser/client
+- 使用指纹识别唯一浏览器/客户端
+- Fields: `fingerprint`, `name`, `lastSeenAt`
+- 字段：`fingerprint`（指纹）、`name`（名称）、`lastSeenAt`（最后访问时间）
+
+#### UserPreferences / 用户偏好
+- Stores all user settings
+- 存储所有用户设置
+- Synced across devices with the same fingerprint
+- 使用相同指纹的设备间同步
+- Fields: theme, defaultDuration, privacyMode, etc.
+- 字段：主题、默认时长、隐私模式等
+
+#### ActiveSession / 活动会话
+- Tracks which devices are currently viewing which items
+- 跟踪哪些设备正在查看哪些项目
+- Used for presence awareness and real-time sync
+- 用于实时感知和同步
+- Fields: `deviceId`, `itemId`, `lastActive`
+- 字段：`deviceId`、`itemId`、`lastActive`
+
+#### DecryptCache / 解密缓存
+- Optional shared cache for decrypted content
+- 可选的解密内容共享缓存
+- Reduces redundant decryption operations
+- 减少冗余解密操作
+- Fields: `content`, `type`, `expiresAt`
+- 字段：`content`、`type`、`expiresAt`
+
+#### SharedItem / 共享项目
+- Item sharing and access control
+- 项目共享和访问控制
+- Future feature for collaboration
+- 未来协作功能
+- Fields: `shareToken`, `permission`, `expiresAt`
+- 字段：`shareToken`、`permission`、`expiresAt`
+
+### Chaster Models / Chaster 模型
+
+These models manage the encrypted items and encryption service:
+
+这些模型管理加密项目和加密服务：
+
+#### Item / 加密项目
+- Core encrypted item storage
+- 核心加密项目存储
+- Fields: `type`, `encryptedData`, `decryptAt`, `roundNumber`, `layerCount`
+- 字段：`type`、`encryptedData`、`decryptAt`、`roundNumber`、`layerCount`
+
+#### SystemConfig / 系统配置
+- Key-value configuration storage
+- 键值对配置存储
+- Fields: `key`, `value`
+- 字段：`key`、`value`
+
+#### ApiLog / API 日志
+- Optional API request logging
+- 可选的 API 请求日志
+- Fields: `endpoint`, `method`, `statusCode`, `duration`
+- 字段：`endpoint`、`method`、`statusCode`、`duration`
+
+---
+
+## Local Development / 本地开发
+
+### Starting the Database / 启动数据库
 
 ```bash
-# 复制新的环境变量模板
-cp .env.example .env
+# Start all database services (PostgreSQL + Redis)
+# 启动所有数据库服务（PostgreSQL + Redis）
+docker compose up -d
 
-# 编辑 .env，设置 PostgreSQL 连接
-DATABASE_URL=postgresql://promissum:promissum_password@promissum-db:5432/promissum
+# Verify services are running
+# 验证服务运行状态
+docker compose ps
 ```
 
-### 2. 启动 PostgreSQL 数据库
+### Running Migrations / 运行迁移
 
 ```bash
-# 使用 Docker Compose 启动
-docker compose up -d promissum-db
+# Create and apply new migrations (development)
+# 创建并应用新迁移（开发环境）
+npx prisma migrate dev
 
-# 验证数据库运行
-docker compose ps promissum-db
-```
-
-### 3. 生成并应用迁移
-
-```bash
-# 生成新的 PostgreSQL 迁移
-npx prisma migrate dev --name init_postgresql
-
-# 或在生产环境部署
+# Deploy migrations (production)
+# 部署迁移（生产环境）
 npx prisma migrate deploy
 ```
 
-### 4. 验证迁移
+### Database Tools / 数据库工具
 
 ```bash
-# 检查数据库连接
-docker compose exec promissum-db psql -U promissum -d promissum -c "SELECT version();"
-
-# 使用 Prisma Studio 查看数据
+# Open Prisma Studio (GUI)
+# 打开 Prisma Studio（图形界面）
 npx prisma studio
+
+# Generate Prisma Client
+# 生成 Prisma 客户端
+npx prisma generate
+
+# Reset database (WARNING: deletes all data)
+# 重置数据库（警告：删除所有数据）
+npx prisma migrate reset
 ```
 
-## 本地开发设置
+---
 
-### 方法 1: Docker 数据库 + 原生应用 (推荐)
+## Docker Services / Docker 服务
+
+Promissum uses three services in production:
+
+Promissum 在生产环境使用三个服务：
+
+```yaml
+services:
+  app:     # Main application with integrated encryption
+           # 主应用（集成加密服务）
+  db:      # PostgreSQL database
+           # PostgreSQL 数据库
+  redis:   # Rate limiting and caching
+           # 限流和缓存
+```
+
+### Service Health Checks / 服务健康检查
 
 ```bash
-# 启动数据库服务
-docker compose up -d promissum-db chaster chaster-db chaster-redis
+# Check database health
+# 检查数据库健康
+docker compose exec db pg_isready -U promissum
 
-# 运行应用
-npm run dev
-```
+# Check Redis health
+# 检查 Redis 健康
+docker compose exec redis redis-cli ping
 
-### 方法 2: 完全 Docker 化
-
-```bash
-# 构建并启动所有服务
-docker compose up -d
-```
-
-## 生产部署
-
-### 首次部署
-
-```bash
-# 1. 准备环境变量
-cp .env.example .env
-nano .env  # 配置生产环境变量
-
-# 2. 生成安全密码
-CHASTER_API_TOKEN=$(openssl rand -hex 32)
-POSTGRES_PASSWORD=$(openssl rand -hex 16)
-
-# 3. 启动服务
-docker compose up -d
-
-# 4. 运行迁移
-docker compose exec app npx prisma migrate deploy
-```
-
-### 更新部署
-
-```bash
-# 拉取最新镜像
-docker compose pull
-
-# 重启服务
-docker compose up -d
-
-# 应用新的迁移
-docker compose exec app npx prisma migrate deploy
-```
-
-## 故障排查
-
-### 连接问题
-
-```bash
-# 检查 PostgreSQL 状态
-docker compose ps promissum-db
-
-# 查看日志
-docker compose logs promissum-db
-
-# 测试连接
-docker compose exec promissum-db psql -U promissum -d promissum
-```
-
-### 迁移错误
-
-```bash
-# 重置数据库 (注意：会删除数据)
-docker compose exec app npx prisma migrate reset
-
-# 手动删除并重建数据库
-docker compose exec promissum-db psql -U promissum -d postgres -c "DROP DATABASE promissum;"
-docker compose exec promissum-db psql -U promissum -d postgres -c "CREATE DATABASE promissum;"
-```
-
-### 权限问题
-
-```bash
-# 确保用户有正确的权限
-docker compose exec promissum-db psql -U promissum -d promissum -c "GRANT ALL PRIVILEGES ON DATABASE promissum TO promissum;"
-```
-
-## 回滚计划
-
-如果需要回滚到 SQLite：
-
-1. **恢复 Prisma Schema**
-
-```prisma
-datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
-}
-```
-
-2. **更新环境变量**
-
-```bash
-DATABASE_URL="file:./dev.db"
-```
-
-3. **重新生成迁移**
-
-```bash
-npx prisma migrate dev
-```
-
-## 数据迁移 (如有需要)
-
-如果你有需要保留的 SQLite 数据：
-
-```bash
-# 导出 SQLite 数据
-sqlite3 data/dev.db .dump > backup.sql
-
-# 转换为 PostgreSQL 格式 (需要手动调整)
-# 导入到 PostgreSQL
-psql -U promissum -d promissum < backup.sql
-```
-
-## 健康检查
-
-### 数据库健康检查
-
-```bash
-# PostgreSQL
-docker compose exec promissum-db pg_isready -U promissum
-
-# 应用
+# Check application health
+# 检查应用健康
 curl http://localhost:3000/api/health
 ```
 
-### 监控指标
+---
 
-- 数据库连接池使用率
-- 查询性能 (Prisma 日志)
-- 应用启动时间
-- 内存使用情况
-- 错误率
+## Production Deployment / 生产部署
 
-## 最佳实践
+### Initial Setup / 初始设置
 
-1. **定期备份**：使用 `pg_dump` 定期备份数据库
-2. **监控日志**：关注 Prisma 查询日志和错误日志
-3. **连接池**：合理配置 Prisma 连接池大小
-4. **索引优化**：根据查询模式添加适当索引
-5. **安全密码**：生产环境使用强密码
+```bash
+# 1. Prepare environment variables
+# 1. 准备环境变量
+cp .env.example .env
+nano .env
 
-## 参考资料
+# 2. Generate secure passwords
+# 2. 生成安全密码
+POSTGRES_PASSWORD=$(openssl rand -hex 16)
 
-- [Prisma PostgreSQL 指南](https://www.prisma.io/docs/concepts/database-connectors/postgresql)
-- [PostgreSQL 官方文档](https://www.postgresql.org/docs/)
-- [Docker PostgreSQL 镜像](https://hub.docker.com/_/postgres)
+# 3. Update .env with secure passwords
+# 3. 使用安全密码更新 .env
+# POSTGRES_PASSWORD=<generated_password>
+
+# 4. Start services
+# 4. 启动服务
+docker compose up -d
+
+# 5. Run migrations
+# 5. 运行迁移
+docker compose exec app npx prisma migrate deploy
+```
+
+### Updating Deployment / 更新部署
+
+```bash
+# Pull latest images
+# 拉取最新镜像
+docker compose pull
+
+# Restart services
+# 重启服务
+docker compose up -d
+
+# Apply new migrations
+# 应用新迁移
+docker compose exec app npx prisma migrate deploy
+```
+
+---
+
+## Backup and Restore / 备份和恢复
+
+### Backup / 备份
+
+```bash
+# Create a backup
+# 创建备份
+docker compose exec db pg_dump -U promissum promissum > backup.sql
+
+# Automated backup (cron job)
+# 自动备份（定时任务）
+# 0 2 * * * docker compose exec db pg_dump -U promissum promissum > /backup/promissum_$(date +\%Y\%m\%d).sql
+```
+
+### Restore / 恢复
+
+```bash
+# Restore from backup
+# 从备份恢复
+docker compose exec -T db psql -U promissum promissum < backup.sql
+```
+
+---
+
+## Troubleshooting / 故障排查
+
+### Connection Issues / 连接问题
+
+```bash
+# Check database status
+# 检查数据库状态
+docker compose ps db
+
+# View database logs
+# 查看数据库日志
+docker compose logs db
+
+# Test connection
+# 测试连接
+docker compose exec db psql -U promissum -d promissum -c "SELECT version();"
+```
+
+### Migration Errors / 迁移错误
+
+```bash
+# Reset database (WARNING: deletes all data)
+# 重置数据库（警告：删除所有数据）
+docker compose exec app npx prisma migrate reset
+
+# Manually recreate database
+# 手动重建数据库
+docker compose exec db psql -U promissum -d postgres -c "DROP DATABASE promissum;"
+docker compose exec db psql -U promissum -d postgres -c "CREATE DATABASE promissum;"
+docker compose exec app npx prisma migrate deploy
+```
+
+### Performance Issues / 性能问题
+
+```bash
+# Check active connections
+# 检查活动连接
+docker compose exec db psql -U promissum -d promissum -c "SELECT count(*) FROM pg_stat_activity;"
+
+# Check slow queries
+# 检查慢查询
+docker compose exec db psql -U promissum -d promissum -c "SELECT query, mean_exec_time FROM pg_stat_statements ORDER BY mean_exec_time DESC LIMIT 10;"
+
+# Vacuum and analyze
+# 清理和分析
+docker compose exec db psql -U promissum -d promissum -c "VACUUM ANALYZE;"
+```
+
+---
+
+## Best Practices / 最佳实践
+
+### Security / 安全性
+
+1. **Use strong passwords** in production
+   生产环境使用强密码
+2. **Limit database exposure** - don't expose port 5432 publicly
+   限制数据库暴露 - 不要公开 5432 端口
+3. **Regular backups** - automate backup schedules
+   定期备份 - 自动化备份计划
+4. **Monitor connections** - set appropriate connection limits
+   监控连接 - 设置适当的连接限制
+
+### Performance / 性能
+
+1. **Use indexes** - add indexes for frequently queried columns
+   使用索引 - 为频繁查询的列添加索引
+2. **Connection pooling** - Prisma handles this automatically
+   连接池 - Prisma 自动处理
+3. **Monitor query performance** - use Prisma logging
+   监控查询性能 - 使用 Prisma 日志
+4. **Regular VACUUM** - PostgreSQL handles this automatically
+   定期 VACUUM - PostgreSQL 自动处理
+
+### Monitoring / 监控
+
+Key metrics to monitor:
+
+关键监控指标：
+
+- Database connection pool usage
+  数据库连接池使用率
+- Query performance (slow queries)
+  查询性能（慢查询）
+- Database size and growth
+  数据库大小和增长
+- Error rates
+  错误率
+- Replication lag (if using replicas)
+  复制延迟（如果使用副本）
+
+---
+
+## Reference / 参考
+
+- [Prisma PostgreSQL Guide](https://www.prisma.io/docs/concepts/database-connectors/postgresql)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [Docker PostgreSQL Image](https://hub.docker.com/_/postgres)
+- [Promissum Architecture Documentation](./ARCHITECTURE.md)

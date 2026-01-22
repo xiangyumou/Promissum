@@ -1,6 +1,6 @@
 {
-  "name": "chaster",
-  "version": "0.1.0",
+  "name": "promissum",
+  "version": "0.5.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
