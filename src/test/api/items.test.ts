@@ -61,7 +61,7 @@ describe('Items API Routes', () => {
             });
 
             const request = new NextRequest('http://localhost/api/items?status=locked');
-            const response = await GET(request);
+            await GET(request);
 
             expect(getItems).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -77,7 +77,7 @@ describe('Items API Routes', () => {
             });
 
             const request = new NextRequest('http://localhost/api/items?type=text');
-            const response = await GET(request);
+            await GET(request);
 
             expect(getItems).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -93,7 +93,7 @@ describe('Items API Routes', () => {
             });
 
             const request = new NextRequest('http://localhost/api/items?sort=decrypt_asc');
-            const response = await GET(request);
+            await GET(request);
 
             expect(getItems).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -201,7 +201,7 @@ describe('Items API Routes', () => {
             });
 
             const response = await POST(request);
-            const data = await response.json();
+            await response.json();
 
             expect(response.status).toBe(400);
         });

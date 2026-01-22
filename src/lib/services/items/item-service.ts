@@ -94,7 +94,7 @@ function formatItemResponse(item: {
     createdAt: bigint;
     layerCount: number;
     metadata: string | null;
-}, includeContent = false): ItemResponse {
+}, _includeContent = false): ItemResponse {
     const now = Date.now();
     const unlocked = Number(item.decryptAt) <= now;
 
@@ -274,7 +274,7 @@ export async function getItemById(id: string): Promise<ItemResponse> {
                 // Return base64 for images
                 response.content = decryptedBuffer.toString('base64');
             }
-        } catch (error) {
+        } catch (_error) {
             throw new Error('Failed to decrypt content');
         }
     }
@@ -310,7 +310,7 @@ export async function extendItem(id: string, minutes: number): Promise<{
         // Decrypt first
         try {
             contentToEncrypt = await decrypt(item.encryptedData);
-        } catch (error) {
+        } catch (_error) {
             throw new Error('Failed to decrypt content for re-encryption');
         }
     } else {

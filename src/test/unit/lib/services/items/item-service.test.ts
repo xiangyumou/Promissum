@@ -244,7 +244,7 @@ describe('Item Service', () => {
             vi.mocked(prisma.item.findMany).mockResolvedValue([]);
             vi.mocked(prisma.item.count).mockResolvedValue(100);
 
-            const result = await getItems({ limit: 10, offset: 20 });
+            await getItems({ limit: 10, offset: 20 });
 
             expect(prisma.item.findMany).toHaveBeenCalledWith(
                 expect.objectContaining({
