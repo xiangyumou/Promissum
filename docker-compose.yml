@@ -1,32 +1,86 @@
+# =============================================================================
+# Production Docker Compose Configuration
+# =============================================================================
+# This file defines the production-ready deployment of Promissum
+# For local development, use: docker compose up -d promissum-db chaster chaster-db chaster-redis
+# Then run: npm run dev
+# =============================================================================
+
 services:
+  # -------------------------------------------------------------------------
+  # Promissum Application
+  # -------------------------------------------------------------------------
   app:
     image: ghcr.io/xiangyumou/promissum:latest
     container_name: promissum-app
     ports:
-      - "3000:3000"
-    volumes:
-      - ./data:/app/data
-    restart: always
+      - "${APP_PORT:-3000}:3000"
+    restart: unless-stopped
     environment:
-      - NODE_ENV=production
-      - CHASTER_API_URL=${CHASTER_API_URL:-http://chaster:3000/api/v1}
-      - CHASTER_API_TOKEN=${API_TOKEN:-your_secure_token_here}
-      - NEXT_PUBLIC_DATE_FORMAT=${NEXT_PUBLIC_DATE_FORMAT:-yyyy-MM-dd HH:mm}
-      - NEXT_PUBLIC_AUTO_REFRESH_INTERVAL=${NEXT_PUBLIC_AUTO_REFRESH_INTERVAL:-60}
-      - NEXT_PUBLIC_CACHE_TTL=${NEXT_PUBLIC_CACHE_TTL:-5}
-    depends_on:
-      - chaster
+      # Application
+      NODE_ENV: production
+      PORT: 3000
 
+      # Chaster API
+      CHASTER_API_URL: ${CHASTER_API_URL:-http://chaster:3000/api/v1}
+      CHASTER_API_TOKEN: ${CHASTER_API_TOKEN}
+
+      # Database
+      DATABASE_URL: postgresql://${POSTGRES_USER:-promissum}:${POSTGRES_PASSWORD:-promissum_password}@promissum-db:5432/${POSTGRES_DB:-promissum}
+
+      # Public variables
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
+      NEXT_PUBLIC_DATE_FORMAT: ${NEXT_PUBLIC_DATE_FORMAT:-yyyy-MM-dd HH:mm}
+      NEXT_PUBLIC_AUTO_REFRESH_INTERVAL: ${NEXT_PUBLIC_AUTO_REFRESH_INTERVAL:-60}
+      NEXT_PUBLIC_CACHE_TTL: ${NEXT_PUBLIC_CACHE_TTL:-5}
+    depends_on:
+      promissum-db:
+        condition: service_healthy
+      chaster:
+        condition: service_started
+    networks:
+      - promissum-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+
+  # -------------------------------------------------------------------------
+  # Promissum PostgreSQL Database
+  # -------------------------------------------------------------------------
+  promissum-db:
+    image: postgres:16-alpine
+    container_name: promissum-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-promissum}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-promissum_password}
+      POSTGRES_DB: ${POSTGRES_DB:-promissum}
+    volumes:
+      - promissum_postgres_data:/var/lib/postgresql/data
+    networks:
+      - promissum-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-promissum} -d ${POSTGRES_DB:-promissum}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  # -------------------------------------------------------------------------
+  # Chaster Service (Encryption Service)
+  # -------------------------------------------------------------------------
   chaster:
     image: ghcr.io/xiangyumou/chaster:latest
     container_name: chaster-service
-    restart: always
-
+    restart: unless-stopped
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgresql://${POSTGRES_USER:-chaster}:${POSTGRES_PASSWORD:-chaster_password}@chaster-db:5432/${POSTGRES_DB:-chaster}
+      DATABASE_URL: postgresql://${CHASTER_POSTGRES_USER:-chaster}:${CHASTER_POSTGRES_PASSWORD:-chaster_password}@chaster-db:5432/${CHASTER_POSTGRES_DB:-chaster}
       REDIS_URL: redis://chaster-redis:6379
-      API_TOKEN: ${API_TOKEN:-your_secure_token_here}
+      API_TOKEN: ${CHASTER_API_TOKEN}
       RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-100}
       MOCK_DRAND: "${MOCK_DRAND:-true}"
     depends_on:
@@ -34,44 +88,65 @@ services:
         condition: service_healthy
       chaster-redis:
         condition: service_healthy
+    networks:
+      - promissum-network
 
+  # -------------------------------------------------------------------------
+  # Chaster PostgreSQL Database
+  # -------------------------------------------------------------------------
   chaster-db:
     image: postgres:16-alpine
     container_name: chaster-db
-    restart: always
-    networks:
-      default:
-        aliases:
-          - db
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-chaster}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chaster_password}
-      POSTGRES_DB: ${POSTGRES_DB:-chaster}
+      POSTGRES_USER: ${CHASTER_POSTGRES_USER:-chaster}
+      POSTGRES_PASSWORD: ${CHASTER_POSTGRES_PASSWORD:-chaster_password}
+      POSTGRES_DB: ${CHASTER_POSTGRES_DB:-chaster}
     volumes:
       - chaster_postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chaster} -d ${POSTGRES_DB:-chaster}" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  chaster-redis:
-    image: redis:7-alpine
-    container_name: chaster-redis
-    restart: always
     networks:
-      default:
-        aliases:
-          - redis
-    command: redis-server --appendonly yes --appendfsync everysec
-    volumes:
-      - chaster_redis_data:/data
+      - promissum-network
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD-SHELL", "pg_isready -U ${CHASTER_POSTGRES_USER:-chaster} -d ${CHASTER_POSTGRES_DB:-chaster}"]
       interval: 5s
       timeout: 3s
       retries: 5
+      start_period: 5s
 
+  # -------------------------------------------------------------------------
+  # Chaster Redis Cache
+  # -------------------------------------------------------------------------
+  chaster-redis:
+    image: redis:7-alpine
+    container_name: chaster-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --appendfsync everysec
+    volumes:
+      - chaster_redis_data:/data
+    networks:
+      - promissum-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+# -----------------------------------------------------------------------------
+# Networks
+# -----------------------------------------------------------------------------
+networks:
+  promissum-network:
+    driver: bridge
+    name: promissum-network
+
+# -----------------------------------------------------------------------------
+# Volumes
+# -----------------------------------------------------------------------------
 volumes:
+  promissum_postgres_data:
+    name: promissum_postgres_data
   chaster_postgres_data:
+    name: chaster_postgres_data
   chaster_redis_data:
+    name: chaster_redis_data

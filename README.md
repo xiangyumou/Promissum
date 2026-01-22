@@ -65,29 +65,38 @@ graph TD
 
 ### 1. 环境配置
 
-创建 `.env.local` 文件：
+复制环境变量模板：
 
 ```bash
-# 远程加密服务配置
-CHASTER_API_URL=http://localhost:3000/api/v1
-CHASTER_API_TOKEN=tok_your_token_here
+cp .env.example .env
 ```
 
-> **获取 Token**: 在加密服务端运行 `npm run token` 创建新的 API token
+编辑 `.env` 文件配置必要的环境变量。
 
-### 2. 安装依赖
+### 2. 本地开发 (推荐)
+
+启动 PostgreSQL 数据库服务：
+
+```bash
+docker compose up -d promissum-db chaster chaster-db chaster-redis
+```
+
+安装依赖并启动开发服务器：
 
 ```bash
 npm install
-```
-
-### 3. 启动开发服务器
-
-```bash
 npm run dev
 ```
 
-访问 `http://localhost:3001`（如果 3000 端口被占用）
+访问 `http://localhost:3000`
+
+### 3. 数据库迁移
+
+首次运行需要初始化数据库：
+
+```bash
+npx prisma migrate dev
+```
 
 ### 4. 生产构建
 
@@ -96,33 +105,61 @@ npm run build
 npm start
 ```
 
-## 🐳 生产环境部署 (Production Deployment)
+## 🐳 Docker 部署
 
-### 1. 准备配置文件
-
-确保服务器目录中包含 `docker-compose.yml` 和 `.env` 文件。
-
-**.env 示例**:
-
-```ini
-# API Token (必须与 chaster 服务一致)
-API_TOKEN=your_secure_random_token_here
-
-# 数据库 URL (如果使用外部数据库)
-# DATABASE_URL="postgresql://..."
-```
-
-### 2. 启动服务
+### 本地开发
 
 ```bash
+# 启动数据库服务
+docker compose up -d promissum-db chaster chaster-db chaster-redis
+
+# 运行应用
+npm run dev
+```
+
+### 生产部署
+
+#### 方法 1: 使用预构建镜像 (推荐)
+
+```bash
+# 1. 准备环境变量
+cp .env.example .env
+# 编辑 .env 配置生产环境变量
+
+# 2. 启动所有服务
+docker compose up -d
+
+# 3. 运行数据库迁移
+docker compose exec app npx prisma migrate deploy
+```
+
+#### 方法 2: 本地构建
+
+```bash
+# 构建镜像
+docker build -t promissum:latest .
+
+# 使用本地镜像
 docker compose up -d
 ```
 
-### 3. 更新
+### 环境变量说明
+
+| 变量 | 说明 | 默认值 |
+|------|------|--------|
+| `DATABASE_URL` | PostgreSQL 连接字符串 | `postgresql://promissum:promissum_password@promissum-db:5432/promissum` |
+| `CHASTER_API_URL` | Chaster API 地址 | `http://chaster:3000/api/v1` |
+| `CHASTER_API_TOKEN` | Chaster API 认证令牌 | (必填) |
+| `NEXT_PUBLIC_APP_URL` | 应用公开地址 | `http://localhost:3000` |
+
+更多配置选项请查看 [`.env.example`](./.env.example)。
+
+### 更新部署
 
 ```bash
 docker compose pull
 docker compose up -d
+docker compose exec app npx prisma migrate deploy
 ```
 
 ## 🧪 Testing
