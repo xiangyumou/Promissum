@@ -77,7 +77,8 @@ nano .env
 
 ```bash
 # 启动数据库服务（PostgreSQL + Redis）
-docker compose up -d
+# 使用端口映射到宿主机，本地应用可以通过 localhost 访问
+docker compose up -d db redis
 
 # 运行数据库迁移
 npx prisma migrate dev
@@ -87,6 +88,10 @@ pnpm run dev
 ```
 
 访问 http://localhost:3000
+
+**说明**：
+- **开发环境**: `docker compose up -d db redis` + `pnpm run dev`（应用在本地运行）
+- **生产环境**: `docker compose up -d`（所有服务包括 app 都在 Docker 中运行）
 
 ## Docker 部署
 

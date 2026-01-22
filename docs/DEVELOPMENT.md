@@ -36,9 +36,9 @@ pnpm install
 ### 2. Start Database Services / 启动数据库服务
 
 ```bash
-# Start PostgreSQL and Redis
-# 启动 PostgreSQL 和 Redis
-docker compose up -d
+# Start PostgreSQL and Redis (with port mapping to localhost)
+# 启动 PostgreSQL 和 Redis（端口映射到 localhost）
+docker compose up -d db redis
 
 # Verify services are running
 # 验证服务运行状态

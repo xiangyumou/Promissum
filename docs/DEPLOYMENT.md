@@ -8,6 +8,62 @@ This guide covers deploying Promissum to production using Docker Compose. Promis
 
 ---
 
+## Development vs Production / 开发与生产
+
+### Local Development / 本地开发
+
+For local development, the application runs outside Docker while databases run in Docker:
+
+本地开发时，应用在 Docker 外运行，数据库在 Docker 中运行：
+
+```bash
+# Start only database services (with port mapping)
+# 仅启动数据库服务（带端口映射）
+docker compose up -d db redis
+
+# Install dependencies with pnpm
+# 使用 pnpm 安装依赖
+pnpm install
+
+# Run migrations
+# 运行迁移
+npx prisma migrate dev
+
+# Start development server
+# 启动开发服务器
+pnpm run dev
+```
+
+**Configuration / 配置**:
+- `DATABASE_URL`: `postgresql://promissum:password@localhost:5432/promissum`
+- `REDIS_URL`: `redis://localhost:6379`
+- App connects via `localhost` (Docker ports mapped to host)
+- 应用通过 `localhost` 连接（Docker 端口映射到宿主机）
+
+### Production Deployment / 生产部署
+
+For production, all services run in Docker:
+
+生产环境所有服务都在 Docker 中运行：
+
+```bash
+# Start all services (including app container)
+# 启动所有服务（包括 app 容器）
+docker compose up -d
+
+# Run migrations
+# 运行迁移
+docker compose exec app npx prisma migrate deploy
+```
+
+**Configuration / 配置**:
+- `DATABASE_URL`: `postgresql://promissum:password@db:5432/promissum`
+- `REDIS_URL`: `redis://redis:6379`
+- App connects via Docker service names (`db`, `redis`)
+- 应用通过 Docker 服务名连接（`db`, `redis`）
+
+---
+
 ## Prerequisites / 前置要求
 
 ### Required / 必需

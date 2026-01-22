@@ -59,6 +59,8 @@ services:
   db:
     image: postgres:16-alpine
     container_name: promissum-db
+    ports:
+      - "5432:5432"  # Port mapping for local development access
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-promissum}
@@ -81,6 +83,8 @@ services:
   redis:
     image: redis:7-alpine
     container_name: promissum-redis
+    ports:
+      - "6379:6379"  # Port mapping for local development access
     restart: unless-stopped
     command: redis-server --appendonly yes --appendfsync everysec
     volumes:

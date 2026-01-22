@@ -79,7 +79,8 @@ nano .env
 
 ```bash
 # Start database services (PostgreSQL + Redis)
-docker compose up -d
+# With port mapping to host, local app can access via localhost
+docker compose up -d db redis
 
 # Run database migrations
 npx prisma migrate dev
@@ -89,6 +90,10 @@ pnpm run dev
 ```
 
 Visit http://localhost:3000
+
+**Note**:
+- **Development**: `docker compose up -d db redis` + `pnpm run dev` (app runs locally)
+- **Production**: `docker compose up -d` (all services including app run in Docker)
 
 ## Docker Deployment
 
