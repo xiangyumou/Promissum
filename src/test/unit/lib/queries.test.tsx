@@ -1,21 +1,18 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useStats, useItems, useItem, queryKeys } from '@/lib/queries';
-import { apiService } from '@/lib/services/api-service';
 import { timeService } from '@/lib/services/time-service';
 import { createWrapper } from '@/test/utils';
 import { useSettings } from '@/lib/stores/settings-store';
 
-// Mock apiService
+// Mock API service functions
 vi.mock('@/lib/services/api-service', () => ({
-    apiService: {
-        getStats: vi.fn(),
-        getItems: vi.fn(),
-        getItem: vi.fn(),
-        createItem: vi.fn(),
-        deleteItem: vi.fn(),
-        extendItem: vi.fn(),
-    }
+    getStats: vi.fn(),
+    getItems: vi.fn(),
+    getItem: vi.fn(),
+    createItem: vi.fn(),
+    deleteItem: vi.fn(),
+    extendItem: vi.fn(),
 }));
 
 // Mock useSettings
@@ -30,6 +27,9 @@ vi.mock('@/lib/services/time-service', () => ({
     }
 }));
 
+// Import the mocked functions
+import { getStats, getItems, getItem } from '@/lib/services/api-service';
+
 describe('queries hooks', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -39,7 +39,7 @@ describe('queries hooks', () => {
                 cacheTTLMinutes: 5,
                 autoRefreshInterval: 60
             };
-             
+
             return (selector as (s: typeof state) => unknown)(state) as any;
         });
         vi.mocked(timeService.now).mockReturnValue(1000000);
@@ -47,7 +47,7 @@ describe('queries hooks', () => {
 
     describe('useStats', () => {
         it('should fetch stats', async () => {
-            vi.mocked(apiService.getStats).mockResolvedValue({ totalItems: 10, lockedItems: 5, unlockedItems: 5, byType: { text: 6, image: 4 } });
+            vi.mocked(getStats).mockResolvedValue({ totalItems: 10, lockedItems: 5, unlockedItems: 5, byType: { text: 6, image: 4 } });
             const { result } = renderHook(() => useStats(), { wrapper: createWrapper() });
 
             await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -55,7 +55,7 @@ describe('queries hooks', () => {
         });
 
         it('should handle error state', async () => {
-            vi.mocked(apiService.getStats).mockRejectedValue(new Error('Server error'));
+            vi.mocked(getStats).mockRejectedValue(new Error('Server error'));
             const { result } = renderHook(() => useStats(), { wrapper: createWrapper() });
 
             await waitFor(() => expect(result.current.isError).toBe(true));
@@ -65,7 +65,7 @@ describe('queries hooks', () => {
 
     describe('useItems', () => {
         it('should fetch items', async () => {
-            vi.mocked(apiService.getItems).mockResolvedValue([{ id: '1', type: 'text', decrypt_at: 1000, unlocked: false, content: null }]);
+            vi.mocked(getItems).mockResolvedValue([{ id: '1', type: 'text', decrypt_at: 1000, unlocked: false, content: null }]);
             const { result } = renderHook(() => useItems(), { wrapper: createWrapper() });
 
             await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -73,17 +73,17 @@ describe('queries hooks', () => {
         });
 
         it('should fetch items with filters', async () => {
-            vi.mocked(apiService.getItems).mockResolvedValue([{ id: '1', type: 'text', decrypt_at: 1000, unlocked: false, content: null }]);
+            vi.mocked(getItems).mockResolvedValue([{ id: '1', type: 'text', decrypt_at: 1000, unlocked: false, content: null }]);
             const filters = { status: 'locked' as const, type: 'text' as const };
             renderHook(() => useItems(filters), { wrapper: createWrapper() });
 
             await waitFor(() => {
-                expect(apiService.getItems).toHaveBeenCalledWith(filters);
+                expect(getItems).toHaveBeenCalledWith(filters);
             });
         });
 
         it('should handle empty result', async () => {
-            vi.mocked(apiService.getItems).mockResolvedValue([]);
+            vi.mocked(getItems).mockResolvedValue([]);
             const { result } = renderHook(() => useItems(), { wrapper: createWrapper() });
 
             await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -93,7 +93,7 @@ describe('queries hooks', () => {
 
     describe('useItem', () => {
         it('should fetch item detail', async () => {
-            vi.mocked(apiService.getItem).mockResolvedValue({ id: '1', type: 'text', decrypt_at: 1000, unlocked: false, content: null });
+            vi.mocked(getItem).mockResolvedValue({ id: '1', type: 'text', decrypt_at: 1000, unlocked: false, content: null });
             const { result } = renderHook(() => useItem('1'), { wrapper: createWrapper() });
 
             await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -108,7 +108,7 @@ describe('queries hooks', () => {
         it('should handle 404 error', async () => {
             const error = new Error('Not found');
             (error as Error & { status: number }).status = 404;
-            vi.mocked(apiService.getItem).mockRejectedValue(error);
+            vi.mocked(getItem).mockRejectedValue(error);
 
             const { result } = renderHook(() => useItem('missing'), { wrapper: createWrapper() });
 

@@ -1,10 +1,9 @@
 /**
  * Cache Configuration Module
- * 
+ *
  * Centralized cache management including:
- * - TTL configuration
- * - localStorage persistence with error handling
- * - Fallback to sessionStorage/in-memory cache
+ * - TTL configuration (from environment variable)
+ * - localStorage persistence
  */
 
 import { persistQueryClient } from '@tanstack/react-query-persist-client';
@@ -15,64 +14,31 @@ const CACHE_VERSION = 'v1';
 const CACHE_KEY = 'promissum-react-query-cache';
 
 /**
- * Global cache TTL in milliseconds
- * Updated when user changes settings
+ * Cache TTL in milliseconds
+ * Read from environment variable with default of 5 minutes
  */
-let globalCacheTTL = 5 * 60 * 1000; // Default: 5 minutes
+const CACHE_TTL = parseInt(process.env.NEXT_PUBLIC_CACHE_TTL || '5', 10) * 60 * 1000;
 
 /**
  * Get current cache TTL
  */
 export function getCacheTTL(): number {
-    return globalCacheTTL;
+    return CACHE_TTL;
 }
 
 /**
- * Update global cache TTL
- * This will affect new queries, but won't invalidate existing cache
+ * Create storage persister
+ * Uses localStorage, returns null on server
  */
-export function setCacheTTL(minutes: number): void {
-    globalCacheTTL = minutes * 60 * 1000;
-}
-
-/**
- * Create safe storage persister with fallback
- * 
- * Priority: localStorage -> sessionStorage -> null (memory only)
- */
-function createSafePersister() {
+function createPersister() {
     if (typeof window === 'undefined') {
         return null;
     }
 
-    // Try localStorage first
-    try {
-        const testKey = '__storage_test__';
-        window.localStorage.setItem(testKey, 'test');
-        window.localStorage.removeItem(testKey);
-
-        return createSyncStoragePersister({
-            storage: window.localStorage,
-            key: CACHE_KEY,
-        });
-    } catch (error) {
-        console.warn('[Cache] localStorage unavailable:', error);
-
-        // Fallback to sessionStorage
-        try {
-            const testKey = '__storage_test__';
-            window.sessionStorage.setItem(testKey, 'test');
-            window.sessionStorage.removeItem(testKey);
-
-            return createSyncStoragePersister({
-                storage: window.sessionStorage,
-                key: CACHE_KEY,
-            });
-        } catch (_sessionError) {
-            console.warn('[Cache] sessionStorage also unavailable, using memory-only cache');
-            return null;
-        }
-    }
+    return createSyncStoragePersister({
+        storage: window.localStorage,
+        key: CACHE_KEY,
+    });
 }
 
 /**
@@ -84,9 +50,8 @@ export function initializeQueryPersistence(queryClient: QueryClient): void {
         return;
     }
 
-    const persister = createSafePersister();
+    const persister = createPersister();
     if (!persister) {
-        console.warn('[Cache] Persistence disabled, using memory-only cache');
         return;
     }
 
@@ -94,7 +59,7 @@ export function initializeQueryPersistence(queryClient: QueryClient): void {
         persistQueryClient({
             queryClient,
             persister,
-            maxAge: globalCacheTTL,
+            maxAge: CACHE_TTL,
             buster: CACHE_VERSION,
             dehydrateOptions: {
                 shouldDehydrateQuery: (query) => {
@@ -125,7 +90,6 @@ export function clearPersistedCache(): void {
 
     try {
         window.localStorage.removeItem(CACHE_KEY);
-        window.sessionStorage.removeItem(CACHE_KEY);
     } catch (error) {
         console.warn('[Cache] Failed to clear persisted cache:', error);
     }

@@ -1,23 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ChasterApiClient, createApiClient } from '@/lib/api-client';
-import { useSettings } from '@/lib/stores/settings-store';
-import { getEffectiveApiUrl, getEffectiveApiToken } from '@/lib/env';
-
-// Mock dependencies
-vi.mock('@/lib/stores/settings-store', () => ({
-    useSettings: {
-        getState: vi.fn(),
-    }
-}));
-
-vi.mock('@/lib/env', () => ({
-    getEffectiveApiUrl: vi.fn(),
-    getEffectiveApiToken: vi.fn(),
-    env: {
-        apiUrl: 'http://env-url.com',
-        apiToken: 'env-token'
-    }
-}));
 
 // Mock the SDK services
 vi.mock('@xymou/chaster-client', () => ({
@@ -42,14 +24,6 @@ import { ItemsService, SystemService } from '@xymou/chaster-client';
 describe('ChasterApiClient', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-
-        // Setup default mock behaviors
-        (useSettings.getState as ReturnType<typeof vi.fn>).mockReturnValue({
-            apiUrl: '',
-            apiToken: ''
-        });
-        (getEffectiveApiUrl as ReturnType<typeof vi.fn>).mockReturnValue('http://default-url.com');
-        (getEffectiveApiToken as ReturnType<typeof vi.fn>).mockReturnValue('default-token');
     });
 
     describe('getItems', () => {

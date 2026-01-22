@@ -9,7 +9,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { FilterParams } from './api-client';
 import { useSettings } from '@/lib/stores/settings-store';
-import { apiService, type ApiItemResponse } from './services/api-service';
+import {
+    getItems,
+    getItem,
+    createItem,
+    extendItem,
+    deleteItem,
+    getStats,
+    type ApiItemResponse
+} from './services/api-service';
 import { timeService } from './services/time-service';
 
 /**
@@ -46,7 +54,7 @@ export function useStats() {
 
     return useQuery({
         queryKey: queryKeys.stats,
-        queryFn: () => apiService.getStats(),
+        queryFn: () => getStats(),
         staleTime: cacheTime,
         gcTime: cacheTime,
     });
@@ -63,7 +71,7 @@ export function useItems(filters?: FilterParams) {
 
     return useQuery({
         queryKey: queryKeys.items.list(filters),
-        queryFn: () => apiService.getItems(filters),
+        queryFn: () => getItems(filters),
         staleTime: cacheTime,
         gcTime: cacheTime,
         // Refetch based on settings (convert seconds to ms)
@@ -84,7 +92,7 @@ export function useItem(id: string | null) {
         queryKey: queryKeys.items.detail(id!),
         queryFn: async () => {
             try {
-                return await apiService.getItem(id!);
+                return await getItem(id!);
             } catch (error: unknown) {
                 const err = error as Error & { status?: number };
                 if (err.status) {
@@ -139,7 +147,7 @@ export function useDeleteItem() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (id: string) => apiService.deleteItem(id),
+        mutationFn: (id: string) => deleteItem(id),
         onSuccess: () => {
             // Invalidate items list to refetch
             queryClient.invalidateQueries({ queryKey: queryKeys.items.all });
@@ -156,7 +164,7 @@ export function useExtendItem(id: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (minutes: number) => apiService.extendItem(id, minutes),
+        mutationFn: (minutes: number) => extendItem(id, minutes),
         onSuccess: () => {
             // Invalidate this item's detail
             queryClient.invalidateQueries({ queryKey: queryKeys.items.detail(id) });
@@ -173,7 +181,7 @@ export function useCreateItem() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (formData: FormData) => apiService.createItem(formData),
+        mutationFn: (formData: FormData) => createItem(formData),
         onSuccess: () => {
             // Invalidate items list
             queryClient.invalidateQueries({ queryKey: queryKeys.items.all });

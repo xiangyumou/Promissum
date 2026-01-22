@@ -6,12 +6,11 @@
  */
 
 import { useSyncExternalStore, useCallback } from 'react';
-import { browserService } from '@/lib/services/browser-service';
 
 export function useMediaQuery(query: string, defaultValue = false): boolean {
     const subscribe = useCallback(
         (callback: () => void) => {
-            const mediaQuery = browserService.matchMedia(query);
+            const mediaQuery = typeof window !== 'undefined' ? window.matchMedia(query) : null;
             if (!mediaQuery) return () => { };
 
             // Modern browsers
@@ -29,7 +28,7 @@ export function useMediaQuery(query: string, defaultValue = false): boolean {
     );
 
     const getSnapshot = useCallback(() => {
-        const mediaQuery = browserService.matchMedia(query);
+        const mediaQuery = typeof window !== 'undefined' ? window.matchMedia(query) : null;
         return mediaQuery?.matches ?? defaultValue;
     }, [query, defaultValue]);
 

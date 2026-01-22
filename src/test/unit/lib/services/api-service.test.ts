@@ -1,7 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { apiService } from '@/lib/services/api-service';
+import {
+    getItems,
+    getItem,
+    createItem,
+    extendItem,
+    deleteItem,
+    getStats
+} from '@/lib/services/api-service';
 
-describe('ApiService', () => {
+describe('API Service Functions', () => {
     let fetchMock: ReturnType<typeof vi.fn>;
 
     beforeEach(() => {
@@ -25,7 +32,7 @@ describe('ApiService', () => {
                 json: async () => ({ items: mockItems })
             });
 
-            const result = await apiService.getItems();
+            const result = await getItems();
 
             expect(result).toEqual(mockItems);
             expect(fetchMock).toHaveBeenCalled();
@@ -39,7 +46,7 @@ describe('ApiService', () => {
                 json: async () => ({ items: [] })
             });
 
-            await apiService.getItems({
+            await getItems({
                 status: 'locked',
                 type: 'text',
                 sort: 'created_desc'
@@ -57,7 +64,7 @@ describe('ApiService', () => {
                 json: async () => ({ items: [] })
             });
 
-            await apiService.getItems({ status: 'all' });
+            await getItems({ status: 'all' });
 
             const url = fetchMock.mock.calls[0][0];
             expect(url).not.toContain('status=');
@@ -69,7 +76,7 @@ describe('ApiService', () => {
                 json: async () => ({}) // no items key
             });
 
-            const result = await apiService.getItems();
+            const result = await getItems();
             expect(result).toEqual([]);
         });
 
@@ -80,7 +87,7 @@ describe('ApiService', () => {
                 statusText: 'Internal Server Error'
             });
 
-            await expect(apiService.getItems()).rejects.toThrow('Failed to fetch items');
+            await expect(getItems()).rejects.toThrow('Failed to fetch items');
         });
     });
 
@@ -92,7 +99,7 @@ describe('ApiService', () => {
                 json: async () => mockItem
             });
 
-            const result = await apiService.getItem('123');
+            const result = await getItem('123');
 
             expect(result).toEqual(mockItem);
             expect(fetchMock).toHaveBeenCalledWith('/api/items/123');
@@ -106,7 +113,7 @@ describe('ApiService', () => {
             });
 
             try {
-                await apiService.getItem('missing');
+                await getItem('missing');
                 expect.fail('Should have thrown');
             } catch (error) {
                 const e = error as Error & { status?: number };
@@ -123,7 +130,7 @@ describe('ApiService', () => {
             });
 
             try {
-                await apiService.getItem('private');
+                await getItem('private');
                 expect.fail('Should have thrown');
             } catch (error) {
                 const e = error as Error & { status?: number };
@@ -144,7 +151,7 @@ describe('ApiService', () => {
             formData.append('type', 'text');
             formData.append('content', 'my secret');
 
-            const result = await apiService.createItem(formData);
+            const result = await createItem(formData);
 
             expect(result).toEqual(mockResponse);
             expect(fetchMock).toHaveBeenCalledWith('/api/items', {
@@ -163,7 +170,7 @@ describe('ApiService', () => {
             const formData = new FormData();
             formData.append('type', 'invalid');
 
-            await expect(apiService.createItem(formData)).rejects.toThrow('Failed to create item');
+            await expect(createItem(formData)).rejects.toThrow('Failed to create item');
         });
     });
 
@@ -175,7 +182,7 @@ describe('ApiService', () => {
                 json: async () => mockResponse
             });
 
-            const result = await apiService.extendItem('123', 60);
+            const result = await extendItem('123', 60);
 
             expect(result).toEqual(mockResponse);
             expect(fetchMock).toHaveBeenCalledWith('/api/items/123/extend', {
@@ -192,7 +199,7 @@ describe('ApiService', () => {
                 json: async () => ({ error: 'Cannot extend already unlocked item' })
             });
 
-            await expect(apiService.extendItem('123', 60))
+            await expect(extendItem('123', 60))
                 .rejects.toThrow('Cannot extend already unlocked item');
         });
 
@@ -203,7 +210,7 @@ describe('ApiService', () => {
                 json: async () => ({})
             });
 
-            await expect(apiService.extendItem('123', 60))
+            await expect(extendItem('123', 60))
                 .rejects.toThrow('Failed to extend lock');
         });
     });
@@ -215,7 +222,7 @@ describe('ApiService', () => {
                 json: async () => ({ success: true })
             });
 
-            const result = await apiService.deleteItem('123');
+            const result = await deleteItem('123');
 
             expect(result).toEqual({ success: true });
             expect(fetchMock).toHaveBeenCalledWith('/api/items/123', {
@@ -230,7 +237,7 @@ describe('ApiService', () => {
                 statusText: 'Not Found'
             });
 
-            const result = await apiService.deleteItem('already-deleted');
+            const result = await deleteItem('already-deleted');
             expect(result).toEqual({ success: true });
         });
 
@@ -241,7 +248,7 @@ describe('ApiService', () => {
                 statusText: 'Internal Server Error'
             });
 
-            await expect(apiService.deleteItem('123')).rejects.toThrow('Failed to delete item');
+            await expect(deleteItem('123')).rejects.toThrow('Failed to delete item');
         });
     });
 
@@ -258,7 +265,7 @@ describe('ApiService', () => {
                 json: async () => mockStats
             });
 
-            const result = await apiService.getStats();
+            const result = await getStats();
 
             expect(result).toEqual(mockStats);
             expect(fetchMock).toHaveBeenCalledWith('/api/stats');
@@ -271,7 +278,7 @@ describe('ApiService', () => {
                 statusText: 'Internal Server Error'
             });
 
-            await expect(apiService.getStats()).rejects.toThrow('Failed to fetch stats');
+            await expect(getStats()).rejects.toThrow('Failed to fetch stats');
         });
     });
 
@@ -279,13 +286,13 @@ describe('ApiService', () => {
         it('should propagate network failures', async () => {
             fetchMock.mockRejectedValueOnce(new Error('Network Error'));
 
-            await expect(apiService.getItems()).rejects.toThrow('Network Error');
+            await expect(getItems()).rejects.toThrow('Network Error');
         });
 
         it('should handle timeout errors', async () => {
             fetchMock.mockRejectedValueOnce(new Error('Timeout'));
 
-            await expect(apiService.getStats()).rejects.toThrow('Timeout');
+            await expect(getStats()).rejects.toThrow('Timeout');
         });
     });
 });

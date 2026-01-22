@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
     getCacheTTL,
-    setCacheTTL,
     clearPersistedCache,
     initializeQueryPersistence
 } from '@/lib/cache-config';
@@ -16,11 +15,8 @@ vi.mock('@tanstack/react-query-persist-client', () => ({
 describe('cache-config', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        // Reset TTL to default
-        setCacheTTL(5);
 
         // Spy on console
-        vi.spyOn(console, 'info').mockImplementation(() => { });
         vi.spyOn(console, 'warn').mockImplementation(() => { });
         vi.spyOn(console, 'error').mockImplementation(() => { });
 
@@ -32,15 +28,6 @@ describe('cache-config', () => {
             removeItem: vi.fn((key) => { delete store[key]; }),
             clear: vi.fn(() => { for (const k in store) delete store[k]; })
         });
-
-        // Mock sessionStorage
-        const sessionStore: Record<string, string> = {};
-        vi.stubGlobal('sessionStorage', {
-            getItem: vi.fn((key) => sessionStore[key] || null),
-            setItem: vi.fn((key, value) => { sessionStore[key] = value + ''; }),
-            removeItem: vi.fn((key) => { delete sessionStore[key]; }),
-            clear: vi.fn(() => { for (const k in sessionStore) delete sessionStore[k]; })
-        });
     });
 
     afterEach(() => {
@@ -48,42 +35,8 @@ describe('cache-config', () => {
     });
 
     describe('TTL management', () => {
-        it('should get default TTL', () => {
+        it('should get default TTL from environment', () => {
             expect(getCacheTTL()).toBe(5 * 60 * 1000);
-        });
-
-        it('should update TTL', () => {
-            setCacheTTL(10);
-            expect(getCacheTTL()).toBe(10 * 60 * 1000);
-        });
-    });
-
-    describe('Storage Persistence Fallback', () => {
-        it('should fall back to sessionStorage if localStorage fails', () => {
-            // Simulate localStorage failure
-            vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
-                throw new Error('QuotaExceeded');
-            });
-
-            const queryClient = new QueryClient();
-            initializeQueryPersistence(queryClient);
-
-            // When localStorage fails, it should still initialize with sessionStorage
-            expect(persistQueryClient).toHaveBeenCalled();
-        });
-
-        it('should fall back to memory if both storages fail', () => {
-            vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
-                throw new Error('QuotaExceeded');
-            });
-            vi.spyOn(sessionStorage, 'setItem').mockImplementation(() => {
-                throw new Error('QuotaExceeded');
-            });
-
-            const queryClient = new QueryClient();
-            initializeQueryPersistence(queryClient);
-
-            expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('sessionStorage also unavailable'));
         });
     });
 

@@ -1,13 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { browserService } from '@/lib/services/browser-service';
-
-vi.mock('@/lib/services/browser-service', () => ({
-    browserService: {
-        matchMedia: vi.fn()
-    }
-}));
 
 describe('useMediaQuery', () => {
     let addListenerMock: ReturnType<typeof vi.fn>;
@@ -21,10 +14,19 @@ describe('useMediaQuery', () => {
         addEventListenerMock = vi.fn();
         removeEventListenerMock = vi.fn();
         vi.clearAllMocks();
+
+        // Mock window.matchMedia
+        global.matchMedia = vi.fn().mockImplementation(() => ({
+            matches: false,
+            addListener: addListenerMock,
+            removeListener: removeListenerMock,
+            addEventListener: addEventListenerMock,
+            removeEventListener: removeEventListenerMock,
+        })) as unknown as typeof window.matchMedia;
     });
 
     it('should return matches based on query', () => {
-        vi.mocked(browserService.matchMedia).mockReturnValue({
+        (global.matchMedia as ReturnType<typeof vi.fn>).mockReturnValue({
             matches: true,
             addListener: addListenerMock,
             removeListener: removeListenerMock,
@@ -40,7 +42,7 @@ describe('useMediaQuery', () => {
         const listeners: (() => void)[] = [];
         let currentMatches = false;
 
-        vi.mocked(browserService.matchMedia).mockImplementation(() => ({
+        (global.matchMedia as ReturnType<typeof vi.fn>).mockImplementation(() => ({
             get matches() { return currentMatches; },
             addListener: vi.fn(),
             removeListener: vi.fn(),
@@ -48,7 +50,7 @@ describe('useMediaQuery', () => {
                 if (type === 'change') listeners.push(cb);
             },
             removeEventListener: vi.fn(),
-        } as unknown as MediaQueryList));
+        }) as unknown as MediaQueryList);
 
         const { result } = renderHook(() => useMediaQuery('(min-width: 600px)'));
         expect(result.current).toBe(false);

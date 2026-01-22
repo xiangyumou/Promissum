@@ -15,7 +15,7 @@ import {
     type Item,
     type ItemInput
 } from '@xymou/chaster-client';
-import { getEffectiveApiUrl, getEffectiveApiToken } from './env';
+import env from './env';
 import type {
     ItemMetadata,
     ApiItemListView,
@@ -36,8 +36,8 @@ export type { FilterParams, SystemStats };
  * Configure SDK before making requests
  */
 function configureSDK(customBaseUrl?: string, customToken?: string) {
-    OpenAPI.BASE = customBaseUrl || getEffectiveApiUrl('');
-    OpenAPI.TOKEN = customToken || getEffectiveApiToken('');
+    OpenAPI.BASE = customBaseUrl || env.apiUrl;
+    OpenAPI.TOKEN = customToken || env.apiToken;
 }
 
 /**

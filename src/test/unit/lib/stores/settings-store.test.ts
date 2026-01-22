@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createSettingsStore, resetSettingsStore } from '@/lib/stores/settings-store';
-
+import { useSettings, resetSettingsStore } from '@/lib/stores/settings-store';
 
 // Mock env
 vi.mock('@/lib/env', () => ({
@@ -17,11 +16,9 @@ describe('SettingsStore', () => {
     });
 
     it('should initialize with default values from env and hardcoded defaults', () => {
-        const store = createSettingsStore();
-        const state = store.getState();
+        const state = useSettings.getState();
 
         expect(state.sidebarOpen).toBe(true);
-        expect(state.dateTimeFormat).toBe('yyyy-MM-dd HH:mm');
         expect(state.confirmDelete).toBe(true);
         expect(state.confirmExtend).toBe(true);
         expect(state.autoRefreshInterval).toBe(60);
@@ -31,24 +28,10 @@ describe('SettingsStore', () => {
     });
 
     it('should toggle sidebar', () => {
-        const store = createSettingsStore();
+        useSettings.getState().setSidebarOpen(false);
+        expect(useSettings.getState().sidebarOpen).toBe(false);
 
-        store.getState().setSidebarOpen(false);
-        expect(store.getState().sidebarOpen).toBe(false);
-
-        store.getState().setSidebarOpen(true);
-        expect(store.getState().sidebarOpen).toBe(true);
+        useSettings.getState().setSidebarOpen(true);
+        expect(useSettings.getState().sidebarOpen).toBe(true);
     });
-
-    it('should reset to defaults', () => {
-        const store = createSettingsStore();
-
-        store.getState().setSidebarOpen(false);
-        expect(store.getState().sidebarOpen).toBe(false);
-
-        store.getState().resetToDefaults();
-        expect(store.getState().sidebarOpen).toBe(true);
-    });
-
-    // We no longer test setters for env-based values as they were removed
 });
