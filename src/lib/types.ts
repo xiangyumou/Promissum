@@ -1,9 +1,9 @@
 /**
- * Type definitions for Chaster application
+ * Type definitions for Promissum application
  * Single source of truth for all shared types
- * 
+ *
  * Note: Field names use snake_case to match frontend expectations.
- * The API routes convert SDK camelCase responses to snake_case.
+ * The API routes convert internal camelCase responses to snake_case.
  */
 
 // ============================================
@@ -12,7 +12,7 @@
 
 /**
  * Extended metadata for items
- * Stored in the 'metadata' field of remote API
+ * Stored in the 'metadata' field of items
  */
 export interface ItemMetadata {
     title?: string;        // Custom title for the item
@@ -21,11 +21,11 @@ export interface ItemMetadata {
 }
 
 // ============================================
-// API Types (used by api-client and API routes)
+// API Types (used by frontend, API routes, and services)
 // ============================================
 
 /**
- * API list view format (from remote API)
+ * API list view format (from API routes)
  */
 export interface ApiItemListView {
     id: string;
@@ -37,7 +37,7 @@ export interface ApiItemListView {
 }
 
 /**
- * API detail format (from remote API)
+ * API detail format (from API routes)
  */
 export interface ApiItemDetail {
     id: string;
@@ -50,6 +50,20 @@ export interface ApiItemDetail {
     layer_count?: number;
     original_name?: string | null;
     created_at?: number;
+}
+
+/**
+ * API Item response format (from local API routes)
+ * Uses snake_case for frontend compatibility
+ */
+export interface ApiItemResponse {
+    id: string;
+    type: 'text' | 'image';
+    decrypt_at: number;
+    created_at?: number;
+    unlocked: boolean;
+    content: string | null;
+    metadata?: Record<string, unknown>;
 }
 
 /**
@@ -94,5 +108,6 @@ export interface SystemStats {
         image: number;
     };
     avgLockDurationMinutes?: number;
+    newestItem?: number; // Timestamp of the newest item
 }
 

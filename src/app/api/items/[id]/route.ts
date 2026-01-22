@@ -1,68 +1,75 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { apiClient } from '@/lib/api-client';
-import { createErrorResponse, logApiError } from '@/lib/api-error';
-
-interface RouteParams {
-    params: Promise<{ id: string }>;
-}
+import { getItemById, deleteItem } from '@/lib/services/items/item-service';
+import { withRateLimit } from '@/lib/services/rate-limiting/wrapper';
 
 // GET /api/items/[id] - Get item with decryption attempt
-export async function GET(request: NextRequest, { params }: RouteParams) {
+async function getHandler(request: NextRequest, context?: unknown) {
     try {
-        const { id } = await params;
+        // Type assertion for Next.js 16 dynamic route params
+        const params = context as { params: Promise<{ id: string }> };
+        const { id } = await params.params;
 
-        // Call remote API service (it handles decryption automatically)
-        // apiClient returns response in snake_case format
-        const apiResponse = await apiClient.getItemById(id);
+        // Direct service function call - no HTTP!
+        const item = await getItemById(id);
 
-        // Response already uses snake_case from apiClient
+        // Transform to snake_case for frontend
         const response: Record<string, unknown> = {
-            id: apiResponse.id,
-            type: apiResponse.type,
-            decrypt_at: apiResponse.decrypt_at,
-            unlocked: apiResponse.unlocked,
-            content: apiResponse.content,
-            metadata: apiResponse.metadata,
+            id: item.id,
+            type: item.type,
+            decrypt_at: item.decryptAt,
+            created_at: item.createdAt,
+            unlocked: item.unlocked,
+            content: item.content,
+            metadata: item.metadata,
+            time_remaining_ms: item.timeRemainingMs,
+            layer_count: item.layerCount,
+            original_name: item.originalName,
         };
 
         // For images, ensure proper data URL format
-        if (apiResponse.type === 'image' && apiResponse.content) {
+        if (item.type === 'image' && item.content) {
             // Check if already has data URL prefix
-            if (!apiResponse.content.startsWith('data:image')) {
-                response.content = `data:image/png;base64,${apiResponse.content}`;
+            if (!item.content.startsWith('data:image')) {
+                response.content = `data:image/png;base64,${item.content}`;
             }
         }
 
         return NextResponse.json(response);
     } catch (error) {
-        // Check if it's a 404 error
-        if (error instanceof Error && error.message.includes('404')) {
+        console.error('Error fetching item:', error);
+        const message = error instanceof Error ? error.message : 'Failed to fetch item';
+
+        if (message === 'Item not found') {
             return NextResponse.json({ error: 'Item not found' }, { status: 404 });
         }
 
-        logApiError('Error fetching item from API', error);
-
-        return createErrorResponse(error, 'Failed to fetch item');
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }
 
 // DELETE /api/items/[id] - Delete item
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+async function deleteHandler(request: NextRequest, context?: unknown) {
     try {
-        const { id } = await params;
+        // Type assertion for Next.js 16 dynamic route params
+        const params = context as { params: Promise<{ id: string }> };
+        const { id } = await params.params;
 
-        // Call remote API service
-        await apiClient.deleteItem(id);
+        // Direct service function call - no HTTP!
+        await deleteItem(id);
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        // Check if it's a 404 error
-        if (error instanceof Error && error.message.includes('404')) {
+        console.error('Error deleting item:', error);
+        const message = error instanceof Error ? error.message : 'Failed to delete item';
+
+        if (message === 'Item not found') {
             return NextResponse.json({ error: 'Item not found' }, { status: 404 });
         }
 
-        logApiError('Error deleting item via API', error);
-
-        return createErrorResponse(error, 'Failed to delete item');
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }
+
+// Apply rate limiting
+export const GET = withRateLimit(getHandler);
+export const DELETE = withRateLimit(deleteHandler);

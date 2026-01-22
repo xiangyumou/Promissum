@@ -1,31 +1,23 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from '@/app/api/health/route';
 import { NextRequest } from 'next/server';
 
-describe('Health API', () => {
-    const mockFetch = vi.fn();
+// Mock the Prisma client
+vi.mock('@/lib/db/client', () => ({
+    prisma: {
+        $queryRaw: vi.fn()
+    }
+}));
 
+describe('Health API', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        vi.stubGlobal('fetch', mockFetch);
-
-        // Mock successful health check response by default
-        mockFetch.mockResolvedValue({
-            ok: true,
-            status: 200,
-            json: async () => ({
-                status: 'ok',
-                timestamp: new Date().toISOString(),
-                uptime: 12345
-            })
-        });
-    });
-
-    afterEach(() => {
-        vi.unstubAllGlobals();
     });
 
     it('should return health status', async () => {
+        const { prisma } = await import('@/lib/db/client');
+        vi.mocked(prisma.$queryRaw).mockResolvedValueOnce([{ '?column?': 1 }]);
+
         const req = new NextRequest('http://localhost/api/health');
         const res = await GET(req);
 
@@ -34,17 +26,15 @@ describe('Health API', () => {
 
         expect(data).toMatchObject({
             status: 'ok',
+            database: 'connected',
         });
         expect(data.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/); // ISO format
-        expect(typeof data.uptime).toBe('number');
-        expect(data.uptime).toBeGreaterThanOrEqual(0);
+        expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
     });
 
-    it('should handle remote API failure', async () => {
-        mockFetch.mockResolvedValue({
-            ok: false,
-            status: 503,
-        });
+    it('should handle database connection error', async () => {
+        const { prisma } = await import('@/lib/db/client');
+        vi.mocked(prisma.$queryRaw).mockRejectedValueOnce(new Error('Connection failed'));
 
         const req = new NextRequest('http://localhost/api/health');
         const res = await GET(req);
@@ -52,10 +42,12 @@ describe('Health API', () => {
         expect(res.status).toBe(503);
         const data = await res.json();
         expect(data.status).toBe('error');
+        expect(data.message).toBe('Connection failed');
     });
 
-    it('should handle network error', async () => {
-        mockFetch.mockRejectedValue(new Error('Network error'));
+    it('should handle database error with non-production error message', async () => {
+        const { prisma } = await import('@/lib/db/client');
+        vi.mocked(prisma.$queryRaw).mockRejectedValueOnce(new Error('Database timeout'));
 
         const req = new NextRequest('http://localhost/api/health');
         const res = await GET(req);
@@ -63,6 +55,6 @@ describe('Health API', () => {
         expect(res.status).toBe(503);
         const data = await res.json();
         expect(data.status).toBe('error');
-        expect(data.message).toBe('Network error');
+        expect(data.message).toBe('Database timeout');
     });
 });

@@ -1,13 +1,12 @@
 /**
- * TanStack Query Hooks for Chaster API
- * 
+ * TanStack Query Hooks for Promissum API
+ *
  * Centralized data fetching hooks with automatic caching and revalidation.
- * Uses the local API routes which internally use the Chaster SDK.
+ * Uses the local API routes which directly call service functions.
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { FilterParams } from './api-client';
 import { useSettings } from '@/lib/stores/settings-store';
 import {
     getItems,
@@ -19,6 +18,18 @@ import {
     type ApiItemResponse
 } from './services/api-service';
 import { timeService } from './services/time-service';
+
+/**
+ * Filter parameters for TanStack Query hooks.
+ * Note: This is a simplified version of FilterParams from types.ts,
+ * tailored for the UI's filtering needs.
+ */
+export interface FilterParams {
+    status?: 'all' | 'locked' | 'unlocked';
+    type?: 'text' | 'image';
+    sort?: 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc';
+    search?: string;
+}
 
 /**
  * Custom API Error with status code

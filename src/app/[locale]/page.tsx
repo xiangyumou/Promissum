@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import Sidebar from '@/components/Sidebar';
 import AddModal from '@/components/AddModal';
 import ContentView from '@/components/ContentView';
-import { FilterParams } from '@/lib/api-client';
+import { FilterParams } from '@/lib/queries';
 import { useItems, useCreateItem, useItem, useExtendItem, useDeleteItem } from '@/lib/queries';
 
 

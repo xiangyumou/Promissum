@@ -1,35 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { env } from '@/lib/env';
-import { logApiError } from '@/lib/api-error';
+import { prisma } from '@/lib/db/client';
 
 /**
  * Health Check Endpoint
- * Proxies health check to the remote Chaster API
+ * Checks database connection and returns system status
  */
 export async function GET(_request: NextRequest) {
     try {
-        const response = await fetch(`${env.apiUrl}/../health`, {
-            headers: {
-                'Authorization': `Bearer ${env.apiToken}`,
-            },
+        // Check database connection
+        await prisma.$queryRaw`SELECT 1`;
+
+        return NextResponse.json({
+            status: 'ok',
+            timestamp: new Date().toISOString(),
+            database: 'connected',
         });
-
-        if (!response.ok) {
-            return NextResponse.json(
-                { status: 'error', message: 'Remote API health check failed' },
-                { status: response.status }
-            );
-        }
-
-        const data = await response.json();
-        return NextResponse.json(data);
     } catch (error) {
-        logApiError('Health check error', error);
-        const isProduction = process.env.NODE_ENV === 'production';
+        console.error('Health check error:', error);
         return NextResponse.json(
             {
                 status: 'error',
-                message: isProduction ? 'Service unavailable' : (error instanceof Error ? error.message : 'Unknown error')
+                message: process.env.NODE_ENV === 'production' ? 'Service unavailable' : (error instanceof Error ? error.message : 'Unknown error')
             },
             { status: 503 }
         );

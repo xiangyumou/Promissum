@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { apiClient } from '@/lib/api-client';
-import { ExtendItemSchema, formatZodErrors } from '@/lib/validation';
-import { createErrorResponse, logApiError } from '@/lib/api-error';
+import { extendItem } from '@/lib/services/items/item-service';
+import { withRateLimit } from '@/lib/services/rate-limiting/wrapper';
+import { formatZodErrors, ExtendItemSchema } from '@/lib/validation';
 
-interface RouteParams {
-    params: Promise<{ id: string }>;
-}
-
-export async function POST(request: NextRequest, { params }: RouteParams) {
+// POST /api/items/[id]/extend - Extend item lock duration
+async function postHandler(request: NextRequest, context?: unknown) {
     try {
-        const { id } = await params;
+        // Type assertion for Next.js 16 dynamic route params
+        const params = context as { params: Promise<{ id: string }> };
+        const { id } = await params.params;
+
         const body = await request.json();
 
         // Validate input with Zod
@@ -22,53 +22,31 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
         const { minutes } = validation.data;
 
-        // Allow any positive number of minutes
-        if (minutes <= 0) {
-            return NextResponse.json({
-                error: 'Invalid minutes, must be greater than 0'
-            }, { status: 400 });
-        }
-
-        // Fetch current item state to check if it's already unlocked
-        const item = await apiClient.getItemById(id);
-        const now = Date.now();
-        let effectiveMinutes = minutes;
-
-        // If item is already unlocked (time in past), we need to add enough minutes
-        // to cover the gap between now and decrypt_at, plus the requested minutes.
-        if (item.decrypt_at < now) {
-            const gapMs = now - item.decrypt_at;
-            // gapMinutes needs to be rounded up to ensure we are definitely in the future
-            const gapMinutes = Math.ceil(gapMs / (1000 * 60));
-            effectiveMinutes = minutes + gapMinutes;
-        }
-
-        // Call remote API service with the adjusted duration
-        const apiResponse = await apiClient.extendItem(id, effectiveMinutes);
+        // Direct service function call - no HTTP!
+        const result = await extendItem(id, minutes);
 
         return NextResponse.json({
             success: true,
-            decrypt_at: apiResponse.decrypt_at,
-            layer_count: apiResponse.layer_count || 1,
+            decrypt_at: result.decryptAt,
+            layer_count: result.layerCount,
         });
     } catch (error) {
-        logApiError('Error extending lock via API', error);
+        console.error('Error extending lock:', error);
+        const message = error instanceof Error ? error.message : 'Failed to extend lock';
 
-        // Check for specific error types
-        if (error instanceof Error) {
-            // If API returns 409 for concurrent modification
-            if (error.message.includes('409')) {
-                return NextResponse.json({
-                    error: 'Concurrent modification detected. Please refresh and try again.'
-                }, { status: 409 });
-            }
-
-            // If item not found
-            if (error.message.includes('404')) {
-                return NextResponse.json({ error: 'Item not found' }, { status: 404 });
-            }
+        if (message === 'Item not found') {
+            return NextResponse.json({ error: 'Item not found' }, { status: 404 });
         }
 
-        return createErrorResponse(error, 'Failed to extend lock');
+        if (message.includes('retry')) {
+            return NextResponse.json({
+                error: 'Concurrent modification detected. Please refresh and try again.'
+            }, { status: 409 });
+        }
+
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }
+
+// Apply rate limiting
+export const POST = withRateLimit(postHandler);

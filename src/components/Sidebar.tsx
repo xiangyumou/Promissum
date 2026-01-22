@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ApiItemListView } from '@/lib/types';
-import { FilterParams } from '@/lib/api-client';
+import { FilterParams } from '@/lib/queries';
 import FilterBar from './FilterBar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, PanelLeftClose } from 'lucide-react';

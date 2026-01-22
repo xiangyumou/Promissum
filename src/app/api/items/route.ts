@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { apiClient } from '@/lib/api-client';
-import { createErrorResponse, logApiError } from '@/lib/api-error';
+import { createItem, getItems } from '@/lib/services/items/item-service';
+import { withRateLimit } from '@/lib/services/rate-limiting/wrapper';
 
 // GET /api/items - List all items
-export async function GET(request: NextRequest) {
+async function getHandler(request: NextRequest) {
     try {
         // Extract query parameters
         const { searchParams } = new URL(request.url);
@@ -11,31 +11,29 @@ export async function GET(request: NextRequest) {
         const type = searchParams.get('type') as 'text' | 'image' | null;
         const sort = searchParams.get('sort') as 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc' | null;
 
-        // Call remote API service with filters
-        // apiClient returns items in snake_case format
-        const items = await apiClient.getItems({
+        // Direct service function call - no HTTP!
+        const result = await getItems({
             status: status || undefined,
             type: type || undefined,
-            sort: sort || 'created_desc', // Default sort: newest first
+            sort: sort || 'created_desc',
         });
 
-        // Items are already in snake_case format from apiClient
-        const mappedItems = items.map(item => ({
+        // Transform to match frontend expectations (snake_case)
+        const mappedItems = result.items.map(item => ({
             id: item.id,
             type: item.type,
-            decrypt_at: item.decrypt_at,
-            created_at: item.created_at || Date.now(),
+            decrypt_at: item.decryptAt,
+            created_at: item.createdAt,
             unlocked: item.unlocked,
             metadata: item.metadata,
         }));
 
-        // Return in original format
         return NextResponse.json({
             items: mappedItems,
-            lastDuration: 720 // Default 12 hours, could be stored in localStorage on client
+            lastDuration: 720 // Default 12 hours
         });
     } catch (error) {
-        logApiError('Error fetching items from API', error);
+        console.error('Error fetching items:', error);
         return NextResponse.json({
             items: [], // Return empty array on error to prevent crashes
             lastDuration: 720,
@@ -45,7 +43,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/items - Create new encrypted item
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest) {
     try {
         const formData = await request.formData();
         const type = formData.get('type') as 'text' | 'image';
@@ -78,42 +76,35 @@ export async function POST(request: NextRequest) {
             content = base64;
         }
 
-        // Prepare API request payload
-        const apiRequest: {
-            type: 'text' | 'image';
-            content: string;
-            durationMinutes?: number;
-            decryptAt?: number;
-            metadata?: Record<string, unknown>;
-        } = {
+        // Direct service function call
+        const item = await createItem({
             type,
             content,
+            durationMinutes: durationMinutes || undefined,
+            decryptAt: decryptAtTimestamp || undefined,
             metadata: metadataString ? JSON.parse(metadataString) : undefined,
-        };
+        });
 
-        if (decryptAtTimestamp) {
-            apiRequest.decryptAt = decryptAtTimestamp;
-        } else {
-            apiRequest.durationMinutes = durationMinutes!;
-        }
-
-        // Call remote API service
-        // apiClient returns response in snake_case format
-        const apiResponse = await apiClient.createItem(apiRequest);
-
-        // Response already uses snake_case from apiClient
+        // Transform to snake_case for frontend
         return NextResponse.json({
             success: true,
             item: {
-                id: apiResponse.id,
-                type: apiResponse.type,
-                decrypt_at: apiResponse.decrypt_at,
-                unlocked: apiResponse.unlocked,
-                metadata: apiResponse.metadata,
+                id: item.id,
+                type: item.type,
+                decrypt_at: item.decryptAt,
+                unlocked: item.unlocked,
+                metadata: item.metadata,
             }
         });
     } catch (error) {
-        logApiError('Error creating item via API', error);
-        return createErrorResponse(error, 'Failed to create item');
+        console.error('Error creating item:', error);
+        return NextResponse.json({
+            error: 'Failed to create item',
+            message: error instanceof Error ? error.message : 'Unknown error'
+        }, { status: 500 });
     }
 }
+
+// Apply rate limiting (optional, can be disabled by setting RATE_LIMIT_MAX=0)
+export const GET = withRateLimit(getHandler);
+export const POST = withRateLimit(postHandler);

@@ -5,25 +5,14 @@
  * Abstracts the actual fetch calls from React Query hooks.
  *
  * Note: This service calls the local Next.js API routes,
- * which in turn call the Chaster SDK. Response format
+ * which in turn call service functions directly. Response format
  * uses snake_case for frontend compatibility.
  */
 
-import type { FilterParams, SystemStats } from '../api-client';
+import type { FilterParams, SystemStats, ApiItemResponse } from '@/lib/types';
 
-/**
- * API Item response format (from local API routes)
- * Uses snake_case for frontend compatibility
- */
-export interface ApiItemResponse {
-    id: string;
-    type: 'text' | 'image';
-    decrypt_at: number;
-    created_at?: number;
-    unlocked: boolean;
-    content: string | null;
-    metadata?: Record<string, unknown>;
-}
+// Re-export types for backward compatibility
+export type { FilterParams, SystemStats, ApiItemResponse };
 
 export async function getItems(filters?: FilterParams): Promise<ApiItemResponse[]> {
     const params = new URLSearchParams();
