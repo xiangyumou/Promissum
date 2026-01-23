@@ -318,8 +318,11 @@ export async function extendItem(id: string, minutes: number): Promise<{
         contentToEncrypt = Buffer.from(item.encryptedData, 'utf-8');
     }
 
-    // Calculate new decrypt time based on original unlock time
-    const newDecryptAt = new Date(Number(item.decryptAt) + validatedMinutes * 60 * 1000);
+    // Calculate new decrypt time
+    // If item is already unlocked, start from NOW
+    // If item is still locked, extend from current decryptAt
+    const baseTime = unlocked ? now : Number(item.decryptAt);
+    const newDecryptAt = new Date(baseTime + validatedMinutes * 60 * 1000);
 
     // Re-encrypt
     const { ciphertext, roundNumber } = await encrypt(contentToEncrypt, newDecryptAt);
