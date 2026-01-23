@@ -10,11 +10,11 @@ describe('Unlock Time Utilities', () => {
             expect(result).toBe(60);
         });
 
-        it('returns minimum 1 minute in duration mode', () => {
+        it('returns 0 when accumulated duration is 0 in duration mode', () => {
             const result = calculateDurationMinutes('duration', 0, {
                 year: '2024', month: '1', day: '1', hour: '12', minute: '00'
             });
-            expect(result).toBe(1);
+            expect(result).toBe(0);
         });
 
         it('calculates minutes difference in absolute mode', () => {

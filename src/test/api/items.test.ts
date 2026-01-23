@@ -187,7 +187,7 @@ describe('Items API Routes', () => {
             const data = await response.json();
 
             expect(response.status).toBe(400);
-            expect(data.error).toContain('Missing');
+            expect(data.error).toContain('Invalid');
         });
 
         it('should handle missing time specification', async () => {
