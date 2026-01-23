@@ -3,13 +3,34 @@ import { createItem, getItems } from '@/lib/services/items/item-service';
 import { withRateLimit } from '@/lib/services/rate-limiting/wrapper';
 import { toSnakeCase } from '@/lib/utils';
 import { DEFAULT_LOCK_DURATION_MINUTES } from '@/lib/constants';
+import { DrandError } from '@/lib/services/encryption/tlock';
+import { z } from 'zod';
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+// Zod schemas for validation
+const querySchema = z.object({
+    status: z.enum(['all', 'locked', 'unlocked']).nullable().optional(),
+    type: z.enum(['text', 'image']).nullable().optional(),
+    sort: z.enum(['created_asc', 'created_desc', 'decrypt_asc', 'decrypt_desc']).nullable().optional()
+});
 
 async function getHandler(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
-        const status = searchParams.get('status') as 'all' | 'locked' | 'unlocked' | null;
-        const type = searchParams.get('type') as 'text' | 'image' | null;
-        const sort = searchParams.get('sort') as 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc' | null;
+        
+        const parseResult = querySchema.safeParse({
+            status: searchParams.get('status') || null,
+            type: searchParams.get('type') || null,
+            sort: searchParams.get('sort') || null
+        });
+
+        if (!parseResult.success) {
+            return NextResponse.json({ error: 'Invalid query parameters' }, { status: 400 });
+        }
+
+        const { status, type, sort } = parseResult.data;
 
         const result = await getItems({
             status: status || undefined,
@@ -31,7 +52,7 @@ async function getHandler(request: NextRequest) {
             lastDuration: DEFAULT_LOCK_DURATION_MINUTES
         });
     } catch (error) {
-        console.error('Error fetching items:', error);
+        console.error('Error fetching items:', error instanceof Error ? error.message : 'Unknown error');
         return NextResponse.json({
             items: [],
             lastDuration: DEFAULT_LOCK_DURATION_MINUTES,
@@ -43,27 +64,66 @@ async function getHandler(request: NextRequest) {
 async function postHandler(request: NextRequest) {
     try {
         const formData = await request.formData();
-        const type = formData.get('type') as 'text' | 'image';
-        const durationMinutes = formData.get('durationMinutes') ? parseInt(formData.get('durationMinutes') as string, 10) : null;
-        const decryptAtTimestamp = formData.get('decryptAt') ? parseInt(formData.get('decryptAt') as string, 10) : null;
-        const metadataString = formData.get('metadata') as string;
+        
+        // Basic Type Validation
+        const type = formData.get('type');
+        if (type !== 'text' && type !== 'image') {
+            return NextResponse.json({ error: 'Invalid item type' }, { status: 400 });
+        }
 
-        if (!type || (!durationMinutes && !decryptAtTimestamp)) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        const durationStr = formData.get('durationMinutes');
+        const decryptAtStr = formData.get('decryptAt');
+        
+        // Time validation logic
+        const durationMinutes = durationStr ? parseInt(durationStr as string, 10) : null;
+        const decryptAtTimestamp = decryptAtStr ? parseInt(decryptAtStr as string, 10) : null;
+
+        if (!durationMinutes && !decryptAtTimestamp) {
+            return NextResponse.json({ error: 'Must provide either durationMinutes or decryptAt' }, { status: 400 });
+        }
+
+        if (durationMinutes && (isNaN(durationMinutes) || durationMinutes <= 0)) {
+            return NextResponse.json({ error: 'Invalid durationMinutes' }, { status: 400 });
+        }
+        
+        if (decryptAtTimestamp && (isNaN(decryptAtTimestamp) || decryptAtTimestamp <= Date.now())) {
+             return NextResponse.json({ error: 'Invalid decryptAt timestamp' }, { status: 400 });
+        }
+
+        // Metadata Parsing
+        const metadataString = formData.get('metadata') as string;
+        let metadata: Record<string, any> | undefined;
+        if (metadataString) {
+            try {
+                metadata = JSON.parse(metadataString);
+            } catch (e) {
+                return NextResponse.json({ error: 'Invalid metadata JSON' }, { status: 400 });
+            }
         }
 
         let content: string;
 
         if (type === 'text') {
-            const text = formData.get('content') as string;
-            if (!text) {
+            const text = formData.get('content');
+            if (!text || typeof text !== 'string') {
                 return NextResponse.json({ error: 'Missing text content' }, { status: 400 });
+            }
+            if (text.length > MAX_FILE_SIZE) { // Reuse size limit for text too (approx 10MB text)
+                 return NextResponse.json({ error: 'Text content too large' }, { status: 413 });
             }
             content = text;
         } else {
-            const file = formData.get('file') as File;
-            if (!file) {
+            const file = formData.get('file');
+            if (!file || !(file instanceof File)) {
                 return NextResponse.json({ error: 'Missing image file' }, { status: 400 });
+            }
+            
+            if (file.size > MAX_FILE_SIZE) {
+                return NextResponse.json({ error: 'File too large (max 10MB)' }, { status: 413 });
+            }
+
+            if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+                return NextResponse.json({ error: 'Invalid file type. Allowed: JPEG, PNG, GIF, WEBP' }, { status: 415 });
             }
 
             const arrayBuffer = await file.arrayBuffer();
@@ -76,7 +136,7 @@ async function postHandler(request: NextRequest) {
             content,
             durationMinutes: durationMinutes || undefined,
             decryptAt: decryptAtTimestamp || undefined,
-            metadata: metadataString ? JSON.parse(metadataString) : undefined,
+            metadata,
         });
 
         return NextResponse.json({
@@ -90,10 +150,18 @@ async function postHandler(request: NextRequest) {
             })
         });
     } catch (error) {
-        console.error('Error creating item:', error);
+        console.error('Error creating item:', error instanceof Error ? error.message : 'Unknown error');
+        
+        if (error instanceof DrandError) {
+            return NextResponse.json({
+                error: 'Encryption Service Unavailable',
+                code: error.code
+            }, { status: 502 }); // Bad Gateway for upstream drand issues
+        }
+
         return NextResponse.json({
             error: 'Failed to create item',
-            message: error instanceof Error ? error.message : 'Unknown error'
+            message: process.env.NODE_ENV === 'development' && error instanceof Error ? error.message : undefined
         }, { status: 500 });
     }
 }

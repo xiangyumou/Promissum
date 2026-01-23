@@ -2,16 +2,10 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Modal from './ui/Modal';
-import ImageUploadZone from './ImageUploadZone';
 import { cn } from '@/lib/utils';
 import {
-    Clock,
-    FileText,
-    Image as ImageIcon,
-    Plus,
     RefreshCw,
     Lock,
-    AlertCircle,
     ChevronLeft,
     ChevronRight,
     Check
@@ -19,6 +13,10 @@ import {
 import { useTranslations } from 'next-intl';
 import { timeService } from '@/lib/services/time-service';
 import { calculateDurationMinutes, calculateUnlockTimeInfo } from '@/lib/utils/unlock-time';
+import Step1TypeSelection from './add-modal/Step1TypeSelection';
+import Step2ContentInput from './add-modal/Step2ContentInput';
+import Step3TimeSettings from './add-modal/Step3TimeSettings';
+import Step4Preview from './add-modal/Step4Preview';
 
 interface AddModalProps {
     isOpen: boolean;
@@ -27,22 +25,12 @@ interface AddModalProps {
     onSubmit: (data: FormData) => Promise<void>;
 }
 
-// Duration presets in minutes
-const DURATION_PRESETS = [
-    { label: '1m', minutes: 1 },
-    { label: '10m', minutes: 10 },
-    { label: '1h', minutes: 60 },
-    { label: '6h', minutes: 360 },
-    { label: '1d', minutes: 1440 },
-];
-
-type TimeMode = 'duration' | 'absolute';
-type Step = 1 | 2 | 3 | 4;
+export type TimeMode = 'duration' | 'absolute';
+export type Step = 1 | 2 | 3 | 4;
 
 export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }: AddModalProps) {
     const t = useTranslations('AddModal');
     const tWizard = useTranslations('Wizard');
-    const tCommon = useTranslations('Common');
 
     // Wizard state
     const [currentStep, setCurrentStep] = useState<Step>(1);
@@ -172,10 +160,6 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
         }
     };
 
-    const handleFileChange = (newFile: File | null) => {
-        setFile(newFile);
-    };
-
     // Paste event handler for images
     useEffect(() => {
         const handlePaste = (e: ClipboardEvent) => {
@@ -286,299 +270,49 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                 <div className="min-h-[300px]">
                     {/* Step 1: Content Type Selection */}
                     {currentStep === 1 && (
-                        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                            <p className="text-sm text-muted-foreground text-center mb-6">
-                                {tWizard('selectContentType')}
-                            </p>
-                            <div className="grid grid-cols-2 gap-4">
-                                <button
-                                    type="button"
-                                    className={cn(
-                                        "p-6 rounded-xl border-2 transition-all flex flex-col items-center gap-3",
-                                        type === 'text'
-                                            ? "border-primary bg-primary/10 shadow-lg scale-105"
-                                            : "border-border hover:border-primary/50 hover:bg-accent/30"
-                                    )}
-                                    onClick={() => setType('text')}
-                                >
-                                    <div className={cn(
-                                        "w-14 h-14 rounded-full flex items-center justify-center",
-                                        type === 'text' ? "bg-primary text-primary-foreground" : "bg-accent text-muted-foreground"
-                                    )}>
-                                        <FileText size={28} />
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="font-semibold">{tCommon('textNote')}</p>
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            {tWizard('textNoteDesc')}
-                                        </p>
-                                    </div>
-                                </button>
-
-                                <button
-                                    type="button"
-                                    className={cn(
-                                        "p-6 rounded-xl border-2 transition-all flex flex-col items-center gap-3",
-                                        type === 'image'
-                                            ? "border-primary bg-primary/10 shadow-lg scale-105"
-                                            : "border-border hover:border-primary/50 hover:bg-accent/30"
-                                    )}
-                                    onClick={() => setType('image')}
-                                >
-                                    <div className={cn(
-                                        "w-14 h-14 rounded-full flex items-center justify-center",
-                                        type === 'image' ? "bg-primary text-primary-foreground" : "bg-accent text-muted-foreground"
-                                    )}>
-                                        <ImageIcon size={28} />
-                                    </div>
-                                    <div className="text-center">
-                                        <p className="font-semibold">{tCommon('image')}</p>
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            {tWizard('imageDesc')}
-                                        </p>
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
+                        <Step1TypeSelection type={type} setType={setType} />
                     )}
 
                     {/* Step 2: Content Input */}
                     {currentStep === 2 && (
-                        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                            {/* Title Input (Optional) */}
-                            <div>
-                                <label className="block text-xs font-medium text-muted-foreground mb-2">
-                                    {t('itemTitle')}
-                                </label>
-                                <input
-                                    type="text"
-                                    className="premium-input"
-                                    placeholder={t('titlePlaceholder')}
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    maxLength={100}
-                                />
-                            </div>
-
-                            {/* Content Input */}
-                            <div>
-                                <label className="block text-xs font-medium text-muted-foreground mb-2">
-                                    {type === 'text' ? tWizard('textContent') : tWizard('imageContent')}
-                                </label>
-                                {type === 'text' ? (
-                                    <textarea
-                                        className="premium-input resize-none"
-                                        placeholder={t('enterContent')}
-                                        value={text}
-                                        onChange={(e) => setText(e.target.value)}
-                                        rows={8}
-                                        autoFocus
-                                    />
-                                ) : (
-                                    <ImageUploadZone
-                                        file={file}
-                                        onFileChange={handleFileChange}
-                                    />
-                                )}
-                            </div>
-                        </div>
+                        <Step2ContentInput
+                            type={type}
+                            title={title}
+                            setTitle={setTitle}
+                            text={text}
+                            setText={setText}
+                            file={file}
+                            setFile={setFile}
+                        />
                     )}
 
                     {/* Step 3: Time Lock Settings */}
                     {currentStep === 3 && (
-                        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                            <div className="flex items-center justify-between">
-                                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                                    <Clock size={16} />
-                                    {t('lockDuration')}
-                                </label>
-                                <div className="flex bg-card/50 p-0.5 rounded-lg border border-border">
-                                    <button
-                                        type="button"
-                                        className={cn(
-                                            "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                            timeMode === 'duration' ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"
-                                        )}
-                                        onClick={() => setTimeMode('duration')}
-                                    >
-                                        {t('duration')}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={cn(
-                                            "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                                            timeMode === 'absolute' ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"
-                                        )}
-                                        onClick={() => setTimeMode('absolute')}
-                                    >
-                                        {t('customDate')}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {timeMode === 'duration' ? (
-                                <div className="space-y-3">
-                                    <div className="flex flex-wrap gap-2">
-                                        {DURATION_PRESETS.map((preset) => (
-                                            <button
-                                                key={preset.label}
-                                                type="button"
-                                                className="px-3 py-1.5 bg-accent/30 hover:bg-accent border border-border rounded-full text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-                                                onClick={() => handlePresetClick(preset.minutes)}
-                                            >
-                                                <Plus size={10} />
-                                                {preset.label}
-                                            </button>
-                                        ))}
-                                        {accumulatedDuration > 0 && (
-                                            <button
-                                                type="button"
-                                                className="px-3 py-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-full text-xs font-medium transition-colors flex items-center gap-1 border border-destructive/20"
-                                                onClick={handleResetDuration}
-                                            >
-                                                <RefreshCw size={10} />
-                                                {t('reset')}
-                                            </button>
-                                        )}
-                                    </div>
-                                    <div className="relative">
-                                        <input
-                                            type="number"
-                                            min="1"
-                                            value={accumulatedDuration || ''}
-                                            placeholder="0"
-                                            onChange={(e) => handleCustomDurationChange(e.target.value)}
-                                            className="w-full pl-4 pr-12 py-3 bg-muted/30 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono text-lg text-foreground"
-                                        />
-                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">min</span>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="flex flex-wrap items-center justify-center gap-2 p-3 bg-muted/30 rounded-xl border border-border">
-                                    {/* Date Inputs */}
-                                    <div className="flex items-center gap-1">
-                                        <TimeInput
-                                            value={absoluteTime.year}
-                                            onChange={(v) => handleAbsoluteTimeChange('year', v)}
-                                            placeholder="YY"
-                                        />
-                                        <span className="text-zinc-500">/</span>
-                                        <TimeInput
-                                            value={absoluteTime.month}
-                                            onChange={(v) => handleAbsoluteTimeChange('month', v)}
-                                            placeholder="MM"
-                                        />
-                                        <span className="text-zinc-500">/</span>
-                                        <TimeInput
-                                            value={absoluteTime.day}
-                                            onChange={(v) => handleAbsoluteTimeChange('day', v)}
-                                            placeholder="DD"
-                                        />
-                                    </div>
-                                    <span className="text-zinc-500">@</span>
-                                    {/* Time Inputs */}
-                                    <div className="flex items-center gap-1">
-                                        <TimeInput
-                                            value={absoluteTime.hour}
-                                            onChange={(v) => handleAbsoluteTimeChange('hour', v)}
-                                            placeholder="HH"
-                                        />
-                                        <span className="text-zinc-500">:</span>
-                                        <TimeInput
-                                            value={absoluteTime.minute}
-                                            onChange={(v) => handleAbsoluteTimeChange('minute', v)}
-                                            placeholder="MM"
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Unlock Preview */}
-                            <div className={cn(
-                                "rounded-xl p-4 flex items-center justify-between border transition-all duration-300",
-                                unlockTimeInfo.isValid
-                                    ? "bg-primary/10 border-primary/20 text-primary"
-                                    : "bg-destructive/10 border-destructive/20 text-destructive"
-                            )}>
-                                <div className="flex items-center gap-3">
-                                    <div className={cn(
-                                        "p-2 rounded-full",
-                                        unlockTimeInfo.isValid ? "bg-primary/20 text-primary" : "bg-destructive/20 text-destructive"
-                                    )}>
-                                        {unlockTimeInfo.isValid ? <Lock size={18} /> : <AlertCircle size={18} />}
-                                    </div>
-                                    <div>
-                                        <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">
-                                            {unlockTimeInfo.isValid ? tCommon('unlocksAt') : t('invalidTime')}
-                                        </p>
-                                        <p className="text-lg font-bold font-mono tracking-tight">
-                                            {unlockTimeInfo.isValid ? unlockTimeInfo.formatted : t('checkInput')}
-                                        </p>
-                                    </div>
-                                </div>
-                                {unlockTimeInfo.isValid && (
-                                    <div className="text-right">
-                                        <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">{t('remaining')}</p>
-                                        <p className="text-sm font-medium">{unlockTimeInfo.remaining}</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        <Step3TimeSettings
+                            timeMode={timeMode}
+                            setTimeMode={setTimeMode}
+                            accumulatedDuration={accumulatedDuration}
+                            setAccumulatedDuration={setAccumulatedDuration}
+                            absoluteTime={absoluteTime}
+                            setAbsoluteTime={setAbsoluteTime}
+                            handleAbsoluteTimeChange={handleAbsoluteTimeChange}
+                            handlePresetClick={handlePresetClick}
+                            handleCustomDurationChange={handleCustomDurationChange}
+                            handleResetDuration={handleResetDuration}
+                            unlockTimeInfo={unlockTimeInfo}
+                            defaultDuration={defaultDuration}
+                        />
                     )}
 
                     {/* Step 4: Preview & Confirm */}
                     {currentStep === 4 && (
-                        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                            <p className="text-sm text-muted-foreground text-center mb-4">
-                                {tWizard('reviewBeforeSubmit')}
-                            </p>
-
-                            {/* Summary Cards */}
-                            <div className="space-y-3">
-                                {/* Content Type */}
-                                <div className="p-4 rounded-lg bg-accent/30 border border-border">
-                                    <p className="text-xs text-muted-foreground mb-1">{tWizard('contentType')}</p>
-                                    <div className="flex items-center gap-2">
-                                        {type === 'text' ? <FileText size={16} /> : <ImageIcon size={16} />}
-                                        <p className="font-medium">{type === 'text' ? tCommon('textNote') : tCommon('image')}</p>
-                                    </div>
-                                </div>
-
-                                {/* Title */}
-                                {title && (
-                                    <div className="p-4 rounded-lg bg-accent/30 border border-border">
-                                        <p className="text-xs text-muted-foreground mb-1">{t('itemTitle')}</p>
-                                        <p className="font-medium">{title}</p>
-                                    </div>
-                                )}
-
-                                {/* Content Preview */}
-                                <div className="p-4 rounded-lg bg-accent/30 border border-border">
-                                    <p className="text-xs text-muted-foreground mb-2">{tWizard('contentPreview')}</p>
-                                    {type === 'text' ? (
-                                        <p className="text-sm line-clamp-3">{text}</p>
-                                    ) : file ? (
-                                        <div className="flex items-center gap-2">
-                                            <ImageIcon size={16} className="text-primary" />
-                                            <span className="text-sm">{file.name}</span>
-                                            <span className="text-xs text-muted-foreground">({(file.size / 1024).toFixed(1)} KB)</span>
-                                        </div>
-                                    ) : null}
-                                </div>
-
-                                {/* Time Lock */}
-                                <div className="p-4 rounded-lg bg-primary/10 border border-primary/20">
-                                    <p className="text-xs text-muted-foreground mb-1">{t('lockDuration')}</p>
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="font-medium text-primary">{unlockTimeInfo.formatted}</p>
-                                            <p className="text-xs text-primary/70 mt-0.5">{unlockTimeInfo.remaining}</p>
-                                        </div>
-                                        <Lock size={20} className="text-primary" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <Step4Preview
+                            type={type}
+                            title={title}
+                            text={text}
+                            file={file}
+                            unlockTimeInfo={unlockTimeInfo}
+                        />
                     )}
                 </div>
 

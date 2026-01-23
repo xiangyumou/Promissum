@@ -38,7 +38,7 @@ export function calculateDurationMinutes(
     currentTime: number = timeService.now()
 ): number {
     if (timeMode === 'duration') {
-        return Math.max(1, accumulatedDuration);
+        return accumulatedDuration;
     } else {
         const year = parseInt(absoluteTime.year) + 2000;
         const month = parseInt(absoluteTime.month) - 1;

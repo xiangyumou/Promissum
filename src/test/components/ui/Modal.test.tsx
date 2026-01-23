@@ -1,5 +1,6 @@
 import { screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import * as Dialog from '@radix-ui/react-dialog';
 import Modal from '@/components/ui/Modal';
 import { renderWithProviders } from '@/test/utils';
 import React from 'react';
@@ -12,6 +13,7 @@ vi.mock('react-use', () => ({
 // Mock framer-motion to simplify testing
 vi.mock('framer-motion', async () => {
     const actual = await vi.importActual('framer-motion');
+    const React = await import('react'); // Import React dynamically inside the factory
     return {
         ...actual,
         AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -19,8 +21,9 @@ vi.mock('framer-motion', async () => {
             start: vi.fn()
         }),
         motion: {
-             
-            div: ({ children, ...props }: any) => <div {...props}>{children}</div>
+            div: React.forwardRef(({ children, drag, dragControls, dragConstraints, dragElastic, ...props }: any, ref: any) => (
+                <div ref={ref} {...props}>{children}</div>
+            ))
         }
     };
 });
@@ -49,6 +52,7 @@ describe('Modal', () => {
         it('should render when open', () => {
             renderWithProviders(
                 <Modal isOpen={true} onClose={mockOnClose} title="Test Modal">
+                    <Dialog.Description>Modal Content Description</Dialog.Description>
                     <div>Modal Content</div>
                 </Modal>
             );
@@ -60,6 +64,7 @@ describe('Modal', () => {
         it('should render title correctly', () => {
             renderWithProviders(
                 <Modal isOpen={true} onClose={mockOnClose} title="My Custom Title">
+                    <Dialog.Description>Content Description</Dialog.Description>
                     <div>Content</div>
                 </Modal>
             );
@@ -70,6 +75,7 @@ describe('Modal', () => {
         it('should render children correctly', () => {
             renderWithProviders(
                 <Modal isOpen={true} onClose={mockOnClose} title="Title">
+                    <Dialog.Description>Child Description</Dialog.Description>
                     <div data-testid="child">Child Component</div>
                 </Modal>
             );
@@ -83,6 +89,7 @@ describe('Modal', () => {
         it('should have a close button', () => {
             renderWithProviders(
                 <Modal isOpen={true} onClose={mockOnClose} title="Title">
+                    <Dialog.Description>Content Description</Dialog.Description>
                     <div>Content</div>
                 </Modal>
             );
@@ -94,6 +101,7 @@ describe('Modal', () => {
         it('should call onClose when close button is clicked', () => {
             renderWithProviders(
                 <Modal isOpen={true} onClose={mockOnClose} title="Title">
+                    <Dialog.Description>Content Description</Dialog.Description>
                     <div>Content</div>
                 </Modal>
             );
@@ -111,6 +119,7 @@ describe('Modal', () => {
 
             const { container } = renderWithProviders(
                 <Modal isOpen={true} onClose={mockOnClose} title="Title">
+                    <Dialog.Description>Content Description</Dialog.Description>
                     <div>Content</div>
                 </Modal>
             );
@@ -129,6 +138,7 @@ describe('Modal', () => {
 
             const { container } = renderWithProviders(
                 <Modal isOpen={true} onClose={mockOnClose} title="Title">
+                    <Dialog.Description>Content Description</Dialog.Description>
                     <div>Content</div>
                 </Modal>
             );
@@ -149,6 +159,7 @@ describe('Modal', () => {
                     title="Title"
                     className="custom-modal-class"
                 >
+                    <Dialog.Description>Content Description</Dialog.Description>
                     <div data-testid="custom-content">Content</div>
                 </Modal>
             );
@@ -163,6 +174,7 @@ describe('Modal', () => {
         it('should have proper dialog role via Radix', () => {
             renderWithProviders(
                 <Modal isOpen={true} onClose={mockOnClose} title="Accessible Modal">
+                    <Dialog.Description>Content Description</Dialog.Description>
                     <div>Content</div>
                 </Modal>
             );
@@ -177,6 +189,7 @@ describe('Modal', () => {
         it('should handle opening and closing', () => {
             const { rerender } = renderWithProviders(
                 <Modal isOpen={false} onClose={mockOnClose} title="Title">
+                    <Dialog.Description>Content Description</Dialog.Description>
                     <div>Content</div>
                 </Modal>
             );
@@ -185,6 +198,7 @@ describe('Modal', () => {
 
             rerender(
                 <Modal isOpen={true} onClose={mockOnClose} title="Title">
+                    <Dialog.Description>Content Description</Dialog.Description>
                     <div>Content</div>
                 </Modal>
             );
@@ -193,6 +207,7 @@ describe('Modal', () => {
 
             rerender(
                 <Modal isOpen={false} onClose={mockOnClose} title="Title">
+                    <Dialog.Description>Content Description</Dialog.Description>
                     <div>Content</div>
                 </Modal>
             );
