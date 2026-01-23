@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useSearchParams } from 'next/navigation';
+import { useRouter, usePathname } from '@/i18n/routing';
 import Sidebar from '@/components/Sidebar';
 import AddModal from '@/components/AddModal';
 import ContentView from '@/components/ContentView';
@@ -10,7 +12,24 @@ import { useItems, useCreateItem, useItem, useExtendItem, useDeleteItem } from '
 
 
 export default function Home() {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // URL state management
+  const selectedId = searchParams.get('id');
+
+  const updateSelectedId = (id: string | null) => {
+    const params = new URLSearchParams(searchParams);
+    if (id) {
+      params.set('id', id);
+    } else {
+      params.delete('id');
+    }
+    // Using replace to keep history clean, similar to previous local state behavior
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filters, setFilters] = useState<FilterParams>({ status: 'all', sort: 'created_desc' });
@@ -30,7 +49,7 @@ export default function Home() {
         success: (result) => {
           if (result.success) {
             // Select the newly created item
-            setSelectedId(result.item.id);
+            updateSelectedId(result.item.id);
           }
           return 'Item created successfully!';
         },
@@ -46,7 +65,7 @@ export default function Home() {
         loading: 'Deleting item...',
         success: () => {
           if (selectedId === id) {
-            setSelectedId(null);
+            updateSelectedId(null);
           }
           return 'Item deleted';
         },
@@ -67,7 +86,7 @@ export default function Home() {
   };
 
   const handleSelectItem = (id: string) => {
-    setSelectedId(id);
+    updateSelectedId(id);
     // Close sidebar on mobile after selecting item
     setSidebarOpen(false);
   };

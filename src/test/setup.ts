@@ -7,6 +7,7 @@
 import '@testing-library/jest-dom/vitest';
 import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
+import React from 'react';
 import { server } from './mocks/server';
 
 // Mock matchMedia (not implemented in JSDOM)
@@ -91,6 +92,25 @@ vi.mock('next/navigation', () => ({
     usePathname: () => '/',
     useSearchParams: () => new URLSearchParams(),
     useParams: () => ({}),
+}));
+
+// Mock project i18n routing to avoid next-intl internal issues
+vi.mock('@/i18n/routing', () => ({
+    useRouter: () => ({
+        push: vi.fn(),
+        replace: vi.fn(),
+        refresh: vi.fn(),
+        back: vi.fn(),
+        forward: vi.fn(),
+        prefetch: vi.fn(),
+    }),
+    usePathname: () => '/',
+    Link: ({ children, href, ...props }: any) => React.createElement('a', { href, ...props }, children),
+    routing: {
+        locales: ['en', 'zh'],
+        defaultLocale: 'en',
+        localePrefix: 'never'
+    }
 }));
 
 // Mock canvas-confetti to prevent canvas errors in jsdom
