@@ -233,7 +233,7 @@ src/
 ## 🔐 安全性与隐私
 
 ### 数据库
-- **PostgreSQL**：统一数据库，包含 Promissum 和 Chaster 模型
+- **PostgreSQL**：统一数据库，包含应用层和加密层模型
 - **Prisma ORM**：类型安全的数据库访问
 
 ### 加密流程

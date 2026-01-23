@@ -1,5 +1,5 @@
 // This is your Prisma schema file for the Promissum frontend database
-//It manages user preferences, device sessions, and sync state
+// It manages user preferences, device sessions, and sync state
 // Learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
@@ -116,7 +116,7 @@ model SharedItem {
 }
 
 // ============================================================================
-// Chaster Models (Encryption Service)
+// Encryption Models (Timelock Encryption Service)
 // ============================================================================
 
 // Item represents a time-locked encrypted item

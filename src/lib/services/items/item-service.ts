@@ -2,7 +2,7 @@
  * Item Service Layer
  *
  * Core business logic for time-locked encrypted items.
- * Extracted from Chaster API routes for direct function calls.
+ * Provides direct function calls for API routes.
  */
 
 import { prisma } from '@/lib/db/client';
@@ -94,7 +94,7 @@ function formatItemResponse(item: {
     createdAt: bigint;
     layerCount: number;
     metadata: string | null;
-}, _includeContent = false): ItemResponse {
+}): ItemResponse {
     const now = Date.now();
     const unlocked = Number(item.decryptAt) <= now;
 

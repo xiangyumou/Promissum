@@ -12,8 +12,6 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Chaster SDK source (separate project)
-    "Chaster/**",
   ]),
   // Custom rules
   {

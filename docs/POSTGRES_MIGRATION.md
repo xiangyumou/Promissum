@@ -2,9 +2,9 @@
 
 ## Overview / 概述
 
-Promissum uses PostgreSQL as its primary database. The Prisma schema includes models for both the application layer (Promissum) and the encryption layer (Chaster), all unified in a single PostgreSQL database.
+Promissum uses PostgreSQL as its primary database. The Prisma schema includes models for both the application layer and the encryption layer, all unified in a single PostgreSQL database.
 
-Promissum 使用 PostgreSQL 作为主数据库。Prisma schema 包含应用层（Promissum）和加密层（Chaster）的模型，统一存储在一个 PostgreSQL 数据库中。
+Promissum 使用 PostgreSQL 作为主数据库。Prisma schema 包含应用层和加密层的模型，统一存储在一个 PostgreSQL 数据库中。
 
 ---
 
@@ -54,7 +54,7 @@ These models manage the application state and user preferences:
 - Fields: `shareToken`, `permission`, `expiresAt`
 - 字段：`shareToken`、`permission`、`expiresAt`
 
-### Chaster Models / Chaster 模型
+### Encryption Models / 加密模型
 
 These models manage the encrypted items and encryption service:
 

@@ -37,7 +37,6 @@
     "**/*.mts"
   ],
   "exclude": [
-    "node_modules",
-    "Chaster"
+    "node_modules"
   ]
 }

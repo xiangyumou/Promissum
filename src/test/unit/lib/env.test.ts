@@ -11,6 +11,8 @@ describe('env', () => {
 
     describe('env object', () => {
         it('should have default values when env vars not set', async () => {
+            delete process.env.PROMISSUM_API_URL;
+            delete process.env.PROMISSUM_API_TOKEN;
             delete process.env.CHASTER_API_URL;
             delete process.env.CHASTER_API_TOKEN;
             delete process.env.NEXT_PUBLIC_APP_URL;
@@ -30,8 +32,8 @@ describe('env', () => {
         });
 
         it('should use env vars when set', async () => {
-            process.env.CHASTER_API_URL = 'http://test-api.com';
-            process.env.CHASTER_API_TOKEN = 'test-token';
+            process.env.PROMISSUM_API_URL = 'http://test-api.com';
+            process.env.PROMISSUM_API_TOKEN = 'test-token';
             process.env.NEXT_PUBLIC_APP_URL = 'http://test-app.com';
             process.env.NEXT_PUBLIC_DATE_FORMAT = 'dd/MM/yyyy';
             process.env.NEXT_PUBLIC_AUTO_REFRESH_INTERVAL = '30';
@@ -50,18 +52,19 @@ describe('env', () => {
     });
 
     describe('validateEnv', () => {
-        it('should throw when CHASTER_API_TOKEN is not set', async () => {
+        it('should throw when PROMISSUM_API_TOKEN is not set', async () => {
+            delete process.env.PROMISSUM_API_TOKEN;
             delete process.env.CHASTER_API_TOKEN;
 
             vi.resetModules();
             const { validateEnv } = await import('@/lib/env');
 
-            expect(() => validateEnv()).toThrow(/CHASTER_API_TOKEN is not set/);
+            expect(() => validateEnv()).toThrow(/PROMISSUM_API_TOKEN is not set/);
         });
 
-        it('should not throw when CHASTER_API_TOKEN is set (apiUrl has default)', async () => {
-            process.env.CHASTER_API_TOKEN = 'test-token';
-            delete process.env.CHASTER_API_URL;
+        it('should not throw when PROMISSUM_API_TOKEN is set (apiUrl has default)', async () => {
+            process.env.PROMISSUM_API_TOKEN = 'test-token';
+            delete process.env.PROMISSUM_API_URL;
 
             vi.resetModules();
             const { validateEnv } = await import('@/lib/env');
@@ -69,9 +72,9 @@ describe('env', () => {
             expect(() => validateEnv()).not.toThrow();
         });
 
-        it('should not throw when CHASTER_API_TOKEN is set', async () => {
-            process.env.CHASTER_API_TOKEN = 'valid-token';
-            process.env.CHASTER_API_URL = 'http://valid-url.com';
+        it('should not throw when PROMISSUM_API_TOKEN is set', async () => {
+            process.env.PROMISSUM_API_TOKEN = 'valid-token';
+            process.env.PROMISSUM_API_URL = 'http://valid-url.com';
 
             vi.resetModules();
             const { validateEnv } = await import('@/lib/env');

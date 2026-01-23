@@ -86,7 +86,7 @@ All notable changes to this project will be documented in this file.
 ## [0.2.0] - 2025-12-27
 
 ### Added
-- **Remote API Integration**: Switched from local logic to consuming remote Chaster API.
+- **Remote API Integration**: Switched from local logic to integrated encryption service.
 - **Proxy Layer**: Added Next.js API Routes as proxy for secure token handling.
 
 ### Changed

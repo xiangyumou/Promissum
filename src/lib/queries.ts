@@ -18,18 +18,14 @@ import {
     type ApiItemResponse
 } from './services/api-service';
 import { timeService } from './services/time-service';
+import type { FilterParams } from '@/lib/types';
+import {
+    POLLING_INTERVAL,
+    NEAR_UNLOCK_THRESHOLD_MS,
+    MAX_API_RETRIES,
+} from '@/lib/constants';
 
-/**
- * Filter parameters for TanStack Query hooks.
- * Note: This is a simplified version of FilterParams from types.ts,
- * tailored for the UI's filtering needs.
- */
-export interface FilterParams {
-    status?: 'all' | 'locked' | 'unlocked';
-    type?: 'text' | 'image';
-    sort?: 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc';
-    search?: string;
-}
+export type { FilterParams };
 
 /**
  * Custom API Error with status code
@@ -115,88 +111,72 @@ export function useItem(id: string | null) {
         enabled: !!id, // Only fetch if id exists
         staleTime: cacheTime,
         gcTime: cacheTime,
-        // Don't retry specifically on 404s
         retry: (failureCount, error) => {
             if (error instanceof ApiError && error.status === 404) {
                 return false;
             }
-            return failureCount < 3;
+            return failureCount < MAX_API_RETRIES;
         },
-        // Dynamic refetch polling
         refetchInterval: (query) => {
-            // Stop polling on 404
             if (query.state.error instanceof ApiError && query.state.error.status === 404) {
                 return false;
             }
 
             const data = query.state.data as ApiItemResponse | undefined;
-            if (!data) return 1000; // Poll faster if no data yet (maybe loading/error fallback)
+            if (!data) return POLLING_INTERVAL.INITIAL_MS;
 
-            // If already unlocked, no need to poll frequently
             if (data.unlocked) {
                 return false;
             }
 
-            // Calculate time remaining
             const now = timeService.now();
             const timeRemaining = data.decrypt_at - now;
 
-            // If time is up or close (within 1 minute), poll faster (5s) to catch unlock
-            if (timeRemaining <= 60000) {
-                return 5000;
+            if (timeRemaining <= NEAR_UNLOCK_THRESHOLD_MS) {
+                return POLLING_INTERVAL.FAST_MS;
             }
 
-            return 60000;
+            return POLLING_INTERVAL.DEFAULT_MS;
         }
     });
 }
 
-/**
- * Hook: Delete item mutation
- */
 export function useDeleteItem() {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: (id: string) => deleteItem(id),
         onSuccess: () => {
-            // Invalidate items list to refetch
             queryClient.invalidateQueries({ queryKey: queryKeys.items.all });
-            // Invalidate stats
             queryClient.invalidateQueries({ queryKey: queryKeys.stats });
         },
     });
 }
 
-/**
- * Hook: Extend item lock mutation
- */
-export function useExtendItem(id: string) {
+interface ExtendItemParams {
+    id: string;
+    minutes: number;
+}
+
+export function useExtendItem() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (minutes: number) => extendItem(id, minutes),
-        onSuccess: () => {
-            // Invalidate this item's detail
+        mutationFn: ({ id, minutes }: ExtendItemParams) => extendItem(id, minutes),
+        onSuccess: (_, { id }) => {
             queryClient.invalidateQueries({ queryKey: queryKeys.items.detail(id) });
-            // Invalidate items list
             queryClient.invalidateQueries({ queryKey: queryKeys.items.all });
         },
     });
 }
 
-/**
- * Hook: Create item mutation
- */
 export function useCreateItem() {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: (formData: FormData) => createItem(formData),
         onSuccess: () => {
-            // Invalidate items list
             queryClient.invalidateQueries({ queryKey: queryKeys.items.all });
-            // Invalidate stats
             queryClient.invalidateQueries({ queryKey: queryKeys.stats });
         },
     });

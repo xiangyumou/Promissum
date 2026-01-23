@@ -79,6 +79,7 @@ export interface CreateItemRequest {
 
 /**
  * Filter parameters for listing items
+ * CANONICAL DEFINITION - import from @/lib/types, not from queries.ts
  */
 export interface FilterParams {
     status?: 'all' | 'locked' | 'unlocked';
@@ -87,11 +88,9 @@ export interface FilterParams {
     limit?: number;
     offset?: number;
     sort?: 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc';
-
-    // Phase 3: Enhanced filtering
     dateRange?: {
-        start: number; // Timestamp in ms
-        end: number;   // Timestamp in ms
+        start: number;
+        end: number;
     };
     quickFilter?: 'unlocking-soon' | 'long-locked' | 'recent';
 }

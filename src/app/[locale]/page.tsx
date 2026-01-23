@@ -13,33 +13,14 @@ export default function Home() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // const { } = useSettings(); // No settings needed here anymore
   const [filters, setFilters] = useState<FilterParams>({ status: 'all', sort: 'created_desc' });
 
-  // Fetch items with automatic caching and refetching
   const { data: items = [], isLoading: listLoading } = useItems(filters);
-
-  // Fetch selected item detail
-  // Note: useItem automatically polls if locked
   const { data: selectedItemDetail, isLoading: itemLoading } = useItem(selectedId);
 
-  // Mutations
   const createItem = useCreateItem();
   const deleteItem = useDeleteItem();
-  // We need to use extendItem inside the handler because the ID isn't constant
-  // Actually, useExtendItem takes an ID. So we can't call it conditionally at top level if ID changes?
-  // queries.ts defines: export function useExtendItem(id: string) { ... }
-  // This means we need to call it with a specific ID. 
-  // But here we might switch IDs.
-  // Best practice: component specific hook or pass ID to mutationFn?
-  // Checking queries.ts: useExtendItem takes id as argument to the HOOK.
-  // This is problematic if we switch items.
-  // Ideally useExtendItem should accept ID in mutate.
-  // I will check queries.ts again. 
-  // If useExtendItem requires ID at hook level, I should use useMutation directly or a modified hook.
-  // BUT: selectedId is state. `useExtendItem(selectedId || '')` works if we respect Rules of Hooks (always call it).
-  // If selectedId is null, we pass ''. 
-  const extendItem = useExtendItem(selectedId || '');
+  const extendItem = useExtendItem();
 
   const handleAddSubmit = async (formData: FormData) => {
     toast.promise(
@@ -75,12 +56,8 @@ export default function Home() {
   };
 
   const handleExtend = (id: string, minutes: number) => {
-    // If selectedId is not id (unlikely in this view), this hook might be stale?
-    // But ContentView only shows selectedId.
-    if (id !== selectedId) return;
-
     toast.promise(
-      extendItem.mutateAsync(minutes),
+      extendItem.mutateAsync({ id, minutes }),
       {
         loading: 'Extending lock...',
         success: 'Lock extended successfully',

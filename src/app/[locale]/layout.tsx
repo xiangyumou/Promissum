@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Chaster - Timelock Encryption",
+  title: "Promissum - Timelock Encryption",
   description: "Encrypt text and images with timelock - decrypt only when time comes",
 };
 
