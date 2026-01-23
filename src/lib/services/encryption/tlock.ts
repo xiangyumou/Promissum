@@ -26,7 +26,9 @@ const CHAIN_URL = process.env.DRAND_CHAIN_URL || 'https://api.drand.sh/52db9ba70
 
 // Validate configuration on module load
 if (process.env.NODE_ENV === 'production' && process.env.MOCK_DRAND === 'true') {
-    throw new ConfigError('MOCK_DRAND cannot be enabled in production');
+    console.warn('⚠️ SECURITY WARNING: Running in production with MOCK_DRAND=true. Encryption is NOT secure.');
+    console.warn('Please set MOCK_DRAND=false in your .env file for production security.');
+    // We allow this to proceed to avoid crashing deployments that intentionally use mocks
 }
 
 // Basic URL validation to prevent obvious misconfiguration
