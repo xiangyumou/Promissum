@@ -50,9 +50,9 @@ async function getChainClient(): Promise<HttpChainClient> {
             // HttpCachingChain caches all beacons indefinitely, causing OOM after days of uptime
             const chain = new HttpChain(CHAIN_URL);
             chainClient = new HttpChainClient(chain);
-        } catch (error) {
-            throw new DrandError('Failed to initialize drand client', 'INIT_FAILED');
-        }
+    } catch {
+        throw new DrandError('Failed to initialize drand client', 'INIT_FAILED');
+    }
     }
     return chainClient;
 }

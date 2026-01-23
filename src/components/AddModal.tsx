@@ -367,18 +367,3 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
     );
 }
 
-function TimeInput({ value, onChange, placeholder }: { value: string, onChange: (v: string) => void, placeholder: string }) {
-    return (
-        <input
-            type="text"
-            inputMode="numeric"
-            maxLength={2}
-            className="w-12 h-11 min-h-[44px] p-2 text-center bg-transparent border-b-2 border-border focus:border-primary focus:outline-none font-mono font-medium rounded text-lg text-foreground placeholder-muted-foreground/50 transition-colors"
-            placeholder={placeholder}
-            value={value}
-            onChange={(e) => onChange(e.target.value.replace(/\D/g, ''))}
-            onFocus={(e) => e.target.select()}
-            aria-label={placeholder}
-        />
-    );
-}

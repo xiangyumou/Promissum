@@ -14,16 +14,24 @@ vi.mock('react-use', () => ({
 vi.mock('framer-motion', async () => {
     const actual = await vi.importActual('framer-motion');
     const React = await import('react'); // Import React dynamically inside the factory
+    
+    // Create named components to satisfy react/display-name
+    const AnimatePresence = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+    AnimatePresence.displayName = 'AnimatePresence';
+
+    const MotionDiv = React.forwardRef(({ children, ...props }: any, ref: any) => (
+        <div ref={ref} {...props}>{children}</div>
+    ));
+    MotionDiv.displayName = 'motion.div';
+
     return {
         ...actual,
-        AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+        AnimatePresence,
         useDragControls: () => ({
             start: vi.fn()
         }),
         motion: {
-            div: React.forwardRef(({ children, drag, dragControls, dragConstraints, dragElastic, ...props }: any, ref: any) => (
-                <div ref={ref} {...props}>{children}</div>
-            ))
+            div: MotionDiv
         }
     };
 });

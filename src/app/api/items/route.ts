@@ -92,11 +92,11 @@ async function postHandler(request: NextRequest) {
 
         // Metadata Parsing
         const metadataString = formData.get('metadata') as string;
-        let metadata: Record<string, any> | undefined;
+        let metadata: Record<string, unknown> | undefined;
         if (metadataString) {
             try {
                 metadata = JSON.parse(metadataString);
-            } catch (e) {
+            } catch (_) {
                 return NextResponse.json({ error: 'Invalid metadata JSON' }, { status: 400 });
             }
         }

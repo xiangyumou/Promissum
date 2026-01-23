@@ -46,7 +46,7 @@ interface Step3TimeSettingsProps {
         hour: string;
         minute: string;
     };
-    setAbsoluteTime: (time: any) => void;
+    setAbsoluteTime: (time: { year: string; month: string; day: string; hour: string; minute: string }) => void;
     handleAbsoluteTimeChange: (field: string, value: string) => void;
     handlePresetClick: (minutes: number) => void;
     handleCustomDurationChange: (value: string) => void;

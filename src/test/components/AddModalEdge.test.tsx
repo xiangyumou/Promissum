@@ -30,7 +30,6 @@ vi.mock('@/lib/services/time-service', () => ({
 }));
 
 // Mock Drag & Drop
-const mockFile = new File(['test image'], 'test.png', { type: 'image/png' });
 
 // Helper to advance to step 2
 const advanceToStep2 = () => {
