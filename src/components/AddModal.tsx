@@ -111,8 +111,8 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
         setAccumulatedDuration(defaultDuration);
     };
 
-    const handleAbsoluteTimeChange = (field: keyof typeof absoluteTime, value: string) => {
-        setAbsoluteTime(prev => ({ ...prev, [field]: value }));
+    const handleAbsoluteTimeChange = (field: string, value: string) => {
+        setAbsoluteTime(prev => ({ ...prev, [field as keyof typeof absoluteTime]: value }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
