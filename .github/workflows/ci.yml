@@ -207,7 +207,7 @@ jobs:
             docker compose pull
 
             echo "🔄 Restarting services..."
-            docker compose up -d --force-recreate --no-build
+            docker compose up -d --force-recreate
 
             echo "⏳ Waiting for services to be healthy..."
             sleep 10
