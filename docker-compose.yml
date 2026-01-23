@@ -11,6 +11,7 @@ services:
   # Promissum Application (with integrated encryption service)
   # -------------------------------------------------------------------------
   app:
+    image: ghcr.io/xiangyumou/promissum:latest
     build: .
     container_name: promissum-app
     ports:
