@@ -23,6 +23,9 @@ export async function getItems(filters?: FilterParams): Promise<ApiItemResponse[
     if (filters?.type) {
         params.set('type', filters.type);
     }
+    if (filters?.search) {
+        params.set('search', filters.search);
+    }
     params.set('sort', filters?.sort || 'created_desc');
 
     const queryString = params.toString();

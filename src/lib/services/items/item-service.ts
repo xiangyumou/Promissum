@@ -110,6 +110,13 @@ export async function getItems(params?: GetItemsInput): Promise<{
         where.decryptAt = { lte: now };
     }
 
+    if (query.search) {
+        where.metadata = {
+            path: ['title'],
+            string_contains: query.search
+        };
+    }
+
     const orderBy = query.sort.startsWith('created')
         ? { createdAt: query.sort === 'created_asc' ? 'asc' as const : 'desc' as const }
         : { decryptAt: query.sort === 'decrypt_asc' ? 'asc' as const : 'desc' as const };

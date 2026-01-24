@@ -32,6 +32,7 @@ export const createItemSchema = z.object({
 export const apiQuerySchema = z.object({
     status: z.enum(['all', 'locked', 'unlocked']).optional().nullable(),
     type: z.enum(['text', 'image']).optional().nullable(),
+    search: z.string().optional(),
     limit: z.coerce.number().int().positive().max(1000).optional().default(50),
     offset: z.coerce.number().int().nonnegative().optional().default(0),
     sort: z.enum(['created_asc', 'created_desc', 'decrypt_asc', 'decrypt_desc']).optional().default('created_desc'),
@@ -40,6 +41,7 @@ export const apiQuerySchema = z.object({
 export const querySchema = z.object({
     status: z.enum(['locked', 'unlocked', 'all']).optional().default('all'),
     type: z.enum(['text', 'image']).optional(),
+    search: z.string().optional(),
     limit: z.number().int().positive().max(1000).optional().default(50),
     offset: z.number().int().nonnegative().optional().default(0),
     sort: z.enum(['created_asc', 'created_desc', 'decrypt_asc', 'decrypt_desc']).optional().default('created_desc'),

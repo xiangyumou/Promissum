@@ -15,6 +15,7 @@ async function getHandler(request: NextRequest) {
     const result = await getItems({
         status: (query.status || undefined),
         type: (query.type || undefined),
+        search: (query.search || undefined),
         sort: query.sort,
         limit: query.limit,
         offset: query.offset,
