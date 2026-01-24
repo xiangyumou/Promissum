@@ -16,7 +16,7 @@ Promissum is a time-lock encryption system that allows users to encrypt content 
 - **Multiple Time Modes**: Duration-based or absolute time setting
 - **Extend Lock**: Support for extending lock time through multi-layer encryption
 - **Multi-Device Sync**: Real-time state sync across devices
-- **Real-Time Updates**: Server-Sent Events (SSE) for instant updates
+- **Real-Time Updates**: Smart Polling for near real-time updates
 - **Session Tracking**: See which devices are currently viewing items
 - **Advanced Filtering**: Time-range filters (today/this week/this month), filter presets, fuzzy search
 - **Unlock Effects**: Celebration confetti and sound effects
@@ -207,7 +207,7 @@ pnpm test -- --watch
 - **Internationalization**: next-intl
 - **UI Components**: Radix UI
 - **Encryption**: tlock-js (IBE + drand)
-- **Real-time**: Server-Sent Events (SSE)
+- **State Sync**: React Query Smart Polling
 
 ## Security
 

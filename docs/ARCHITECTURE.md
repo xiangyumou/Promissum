@@ -31,7 +31,7 @@ Promissum 是基于 Next.js 构建的统一时间锁加密平台。该架构将�
 │  │  • /api/preferences - User preferences management            │  │
 │  │  • /api/stats      - Statistics aggregation                   │  │
 │  │  • /api/health     - Health check endpoint                    │  │
-│  │  • /api/sse        - Server-Sent Events (real-time updates)  │  │
+│  │  • /api/items      - Smart polling support                   │  │
 │  └──────────────────────────────────────────────────────────────┘  │
 │  ┌──────────────────────────────────────────────────────────────┐  │
 │  │             Encryption Service / 加密服务                     │  │
@@ -223,10 +223,10 @@ src/lib/services/encryption/
 │  ┌─────────────────────────────────────────────┐   │
 │  │  1. Create item in PostgreSQL               │   │
 │  │  2. Broadcast SSE event                     │   │
-│  └─────────────────────────────────────────────┘   │
+│  └──────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────┘
       │                                              │
-      │ 2. SSE: items.created                        │
+      │ 2. Smart Polling: items.list refetch         │
       ├─────────────────────────────────────────────┤│
       │                                              ││
       │                                              │▼ 3. Update list
@@ -296,8 +296,8 @@ Browser Fingerprint → Device ID → User Preferences
    **本地状态**（localStorage）：快速 UI 更新
 2. **Database State** (PostgreSQL): Persistent storage
    **数据库状态**（PostgreSQL）：持久化存储
-3. **Real-time Events** (SSE): Instant notifications
-   **实时事件**（SSE）：即时通知
+3. **Smart Polling** (React Query): Dynamic interval updates
+   **智能轮询**（React Query）：动态间隔更新
 
 ### Conflict Resolution / 冲突解决
 

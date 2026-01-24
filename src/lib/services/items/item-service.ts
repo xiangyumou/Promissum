@@ -208,6 +208,16 @@ export async function getItems(params?: GetItemsParams): Promise<{
             orderBy,
             take: query.limit,
             skip: query.offset,
+            select: {
+                id: true,
+                type: true,
+                originalName: true,
+                decryptAt: true,
+                createdAt: true,
+                layerCount: true,
+                metadata: true,
+                // Explicitly exclude encryptedData and roundNumber for list view performance
+            }
         }),
         prisma.item.count({ where }),
     ]);

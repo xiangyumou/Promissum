@@ -19,7 +19,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - **Multi-Device Synchronization**: Complete state sync across devices using a centralized database.
-- **Real-Time Updates**: Implemented Server-Sent Events (SSE) for instant updates on settings changes and item status.
+- **Real-Time Updates**: Implemented Smart Polling for efficient updates on settings changes and item status.
 - **Session Tracking**: Real-time presence awareness showing active viewers on item detail pages.
 - **Database Layer**: Introduced Prisma ORM with SQLite (migratable to PostgreSQL) for persistent storage.
 - **Dual-Write Architecture**: Hybrid approach syncing `localStorage` (for speed) and Database (for persistence).

@@ -285,28 +285,10 @@ Check if the API server is running. No authentication required.
 
 ## 🔄 Real-Time Updates
 
-Promissum supports Server-Sent Events (SSE) for real-time updates.
+Promissum uses **Smart Polling** via React Query. Clients should poll the `/api/items` endpoint.
 
-### SSE Endpoint
-
-**Endpoint:** `GET /api/sse`
-
-**Query Parameters:**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `deviceId` | `string` | Device fingerprint for identification |
-
-**Example:**
-```bash
-curl -N "http://localhost:3000/api/sse?deviceId=abc123"
-```
-
-**Event Types:**
-- `preferences.updated` - Settings have changed
-- `items.created` - New item created
-- `items.updated` - Item status changed
-- `items.deleted` - Item deleted
+- **Dynamic Interval**: Polling frequency increases as unlock time approaches.
+- **Optimized Payloads**: List endpoint is lightweight (excludes encrypted content).
 
 ---
 
