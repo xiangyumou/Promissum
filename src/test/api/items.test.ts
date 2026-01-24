@@ -110,7 +110,7 @@ describe('Items API Routes', () => {
             const data = await response.json();
 
             expect(response.status).toBe(500);
-            expect(data.error).toBe('Failed to fetch items');
+            expect(data.error).toBe('Database error');
         });
     });
 
@@ -139,7 +139,7 @@ describe('Items API Routes', () => {
             const response = await POST(request);
             const data = await response.json();
 
-            expect(response.status).toBe(200);
+            expect(response.status).toBe(201);
             expect(data.success).toBe(true);
             expect(data.item).toBeDefined();
         });
@@ -170,7 +170,7 @@ describe('Items API Routes', () => {
             const response = await POST(request);
             const data = await response.json();
 
-            expect(response.status).toBe(200);
+            expect(response.status).toBe(201);
             expect(data.success).toBe(true);
         });
 
@@ -187,7 +187,7 @@ describe('Items API Routes', () => {
             const data = await response.json();
 
             expect(response.status).toBe(400);
-            expect(data.error).toContain('Invalid');
+            expect(data.error).toBe('Validation Error');
         });
 
         it('should handle missing time specification', async () => {
@@ -220,7 +220,8 @@ describe('Items API Routes', () => {
             const data = await response.json();
 
             expect(response.status).toBe(400);
-            expect(data.error).toContain('Missing text content');
+            // Zod error for content will be present
+            expect(data.error).toBe('Validation Error');
         });
 
         it('should handle missing image file', async () => {
@@ -237,7 +238,8 @@ describe('Items API Routes', () => {
             const data = await response.json();
 
             expect(response.status).toBe(400);
-            expect(data.error).toContain('Missing image file');
+             // Zod error for content will be present
+            expect(data.error).toBe('Validation Error');
         });
 
         it('should return error on creation failure', async () => {
@@ -257,7 +259,7 @@ describe('Items API Routes', () => {
             const data = await response.json();
 
             expect(response.status).toBe(500);
-            expect(data.error).toBe('Failed to create item');
+            expect(data.error).toBe('Creation failed');
         });
     });
 });

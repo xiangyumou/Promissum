@@ -29,6 +29,14 @@ export const createItemSchema = z.object({
     }
 });
 
+export const apiQuerySchema = z.object({
+    status: z.enum(['all', 'locked', 'unlocked']).optional().nullable(),
+    type: z.enum(['text', 'image']).optional().nullable(),
+    limit: z.coerce.number().int().positive().max(1000).optional().default(50),
+    offset: z.coerce.number().int().nonnegative().optional().default(0),
+    sort: z.enum(['created_asc', 'created_desc', 'decrypt_asc', 'decrypt_desc']).optional().default('created_desc'),
+});
+
 export const querySchema = z.object({
     status: z.enum(['locked', 'unlocked', 'all']).optional().default('all'),
     type: z.enum(['text', 'image']).optional(),
@@ -43,3 +51,4 @@ export const extendSchema = z.object({
 
 export type CreateItemInput = z.infer<typeof createItemSchema>;
 export type GetItemsParams = z.infer<typeof querySchema>;
+export type GetItemsInput = z.input<typeof querySchema>;

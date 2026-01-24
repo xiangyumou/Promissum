@@ -10,7 +10,7 @@ import { encrypt } from '@/lib/services/encryption/tlock';
 import { decrypt } from '@/lib/services/encryption/decryption';
 import {
     CreateItemInput,
-    GetItemsParams,
+    GetItemsInput,
     ItemResponse,
     createItemSchema,
     extendSchema,
@@ -18,8 +18,8 @@ import {
 } from './item-validation';
 import * as itemRepo from './item-repository';
 
-// Re-export types for consumers
-export type { CreateItemInput, GetItemsParams, ItemResponse };
+    // Re-export types for consumers
+export type { CreateItemInput, GetItemsInput, ItemResponse };
 
 export function formatItemResponse(item: {
     id: string;
@@ -91,7 +91,7 @@ export async function createItem(input: CreateItemInput): Promise<ItemResponse> 
     return formatItemResponse(item);
 }
 
-export async function getItems(params?: GetItemsParams): Promise<{
+export async function getItems(params?: GetItemsInput): Promise<{
     items: ItemResponse[];
     total: number;
 }> {
@@ -151,7 +151,8 @@ export async function getItemById(id: string): Promise<ItemResponse> {
                 if (itemHeader.type === 'text') {
                     response.content = decryptedBuffer.toString('utf-8');
                 } else {
-                    response.content = decryptedBuffer.toString('base64');
+                    const base64Content = decryptedBuffer.toString('base64');
+                    response.content = `data:image/png;base64,${base64Content}`;
                 }
             } catch (_error) {
                 console.error("Failed to decrypt item:", id, _error);

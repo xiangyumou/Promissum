@@ -1,6 +1,6 @@
 'use client';
 
-import { useApiHealth } from '@/lib/use-api-health';
+import { useApiHealth } from '@/hooks/useApiHealth';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import { Wifi, WifiOff, Loader2 } from 'lucide-react';

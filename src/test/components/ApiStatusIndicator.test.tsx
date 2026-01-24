@@ -2,10 +2,10 @@ import { screen } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ApiStatusIndicator from '@/components/ApiStatusIndicator';
 import { renderWithProviders } from '@/test/utils';
-import * as useApiHealthModule from '@/lib/use-api-health';
+import * as useApiHealthModule from '@/hooks/useApiHealth';
 
 // Mock the useApiHealth hook
-vi.mock('@/lib/use-api-health', () => ({
+vi.mock('@/hooks/useApiHealth', () => ({
     useApiHealth: vi.fn()
 }));
 
