@@ -8,7 +8,6 @@
 import { prisma } from '@/lib/db/client';
 import { encrypt } from '@/lib/services/encryption/tlock';
 import { decrypt } from '@/lib/services/encryption/decryption';
-import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 
@@ -129,7 +128,7 @@ export async function createItem(input: CreateItemInput): Promise<ItemResponse> 
 
     const item = await prisma.item.create({
         data: {
-            id: uuidv4(),
+            id: crypto.randomUUID(),
             type: validated.type,
             encryptedData: ciphertext,
             originalName: validated.type === 'image' ? 'image.png' : null,

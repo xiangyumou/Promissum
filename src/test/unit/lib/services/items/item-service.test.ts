@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { v4 as uuidv4 } from 'uuid';
 
 import { Prisma } from '@prisma/client';
 
@@ -26,10 +25,6 @@ vi.mock('@/lib/services/encryption/decryption', () => ({
     decrypt: vi.fn(),
 }));
 
-vi.mock('uuid', () => ({
-    v4: vi.fn(),
-}));
-
 import { createItem, getItems, getItemById, extendItem, deleteItem } from '@/lib/services/items/item-service';
 import { prisma } from '@/lib/db/client';
 import { encrypt as mockEncrypt, getRoundForTime as mockGetRoundForTime } from '@/lib/services/encryption/tlock';
@@ -41,7 +36,7 @@ describe('Item Service', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        (vi.mocked(uuidv4) as any).mockReturnValue(mockUuid);
+        vi.spyOn(crypto, 'randomUUID').mockReturnValue(mockUuid);
         (vi.mocked(mockGetRoundForTime) as any).mockResolvedValue(mockRoundNumber);
         (vi.mocked(mockEncrypt) as any).mockResolvedValue({
             ciphertext: 'mock_encrypted_data',

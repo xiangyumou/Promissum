@@ -19,18 +19,3 @@ export function toSnakeCase<T>(obj: T): T {
     }
     return result as T;
 }
-
-export function toCamelCase<T>(obj: T): T {
-    if (obj === null || obj === undefined) return obj;
-    if (typeof obj !== 'object') return obj;
-    if (Array.isArray(obj)) {
-        return obj.map(item => toCamelCase(item)) as T;
-    }
-
-    const result: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
-        const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-        result[camelKey] = toCamelCase(value);
-    }
-    return result as T;
-}
