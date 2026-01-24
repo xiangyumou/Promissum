@@ -21,6 +21,11 @@ vi.mock('@/app/api/events/route', () => ({
     broadcastEvent: vi.fn(),
 }));
 
+// Mock rate limiting to bypass in tests
+vi.mock('@/lib/services/rate-limiting/wrapper', () => ({
+    withRateLimit: (handler: any) => handler,
+}));
+
 describe('Preferences API', () => {
     beforeEach(() => {
         vi.clearAllMocks();

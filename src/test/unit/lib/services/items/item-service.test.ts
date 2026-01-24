@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { v4 as uuidv4 } from 'uuid';
 
+import { Prisma } from '@prisma/client';
+
 // Mock dependencies
 vi.mock('@/lib/db/client', () => ({
     prisma: {
@@ -53,11 +55,11 @@ describe('Item Service', () => {
             const mockItem = {
                 id: mockUuid,
                 type: 'text',
-                encryptedData: 'mock_encrypted_data',
+                encryptedData: 'encrypted_data',
                 originalName: null,
-                decryptAt: BigInt(now + 3600000),
+                decryptAt: new Date(now + 3600000),
                 roundNumber: BigInt(mockRoundNumber),
-                createdAt: BigInt(now),
+                createdAt: new Date(now - 3600000),
                 layerCount: 1,
                 metadata: null,
             };
@@ -83,9 +85,9 @@ describe('Item Service', () => {
                 type: 'image',
                 encryptedData: 'mock_encrypted_data',
                 originalName: 'image.png',
-                decryptAt: BigInt(now + 7200000),
+                decryptAt: new Date(now + 7200000),
                 roundNumber: BigInt(mockRoundNumber),
-                createdAt: BigInt(now),
+                createdAt: new Date(now),
                 layerCount: 1,
                 metadata: null,
             };
@@ -108,11 +110,11 @@ describe('Item Service', () => {
                 type: 'text',
                 encryptedData: 'mock_encrypted_data',
                 originalName: null,
-                decryptAt: BigInt(now + 3600000),
+                decryptAt: new Date(now + 3600000),
                 roundNumber: BigInt(mockRoundNumber),
-                createdAt: BigInt(now),
+                createdAt: new Date(now),
                 layerCount: 1,
-                metadata: JSON.stringify({ title: 'Test Item' }),
+                metadata: { title: 'Test Item' },
             };
             vi.mocked(prisma.item.create).mockResolvedValue(mockItem as any);
 
@@ -143,9 +145,9 @@ describe('Item Service', () => {
                 type: 'image',
                 encryptedData: 'mock_encrypted_data',
                 originalName: 'image.png',
-                decryptAt: BigInt(Date.now() + 3600000),
+                decryptAt: new Date(Date.now() + 3600000),
                 roundNumber: BigInt(mockRoundNumber),
-                createdAt: BigInt(Date.now()),
+                createdAt: new Date(),
                 layerCount: 1,
                 metadata: null,
             } as any);
@@ -170,8 +172,8 @@ describe('Item Service', () => {
                     id: '1',
                     type: 'text',
                     encryptedData: 'encrypted1',
-                    decryptAt: BigInt(now + 3600000),
-                    createdAt: BigInt(now - 3600000),
+                    decryptAt: new Date(now + 3600000),
+                    createdAt: new Date(now - 3600000),
                     layerCount: 1,
                     metadata: null,
                 },
@@ -179,8 +181,8 @@ describe('Item Service', () => {
                     id: '2',
                     type: 'image',
                     encryptedData: 'encrypted2',
-                    decryptAt: BigInt(now - 3600000),
-                    createdAt: BigInt(now - 7200000),
+                    decryptAt: new Date(now - 3600000),
+                    createdAt: new Date(now - 7200000),
                     layerCount: 1,
                     metadata: null,
                 },
@@ -203,8 +205,8 @@ describe('Item Service', () => {
                     id: '1',
                     type: 'text',
                     encryptedData: 'encrypted1',
-                    decryptAt: BigInt(now + 3600000),
-                    createdAt: BigInt(now - 3600000),
+                    decryptAt: new Date(now + 3600000),
+                    createdAt: new Date(now - 3600000),
                     layerCount: 1,
                     metadata: null,
                 },
@@ -225,8 +227,8 @@ describe('Item Service', () => {
                     id: '1',
                     type: 'text',
                     encryptedData: 'encrypted1',
-                    decryptAt: BigInt(now + 3600000),
-                    createdAt: BigInt(now - 3600000),
+                    decryptAt: new Date(now + 3600000),
+                    createdAt: new Date(now - 3600000),
                     layerCount: 1,
                     metadata: null,
                 },
@@ -262,8 +264,8 @@ describe('Item Service', () => {
                 id: '1',
                 type: 'text',
                 encryptedData: 'encrypted_data',
-                decryptAt: BigInt(now + 3600000),
-                createdAt: BigInt(now - 3600000),
+                decryptAt: new Date(now + 3600000),
+                createdAt: new Date(now - 3600000),
                 layerCount: 1,
                 metadata: null,
             };
@@ -278,16 +280,23 @@ describe('Item Service', () => {
 
         it('should decrypt content for unlocked items', async () => {
             const now = Date.now();
-            const mockItem: any = {
+            const mockItemHeader: any = {
                 id: '1',
                 type: 'text',
-                encryptedData: 'encrypted_data',
-                decryptAt: BigInt(now - 3600000), // Past time
-                createdAt: BigInt(now - 7200000),
+                originalName: null,
+                decryptAt: new Date(now - 3600000), // Past time
+                createdAt: new Date(now - 7200000),
                 layerCount: 1,
                 metadata: null,
             };
-            vi.mocked(prisma.item.findUnique).mockResolvedValue(mockItem);
+            const mockItemSecret: any = {
+                encryptedData: 'encrypted_data',
+            };
+            
+            vi.mocked(prisma.item.findUnique)
+                .mockResolvedValueOnce(mockItemHeader) // Step 1: Header
+                .mockResolvedValueOnce(mockItemSecret); // Step 2: Content
+
             vi.mocked(mockDecrypt).mockResolvedValue(Buffer.from('decrypted content', 'utf-8'));
 
             const result = await getItemById('1');
@@ -310,8 +319,8 @@ describe('Item Service', () => {
                 id: '1',
                 type: 'text',
                 encryptedData: 'encrypted_data',
-                decryptAt: BigInt(now + 3600000),
-                createdAt: BigInt(now - 3600000),
+                decryptAt: new Date(now + 3600000),
+                createdAt: new Date(now - 3600000),
                 layerCount: 1,
                 metadata: null,
             };
@@ -338,9 +347,9 @@ describe('Item Service', () => {
                 type: 'text',
                 encryptedData: 'encrypted_data',
                 originalName: null,
-                decryptAt: BigInt(now + 3600000),
+                decryptAt: new Date(now + 3600000),
                 roundNumber: BigInt(mockRoundNumber),
-                createdAt: BigInt(now - 3600000),
+                createdAt: new Date(now - 3600000),
                 layerCount: 1,
                 metadata: null,
             };
@@ -379,7 +388,11 @@ describe('Item Service', () => {
         });
 
         it('should throw error for non-existent item', async () => {
-            vi.mocked(prisma.item.findUnique).mockResolvedValue(null);
+            const error = new Prisma.PrismaClientKnownRequestError('Item not found', {
+                code: 'P2025',
+                clientVersion: '5.0.0',
+            });
+            vi.mocked(prisma.item.delete).mockRejectedValue(error);
 
             await expect(deleteItem('non-existent')).rejects.toThrow('Item not found');
         });

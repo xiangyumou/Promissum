@@ -17,8 +17,8 @@ import CountdownVisuals from './CountdownVisuals';
 import { timeService } from '@/lib/services/time-service';
 import { useUnlockCelebration } from '@/hooks/useUnlockCelebration';
 
-import DeleteButton from './content-view/DeleteButton';
-import ExtendButton from './content-view/ExtendButton';
+import { DeleteButton } from './actions/DeleteButton';
+import { ExtendButton } from './actions/ExtendButton';
 
 interface ContentViewProps {
     selectedId: string | null;
@@ -162,7 +162,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                             <LanguageSwitcher />
                         </div>
 
-                        <ExtendButton onExtend={(mins) => onExtend(item.id, mins)} />
+                        <ExtendButton onExtend={(mins: number) => onExtend(item.id, mins)} />
                         <DeleteButton id={item.id} onDelete={onDelete} />
                     </div>
                 </div>

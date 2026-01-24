@@ -91,11 +91,11 @@ model Item {
   type          String  // 'text' | 'image'
   encryptedData String  @map("encrypted_data")
   originalName  String? @map("original_name")
-  decryptAt     BigInt  @map("decrypt_at")
-  roundNumber   BigInt  @map("round_number")
-  createdAt     BigInt  @map("created_at")
-  layerCount    Int     @default(1) @map("layer_count")
-  metadata      String? @map("metadata")
+  decryptAt     DateTime  @map("decrypt_at")
+  roundNumber   BigInt    @map("round_number")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  layerCount    Int       @default(1) @map("layer_count")
+  metadata      Json?     @map("metadata")
 
   @@index([decryptAt], name: "idx_items_decrypt_at")
   @@index([createdAt], name: "idx_items_created_at")

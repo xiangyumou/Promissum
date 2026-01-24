@@ -10,11 +10,7 @@ import { encrypt } from '@/lib/services/encryption/tlock';
 import { decrypt } from '@/lib/services/encryption/decryption';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
-import type { Prisma } from '@prisma/client';
-
-// ============================================================================
-// Types
-// ============================================================================
+import { Prisma } from '@prisma/client';
 
 export interface ItemResponse {
     id: string;
@@ -45,10 +41,6 @@ export interface GetItemsParams {
     sort?: 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc';
 }
 
-// ============================================================================
-// Validation Schemas
-// ============================================================================
-
 export const createItemSchema = z.object({
     type: z.enum(['text', 'image']),
     content: z.string().min(1, "Content cannot be empty"),
@@ -77,55 +69,41 @@ export const extendSchema = z.object({
     minutes: z.number().int().positive("Minutes must be positive"),
 });
 
-// ============================================================================
-// Helper Functions
-// ============================================================================
-
-/**
- * Format item for API response
- */
 function formatItemResponse(item: {
     id: string;
     type: string;
-    encryptedData: string;
     originalName: string | null;
-    decryptAt: bigint;
-    roundNumber: bigint;
-    createdAt: bigint;
+    decryptAt: Date;
+    createdAt: Date;
     layerCount: number;
-    metadata: string | null;
+    metadata: Prisma.JsonValue | null;
+    encryptedData?: string;
 }): ItemResponse {
     const now = Date.now();
-    const unlocked = Number(item.decryptAt) <= now;
+    const decryptAtMs = item.decryptAt.getTime();
+    const unlocked = decryptAtMs <= now;
+
+    const metadata = (item.metadata as Record<string, unknown>) || null;
 
     const response: ItemResponse = {
         id: item.id,
         type: item.type,
         originalName: item.originalName,
-        decryptAt: Number(item.decryptAt),
-        createdAt: Number(item.createdAt),
+        decryptAt: decryptAtMs,
+        createdAt: item.createdAt.getTime(),
         layerCount: item.layerCount,
         unlocked,
-        metadata: item.metadata ? JSON.parse(item.metadata) : null,
-        timeRemainingMs: unlocked ? undefined : Number(item.decryptAt) - now,
+        metadata,
+        timeRemainingMs: unlocked ? undefined : decryptAtMs - now,
         content: null,
     };
 
     return response;
 }
 
-// ============================================================================
-// Core Functions
-// ============================================================================
-
-/**
- * Create a new encrypted item with time lock
- */
 export async function createItem(input: CreateItemInput): Promise<ItemResponse> {
-    // Validate input
     const validated = createItemSchema.parse(input);
 
-    // Calculate decrypt time
     let decryptAt: Date;
     if (validated.decryptAt) {
         decryptAt = new Date(validated.decryptAt);
@@ -136,12 +114,10 @@ export async function createItem(input: CreateItemInput): Promise<ItemResponse> 
         decryptAt = new Date(Date.now() + validated.durationMinutes! * 60 * 1000);
     }
 
-    // Prepare content for encryption
     let dataToEncrypt: Buffer;
     if (validated.type === 'text') {
         dataToEncrypt = Buffer.from(validated.content, 'utf-8');
     } else {
-        // For images, content should be base64 encoded
         try {
             dataToEncrypt = Buffer.from(validated.content, 'base64');
         } catch {
@@ -149,59 +125,48 @@ export async function createItem(input: CreateItemInput): Promise<ItemResponse> 
         }
     }
 
-    // Encrypt with tlock
     const { ciphertext, roundNumber } = await encrypt(dataToEncrypt, decryptAt);
 
-    // Save to database
     const item = await prisma.item.create({
         data: {
             id: uuidv4(),
             type: validated.type,
             encryptedData: ciphertext,
             originalName: validated.type === 'image' ? 'image.png' : null,
-            decryptAt: BigInt(decryptAt.getTime()),
+            decryptAt: decryptAt,
             roundNumber: BigInt(roundNumber),
-            createdAt: BigInt(Date.now()),
+            createdAt: new Date(),
             layerCount: 1,
-            metadata: validated.metadata ? JSON.stringify(validated.metadata) : null,
+            metadata: validated.metadata ?? Prisma.JsonNull,
         },
     });
 
     return formatItemResponse(item);
 }
 
-/**
- * Get items with filtering and pagination
- */
 export async function getItems(params?: GetItemsParams): Promise<{
     items: ItemResponse[];
     total: number;
 }> {
-    // Parse query parameters
     const query = querySchema.parse(params || {});
-    const now = Date.now();
+    const now = new Date();
 
-    // Build where clause - push ALL filters to database
     const where: Prisma.ItemWhereInput = {};
 
-    // Type filter
     if (query.type) {
         where.type = query.type;
     }
 
-    // Status filter - push to database WHERE clause
     if (query.status === 'locked') {
-        where.decryptAt = { gt: BigInt(now) };
+        where.decryptAt = { gt: now };
     } else if (query.status === 'unlocked') {
-        where.decryptAt = { lte: BigInt(now) };
+        where.decryptAt = { lte: now };
     }
 
-    // Build orderBy
     const orderBy = query.sort.startsWith('created')
         ? { createdAt: query.sort === 'created_asc' ? 'asc' as const : 'desc' as const }
         : { decryptAt: query.sort === 'decrypt_asc' ? 'asc' as const : 'desc' as const };
 
-    // Use efficient database pagination
     const [dbItems, dbTotal] = await Promise.all([
         prisma.item.findMany({
             where,
@@ -216,27 +181,26 @@ export async function getItems(params?: GetItemsParams): Promise<{
                 createdAt: true,
                 layerCount: true,
                 metadata: true,
-                // Explicitly exclude encryptedData and roundNumber for list view performance
             }
         }),
         prisma.item.count({ where }),
     ]);
 
-    // Format response
     const items = dbItems.map(item => {
-        const unlocked = Number(item.decryptAt) <= now;
-        const metadata = item.metadata ? JSON.parse(item.metadata) : null;
+        const decryptAtMs = item.decryptAt.getTime();
+        const unlocked = decryptAtMs <= now.getTime();
+        const metadata = (item.metadata as Record<string, unknown>) || null;
 
         return {
             id: item.id,
             type: item.type,
             originalName: item.originalName,
-            decryptAt: Number(item.decryptAt),
-            createdAt: Number(item.createdAt),
+            decryptAt: decryptAtMs,
+            createdAt: item.createdAt.getTime(),
             layerCount: item.layerCount,
             unlocked,
             metadata,
-            timeRemainingMs: unlocked ? undefined : Number(item.decryptAt) - now,
+            timeRemainingMs: unlocked ? undefined : decryptAtMs - now.getTime(),
         };
     });
 
@@ -246,62 +210,59 @@ export async function getItems(params?: GetItemsParams): Promise<{
     };
 }
 
-/**
- * Get item details by ID (attempts decryption if unlocked)
- */
 export async function getItemById(id: string): Promise<ItemResponse> {
-    const item = await prisma.item.findUnique({ where: { id } });
+    const itemHeader = await prisma.item.findUnique({
+        where: { id },
+        select: {
+            id: true,
+            type: true,
+            originalName: true,
+            decryptAt: true,
+            createdAt: true,
+            layerCount: true,
+            metadata: true,
+        }
+    });
 
-    if (!item) {
+    if (!itemHeader) {
         throw new Error('Item not found');
     }
 
     const now = Date.now();
-    const unlocked = Number(item.decryptAt) <= now;
-    const metadata = item.metadata ? JSON.parse(item.metadata) : null;
+    const unlocked = itemHeader.decryptAt.getTime() <= now;
 
-    const response: ItemResponse = {
-        id: item.id,
-        type: item.type,
-        originalName: item.originalName,
-        decryptAt: Number(item.decryptAt),
-        createdAt: Number(item.createdAt),
-        layerCount: item.layerCount,
-        unlocked,
-        metadata,
-        timeRemainingMs: unlocked ? undefined : Number(item.decryptAt) - now,
-        content: null,
-    };
+    const response = formatItemResponse(itemHeader);
 
-    // If unlocked, decrypt and include content
     if (unlocked) {
-        try {
-            const decryptedBuffer = await decrypt(item.encryptedData);
+        const itemSecret = await prisma.item.findUnique({
+            where: { id },
+            select: { encryptedData: true }
+        });
 
-            if (item.type === 'text') {
-                response.content = decryptedBuffer.toString('utf-8');
-            } else {
-                // Return base64 for images
-                response.content = decryptedBuffer.toString('base64');
+        if (itemSecret?.encryptedData) {
+            try {
+                const decryptedBuffer = await decrypt(itemSecret.encryptedData);
+
+                if (itemHeader.type === 'text') {
+                    response.content = decryptedBuffer.toString('utf-8');
+                } else {
+                    response.content = decryptedBuffer.toString('base64');
+                }
+            } catch (_error) {
+                console.error("Failed to decrypt item:", id, _error);
+                throw new Error('Failed to decrypt content');
             }
-        } catch (_error) {
-            throw new Error('Failed to decrypt content');
         }
     }
 
     return response;
 }
 
-/**
- * Extend the lock duration of an item
- * Note: This re-encrypts the content with a new unlock time
- */
 export async function extendItem(id: string, minutes: number): Promise<{
     success: boolean;
     decryptAt: number;
     layerCount: number;
 }> {
-    // Validate input
     const { minutes: validatedMinutes } = extendSchema.parse({ minutes });
 
     const item = await prisma.item.findUnique({ where: { id } });
@@ -311,41 +272,33 @@ export async function extendItem(id: string, minutes: number): Promise<{
     }
 
     const now = Date.now();
-    const unlocked = Number(item.decryptAt) <= now;
+    const unlocked = item.decryptAt.getTime() <= now;
 
-    // Get content to re-encrypt
     let contentToEncrypt: Buffer;
 
     if (unlocked) {
-        // Decrypt first
         try {
             contentToEncrypt = await decrypt(item.encryptedData);
         } catch (_error) {
             throw new Error('Failed to decrypt content for re-encryption');
         }
     } else {
-        // Use existing ciphertext as-is (nested encryption)
         contentToEncrypt = Buffer.from(item.encryptedData, 'utf-8');
     }
 
-    // Calculate new decrypt time
-    // If item is already unlocked, start from NOW
-    // If item is still locked, extend from current decryptAt
-    const baseTime = unlocked ? now : Number(item.decryptAt);
-    const newDecryptAt = new Date(baseTime + validatedMinutes * 60 * 1000);
+    const baseTimeMs = unlocked ? now : item.decryptAt.getTime();
+    const newDecryptAt = new Date(baseTimeMs + validatedMinutes * 60 * 1000);
 
-    // Re-encrypt
     const { ciphertext, roundNumber } = await encrypt(contentToEncrypt, newDecryptAt);
 
-    // Update database with optimistic locking
     const updated = await prisma.item.updateMany({
         where: {
             id,
-            layerCount: item.layerCount, // Ensure no concurrent modification
+            layerCount: item.layerCount,
         },
         data: {
             encryptedData: ciphertext,
-            decryptAt: BigInt(newDecryptAt.getTime()),
+            decryptAt: newDecryptAt,
             roundNumber: BigInt(roundNumber),
             layerCount: item.layerCount + 1,
         },
@@ -362,19 +315,15 @@ export async function extendItem(id: string, minutes: number): Promise<{
     };
 }
 
-/**
- * Delete an item permanently
- */
 export async function deleteItem(id: string): Promise<{ success: boolean }> {
-    // Check if item exists
-    const item = await prisma.item.findUnique({ where: { id } });
-
-    if (!item) {
-        throw new Error('Item not found');
+    try {
+        await prisma.item.delete({ where: { id } });
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+            throw new Error('Item not found');
+        }
+        throw error;
     }
-
-    // Delete item
-    await prisma.item.delete({ where: { id } });
 
     return { success: true };
 }

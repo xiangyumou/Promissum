@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/client';
 import { z } from 'zod';
+import { withRateLimit } from '@/lib/services/rate-limiting/wrapper';
 
 // Validation schema matching SettingsStore
 const PreferencesSchema = z.object({
@@ -26,7 +27,7 @@ const PreferencesSchema = z.object({
  * GET /api/preferences?deviceId=xxx
  * Fetch preferences for a device
  */
-export async function GET(request: NextRequest) {
+async function getHandler(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const deviceId = searchParams.get('deviceId');
@@ -69,7 +70,7 @@ export async function GET(request: NextRequest) {
  * POST /api/preferences
  * Update preferences for a device
  */
-export async function POST(request: NextRequest) {
+async function postHandler(request: NextRequest) {
     try {
         const body = await request.json();
         const validation = PreferencesSchema.safeParse(body);
@@ -113,3 +114,7 @@ export async function POST(request: NextRequest) {
         );
     }
 }
+
+// Apply rate limiting
+export const GET = withRateLimit(getHandler);
+export const POST = withRateLimit(postHandler);
