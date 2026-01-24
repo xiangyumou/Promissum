@@ -111,7 +111,6 @@ describe('Home Page Integration', () => {
 
     describe('Item Selection Flow', () => {
         it('should render items from MSW and allow selection', async () => {
-            const _user = userEvent.setup();
             renderWithProviders(<Home />);
 
             // Wait for MSW to provide items

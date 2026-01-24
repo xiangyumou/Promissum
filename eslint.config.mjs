@@ -17,7 +17,7 @@ const eslintConfig = defineConfig([
   {
     rules: {
       // Allow underscore-prefixed variables to be unused
-      "@typescript-eslint/no-unused-vars": ["warn", {
+      "@typescript-eslint/no-unused-vars": ["error", {
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_",
         "caughtErrorsIgnorePattern": "^_"

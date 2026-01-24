@@ -10,14 +10,6 @@ vi.mock('@/lib/use-api-health', () => ({
 }));
 
 // Add ApiStatus messages to test utils
-const _apiStatusMessages = {
-    ApiStatus: {
-        checking: 'Checking...',
-        connected: 'Connected',
-        disconnected: 'Disconnected',
-        offline: 'Offline'
-    }
-};
 
 // Extend renderWithProviders for this test
 vi.mock('next-intl', async () => {

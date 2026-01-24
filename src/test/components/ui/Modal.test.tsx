@@ -1,16 +1,14 @@
 import { screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as Dialog from '@radix-ui/react-dialog';
 import Modal from '@/components/ui/Modal';
 import { renderWithProviders } from '@/test/utils';
 import React from 'react';
 
-// Mock react-use for media query
-vi.mock('react-use', () => ({
-    useMedia: vi.fn(() => false) // Default to desktop
-}));
+import * as useMediaQueryHook from '@/hooks/useMediaQuery';
+const useMediaQueryMock = vi.spyOn(useMediaQueryHook, 'useMediaQuery');
+useMediaQueryMock.mockImplementation(() => false);
 
-// Mock framer-motion to simplify testing
 vi.mock('framer-motion', async () => {
     const actual = await vi.importActual('framer-motion');
     const React = await import('react'); // Import React dynamically inside the factory
@@ -36,14 +34,12 @@ vi.mock('framer-motion', async () => {
     };
 });
 
-import { useMedia } from 'react-use';
-
 describe('Modal', () => {
     const mockOnClose = vi.fn();
 
     beforeEach(() => {
         vi.clearAllMocks();
-        (useMedia as Mock).mockReturnValue(false); // Desktop by default
+        useMediaQueryMock.mockReturnValue(false); // Desktop by default
     });
 
     describe('Rendering', () => {
@@ -123,7 +119,7 @@ describe('Modal', () => {
 
     describe('Mobile Mode', () => {
         it('should render drag handle on mobile', () => {
-            (useMedia as Mock).mockReturnValue(true); // Mobile
+            useMediaQueryMock.mockReturnValue(true); // Mobile
 
             const { container } = renderWithProviders(
                 <Modal isOpen={true} onClose={mockOnClose} title="Title">
@@ -142,7 +138,7 @@ describe('Modal', () => {
         });
 
         it('should not render drag handle on desktop', () => {
-            (useMedia as Mock).mockReturnValue(false); // Desktop
+            useMediaQueryMock.mockReturnValue(false); // Desktop
 
             const { container } = renderWithProviders(
                 <Modal isOpen={true} onClose={mockOnClose} title="Title">

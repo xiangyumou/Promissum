@@ -3,10 +3,9 @@ import { getItemById, deleteItem } from '@/lib/services/items/item-service';
 import { withRateLimit } from '@/lib/services/rate-limiting/wrapper';
 import { toSnakeCase } from '@/lib/utils';
 
-async function getHandler(request: NextRequest, context?: unknown) {
+async function getHandler(_request: NextRequest, context: any) {
     try {
-        const params = context as { params: Promise<{ id: string }> };
-        const { id } = await params.params;
+        const { id } = await context.params;
 
         const item = await getItemById(id);
 
@@ -42,10 +41,9 @@ async function getHandler(request: NextRequest, context?: unknown) {
     }
 }
 
-async function deleteHandler(request: NextRequest, context?: unknown) {
+async function deleteHandler(_request: NextRequest, context: any) {
     try {
-        const params = context as { params: Promise<{ id: string }> };
-        const { id } = await params.params;
+        const { id } = await context.params;
 
         await deleteItem(id);
 

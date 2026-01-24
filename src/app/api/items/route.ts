@@ -33,9 +33,11 @@ async function getHandler(request: NextRequest) {
         const { status, type, sort } = parseResult.data;
 
         const result = await getItems({
-            status: status || undefined,
-            type: type || undefined,
-            sort: sort || 'created_desc',
+            status: (status || undefined) as any,
+            type: (type || undefined) as any,
+            sort: (sort || 'created_desc') as any,
+            limit: 50, // Default limit
+            offset: 0,
         });
 
         const mappedItems = result.items.map(item => toSnakeCase({

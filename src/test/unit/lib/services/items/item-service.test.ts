@@ -209,7 +209,12 @@ describe('Item Service', () => {
             vi.mocked(prisma.item.findMany).mockResolvedValue(mockItems as any);
             vi.mocked(prisma.item.count).mockResolvedValue(1);
 
-            const result = await getItems({ status: 'locked' });
+            const result = await getItems({
+                status: 'locked',
+                limit: 50,
+                offset: 0,
+                sort: 'created_desc'
+            });
 
             expect(result.items).toHaveLength(1);
             expect(result.items[0].unlocked).toBe(false);
@@ -231,7 +236,13 @@ describe('Item Service', () => {
             vi.mocked(prisma.item.findMany).mockResolvedValue(mockItems as any);
             vi.mocked(prisma.item.count).mockResolvedValue(1);
 
-            const result = await getItems({ type: 'text' });
+            const result = await getItems({
+                type: 'text',
+                status: 'all',
+                limit: 50,
+                offset: 0,
+                sort: 'created_desc'
+            });
 
             expect(result.items).toHaveLength(1);
             expect(result.items[0].type).toBe('text');
@@ -241,7 +252,7 @@ describe('Item Service', () => {
             vi.mocked(prisma.item.findMany).mockResolvedValue([]);
             vi.mocked(prisma.item.count).mockResolvedValue(100);
 
-            await getItems({ limit: 10, offset: 20 });
+            await getItems({ limit: 10, offset: 20, status: 'all', sort: 'created_desc' });
 
             expect(prisma.item.findMany).toHaveBeenCalledWith(
                 expect.objectContaining({

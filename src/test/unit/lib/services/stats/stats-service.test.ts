@@ -40,7 +40,6 @@ describe('Stats Service', () => {
     });
 
     it('should return system stats with mixed items', async () => {
-        const now = Date.now();
         vi.mocked(prisma.item.count).mockResolvedValueOnce(10);
         vi.mocked(prisma.item.count).mockResolvedValueOnce(6); // locked
         (vi.mocked(prisma.item.groupBy) as any).mockResolvedValueOnce([

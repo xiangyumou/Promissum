@@ -4,7 +4,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { motion, AnimatePresence, useDragControls, PanInfo } from 'framer-motion';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useMedia } from 'react-use';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface ModalProps {
     isOpen: boolean;
@@ -25,7 +25,7 @@ interface ModalProps {
  * - Framer Motion animations
  */
 export default function Modal({ isOpen, onClose, title, children, className }: ModalProps) {
-    const isMobile = useMedia('(max-width: 767px)', false);
+    const isMobile = useMediaQuery('(max-width: 767px)', false);
     const dragControls = useDragControls();
 
     // Handle drag end for bottom sheet

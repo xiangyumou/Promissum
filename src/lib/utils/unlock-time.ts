@@ -120,3 +120,25 @@ export function calculateUnlockTimeInfo(
         errorReason
     };
 }
+
+/**
+ * Get a concise relative time remaining string (e.g., "2d 4h", "5h 30m", "45m").
+ * Used for compact displays like lists/cards.
+ */
+export function getRelativeTimeRemaining(decryptAt: number, now: number = timeService.now()): string {
+    const diff = decryptAt - now;
+
+    if (diff <= 0) return 'Unlocked';
+
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (hours > 24) {
+        const days = Math.floor(hours / 24);
+        const remainingHours = hours % 24;
+        return `${days}d ${remainingHours}h`;
+    }
+
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
+}

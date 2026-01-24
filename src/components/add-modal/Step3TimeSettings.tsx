@@ -1,7 +1,7 @@
 import { Clock, Plus, RefreshCw, Lock, AlertCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
-import { TimeMode } from '../AddModal';
+import { TimeMode } from '@/hooks/useAddItemWizard';
 
 // Duration presets in minutes
 const DURATION_PRESETS = [

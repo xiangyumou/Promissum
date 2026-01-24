@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { ApiItemListView } from '@/lib/types';
 import { FilterParams } from '@/lib/queries';
 import FilterBar from './FilterBar';
@@ -14,6 +13,7 @@ import { useSettings } from '@/lib/stores/settings-store';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { timeService } from '@/lib/services/time-service';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { getRelativeTimeRemaining } from '@/lib/utils/unlock-time';
 
 
 interface SidebarProps {
@@ -265,7 +265,7 @@ function ItemCard({
     const hasMounted = useHasMounted();
 
     const isUnlocked = hasMounted ? timeService.now() >= item.decrypt_at : false;
-    const timeRemaining = hasMounted ? getTimeRemaining(item.decrypt_at) : '...';
+    const timeRemaining = hasMounted ? getRelativeTimeRemaining(item.decrypt_at) : '...';
     const tCommon = useTranslations('Common');
 
     return (
@@ -322,23 +322,4 @@ function ItemCard({
             )}
         </motion.div>
     );
-}
-
-function getTimeRemaining(decryptAt: number): string {
-    const now = timeService.now();
-    const diff = decryptAt - now;
-
-    if (diff <= 0) return 'Unlocked';
-
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    if (hours > 24) {
-        const days = Math.floor(hours / 24);
-        const remainingHours = hours % 24;
-        return `${days}d ${remainingHours}h`;
-    }
-
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    return `${minutes}m`;
 }
