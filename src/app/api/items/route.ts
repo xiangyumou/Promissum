@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createItem, getItems } from '@/lib/services/items/item-service';
+import { createItem, getItems, GetItemsParams } from '@/lib/services/items/item-service';
 import { withRateLimit } from '@/lib/services/rate-limiting/wrapper';
 import { toSnakeCase } from '@/lib/utils';
 import { DEFAULT_LOCK_DURATION_MINUTES } from '@/lib/constants';
@@ -33,9 +33,9 @@ async function getHandler(request: NextRequest) {
         const { status, type, sort } = parseResult.data;
 
         const result = await getItems({
-            status: (status || undefined) as any,
-            type: (type || undefined) as any,
-            sort: (sort || 'created_desc') as any,
+            status: (status || undefined) as GetItemsParams['status'],
+            type: (type || undefined) as GetItemsParams['type'],
+            sort: (sort || 'created_desc') as GetItemsParams['sort'],
             limit: 50, // Default limit
             offset: 0,
         });
