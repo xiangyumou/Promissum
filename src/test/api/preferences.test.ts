@@ -3,7 +3,6 @@ import { GET, POST } from '@/app/api/preferences/route';
 import { NextRequest } from 'next/server';
 
 // Mock Drizzle
-declare const global: { dbMock: { select: any; insert: any; update: any } };
 
 const createMockQuery = () => {
     const chain = {

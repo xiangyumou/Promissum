@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from '@/app/api/stats/route';
-import { NextRequest } from 'next/server';
 
 // Mock the service function
 vi.mock('@/lib/services/stats/stats-service', () => ({
@@ -31,8 +30,7 @@ describe('Stats API Route', () => {
 
         vi.mocked(getSystemStats).mockResolvedValue(mockStats);
 
-        const request = new NextRequest('http://localhost/api/stats');
-        const response = await GET(request);
+        const response = await GET();
         const data = await response.json();
 
         expect(response.status).toBe(200);
@@ -60,8 +58,7 @@ describe('Stats API Route', () => {
 
         vi.mocked(getSystemStats).mockResolvedValue(mockStats);
 
-        const request = new NextRequest('http://localhost/api/stats');
-        const response = await GET(request);
+        const response = await GET();
         const data = await response.json();
 
         expect(response.status).toBe(200);
@@ -72,8 +69,7 @@ describe('Stats API Route', () => {
     it('should return error on service failure', async () => {
         vi.mocked(getSystemStats).mockRejectedValue(new Error('Database error'));
 
-        const request = new NextRequest('http://localhost/api/stats');
-        const response = await GET(request);
+        const response = await GET();
         const data = await response.json();
 
         expect(response.status).toBe(500);

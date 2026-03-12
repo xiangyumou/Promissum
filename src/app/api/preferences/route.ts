@@ -40,7 +40,7 @@ async function getHandler(request: NextRequest) {
         // Find device by fingerprint
         const device = await db.select().from(devices).where(eq(devices.fingerprint, deviceId)).limit(1);
 
-        let deviceRecord = device[0];
+        const deviceRecord = device[0];
 
         if (!deviceRecord) {
             // Create new device with default preferences
@@ -90,7 +90,7 @@ async function postHandler(request: NextRequest) {
 
         // Find or create device
         const device = await db.select().from(devices).where(eq(devices.fingerprint, deviceId)).limit(1);
-        let deviceRecord = device[0];
+        const deviceRecord = device[0];
 
         if (!deviceRecord) {
             const newDeviceId = crypto.randomUUID();

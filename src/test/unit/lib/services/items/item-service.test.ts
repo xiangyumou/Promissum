@@ -224,7 +224,7 @@ describe('Item Service', () => {
         });
 
         it('should throw error for non-existent item', async () => {
-            vi.mocked(itemRepo.findItemHeaderById).mockResolvedValue(null);
+            vi.mocked(itemRepo.findItemHeaderById).mockResolvedValue(null as any);
 
             await expect(getItemById('non-existent')).rejects.toThrow('Item not found');
         });
@@ -253,7 +253,7 @@ describe('Item Service', () => {
         });
 
         it('should throw error for non-existent item', async () => {
-            vi.mocked(itemRepo.findItemForExtension).mockResolvedValue(null);
+            vi.mocked(itemRepo.findItemForExtension).mockResolvedValue(null as any);
 
             await expect(extendItem('non-existent', 60)).rejects.toThrow('Item not found');
         });

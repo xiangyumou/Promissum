@@ -16,7 +16,7 @@ describe('Health API', () => {
 
     it('should return health status', async () => {
         const { db } = await import('@/lib/db/client');
-        vi.mocked(db.run).mockReturnValueOnce(undefined);
+        vi.mocked(db.run as any).mockReturnValueOnce(undefined);
 
         const req = new NextRequest('http://localhost/api/health');
         const res = await GET(req);
