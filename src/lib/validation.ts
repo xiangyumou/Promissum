@@ -37,8 +37,8 @@ export type FilterParamsInput = z.infer<typeof FilterParamsSchema>;
  * Query schema for service layer
  */
 export const QuerySchema = z.object({
-    status: z.enum(['all', 'locked', 'unlocked']).optional().default('all'),
-    type: z.enum(['text', 'image']).optional(),
+    status: z.enum(['all', 'locked', 'unlocked']).optional().nullable().default('all'),
+    type: z.enum(['text', 'image']).optional().nullable(),
     search: z.string().optional(),
     limit: z.number().int().positive().max(1000).optional().default(50),
     offset: z.number().int().nonnegative().optional().default(0),
