@@ -25,8 +25,6 @@ import {
     MAX_API_RETRIES,
 } from '@/lib/constants';
 
-export type { FilterParams };
-
 /**
  * Custom API Error with status code
  */
