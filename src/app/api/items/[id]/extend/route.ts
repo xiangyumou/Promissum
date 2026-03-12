@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extendItem } from '@/lib/services/items/item-service';
-import { withRateLimit } from '@/lib/services/rate-limiting/wrapper';
 import { formatZodErrors, ExtendItemSchema } from '@/lib/validation';
 import { toSnakeCase } from '@/lib/utils';
 
@@ -45,4 +44,5 @@ async function postHandler(request: NextRequest, context?: unknown) {
     }
 }
 
-export const POST = withRateLimit(postHandler);
+// Export without rate limiting
+export const POST = postHandler;

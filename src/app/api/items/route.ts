@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createItem, getItems } from '@/lib/services/items/item-service';
-import { withRateLimit } from '@/lib/services/rate-limiting/wrapper';
 import { toSnakeCase } from '@/lib/utils';
 import { DEFAULT_LOCK_DURATION_MINUTES } from '@/lib/constants';
 import { apiQuerySchema, createItemSchema } from '@/lib/services/items/item-validation';
@@ -99,5 +98,6 @@ async function postHandler(request: NextRequest) {
     }, 201);
 }
 
-export const GET = withRateLimit((req) => withApiHandler(() => getHandler(req)));
-export const POST = withRateLimit((req) => withApiHandler(() => postHandler(req)));
+// Export without rate limiting
+export const GET = (req: NextRequest) => withApiHandler(() => getHandler(req));
+export const POST = (req: NextRequest) => withApiHandler(() => postHandler(req));

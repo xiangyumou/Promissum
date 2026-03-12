@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server';
 import { getItemById, deleteItem } from '@/lib/services/items/item-service';
-import { withRateLimit } from '@/lib/services/rate-limiting/wrapper';
 import { withApiHandler, successResponse } from '@/lib/api-utils';
 
 async function getHandler(_request: NextRequest, context: unknown) {
@@ -30,5 +29,6 @@ async function deleteHandler(_request: NextRequest, context: unknown) {
     return successResponse({ success: true });
 }
 
-export const GET = withRateLimit((req, ctx) => withApiHandler(() => getHandler(req, ctx)));
-export const DELETE = withRateLimit((req, ctx) => withApiHandler(() => deleteHandler(req, ctx)));
+// Export without rate limiting
+export const GET = (req: NextRequest, ctx: unknown) => withApiHandler(() => getHandler(req, ctx));
+export const DELETE = (req: NextRequest, ctx: unknown) => withApiHandler(() => deleteHandler(req, ctx));
