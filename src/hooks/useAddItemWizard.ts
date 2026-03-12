@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { timeService } from '@/lib/services/time-service';
 import { calculateDurationMinutes, calculateUnlockTimeInfo, AbsoluteTime } from '@/lib/utils/unlock-time';
+import { MS_PER_HOUR } from '@/lib/constants';
 
 export type TimeMode = 'duration' | 'absolute';
 export type Step = 1 | 2 | 3 | 4;
@@ -33,7 +34,7 @@ export function useAddItemWizard({ isOpen, defaultDuration, onClose, onSubmit }:
 
     // Absolute time state
     const getDefaultAbsoluteTime = () => {
-        const d = new Date(timeService.now() + 60 * 60 * 1000);
+        const d = new Date(timeService.now() + MS_PER_HOUR);
         return {
             year: d.getFullYear().toString().slice(-2),
             month: (d.getMonth() + 1).toString().padStart(2, '0'),

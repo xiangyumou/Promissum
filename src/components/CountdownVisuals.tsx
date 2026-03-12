@@ -12,6 +12,7 @@
 import { useCountdown } from '@/hooks/useCountdown';
 import { Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { MS_PER_HOUR, MS_PER_MINUTE } from '@/lib/constants';
 
 interface CountdownVisualsProps {
     targetDate: number;
@@ -27,9 +28,9 @@ export default function CountdownVisuals({
     const timeLeft = useCountdown(targetDate);
 
     // Calculate time thresholds
-    const oneHour = 60 * 60 * 1000;
-    const tenMinutes = 10 * 60 * 1000;
-    const oneMinute = 60 * 1000;
+    const oneHour = MS_PER_HOUR;
+    const tenMinutes = 10 * MS_PER_MINUTE;
+    const oneMinute = MS_PER_MINUTE;
 
     const isLastHour = timeLeft > 0 && timeLeft <= oneHour;
     const isLastTenMinutes = timeLeft > 0 && timeLeft <= tenMinutes;
