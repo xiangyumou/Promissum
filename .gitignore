@@ -64,4 +64,7 @@ temp/
 *.bak
 
 SOP
-Chaster
+Chaster*.db
+*.db-journal
+*.db-wal
+*.db-shm
