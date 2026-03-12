@@ -6,9 +6,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db/client';
+import { db } from '@/lib/db/client';
+import { devices, userPreferences } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { withRateLimit } from '@/lib/services/rate-limiting/wrapper';
 
 // Validation schema matching SettingsStore
 const PreferencesSchema = z.object({
@@ -36,27 +37,31 @@ async function getHandler(request: NextRequest) {
             return NextResponse.json({ error: 'deviceId is required' }, { status: 400 });
         }
 
-        // Find or create device
-        let device = await prisma.device.findUnique({
-            where: { fingerprint: deviceId },
-            include: { preferences: true },
+        // Find device with preferences using relations
+        let device = await db.query.devices.findFirst({
+            where: eq(devices.fingerprint, deviceId),
+            with: { preferences: true },
         });
 
         if (!device) {
             // Create new device with default preferences
-            device = await prisma.device.create({
-                data: {
-                    fingerprint: deviceId,
-                    name: null, // Will be updated with actual device name later
-                    preferences: {
-                        create: {}, // Uses default values from schema
-                    },
-                },
-                include: { preferences: true },
+            const newDeviceId = crypto.randomUUID();
+            await db.insert(devices).values({
+                id: newDeviceId,
+                fingerprint: deviceId,
+                name: null,
+            });
+            await db.insert(userPreferences).values({
+                deviceId: newDeviceId,
+            });
+
+            device = await db.query.devices.findFirst({
+                where: eq(devices.id, newDeviceId),
+                with: { preferences: true },
             });
         }
 
-        return NextResponse.json(device.preferences);
+        return NextResponse.json(device?.preferences || {});
     } catch (error) {
         console.error('Error fetching preferences:', error);
         return NextResponse.json(
@@ -85,24 +90,37 @@ async function postHandler(request: NextRequest) {
         const { deviceId, ...preferencesData } = validation.data;
 
         // Find or create device
-        let device = await prisma.device.findUnique({
-            where: { fingerprint: deviceId },
+        let device = await db.query.devices.findFirst({
+            where: eq(devices.fingerprint, deviceId),
         });
 
         if (!device) {
-            device = await prisma.device.create({
-                data: { fingerprint: deviceId },
+            const newDeviceId = crypto.randomUUID();
+            await db.insert(devices).values({
+                id: newDeviceId,
+                fingerprint: deviceId,
             });
+            device = { id: newDeviceId };
         }
 
         // Upsert preferences
-        const preferences = await prisma.userPreferences.upsert({
-            where: { deviceId: device.id },
-            create: {
+        const existing = await db.query.userPreferences.findFirst({
+            where: eq(userPreferences.deviceId, device.id),
+        });
+
+        if (existing) {
+            await db.update(userPreferences)
+                .set({ ...preferencesData, updatedAt: new Date() })
+                .where(eq(userPreferences.deviceId, device.id));
+        } else {
+            await db.insert(userPreferences).values({
                 deviceId: device.id,
                 ...preferencesData,
-            },
-            update: preferencesData,
+            });
+        }
+
+        const preferences = await db.query.userPreferences.findFirst({
+            where: eq(userPreferences.deviceId, device.id),
         });
 
         return NextResponse.json(preferences);
@@ -115,6 +133,6 @@ async function postHandler(request: NextRequest) {
     }
 }
 
-// Apply rate limiting
-export const GET = withRateLimit(getHandler);
-export const POST = withRateLimit(postHandler);
+// Export handlers without rate limiting
+export const GET = getHandler;
+export const POST = postHandler;
