@@ -2,13 +2,12 @@
 # Production Docker Compose Configuration
 # =============================================================================
 # This file defines the production-ready deployment of Promissum
-# For local development, use: docker compose up -d
-# Then run: npm run dev (or just docker compose up for production)
+# For local development: npm run dev
 # =============================================================================
 
 services:
   # -------------------------------------------------------------------------
-  # Promissum Application (with integrated encryption service)
+  # Promissum Application
   # -------------------------------------------------------------------------
   app:
     image: ghcr.io/xiangyumou/promissum:latest
@@ -22,14 +21,8 @@ services:
       NODE_ENV: production
       PORT: 3000
 
-      # Database (unified)
-      DATABASE_URL: postgresql://${POSTGRES_USER:-promissum}:${POSTGRES_PASSWORD:-promissum_password}@db:5432/${POSTGRES_DB:-promissum}
-
-      # Redis (rate limiting)
-      REDIS_URL: redis://redis:6379
-      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-100}
-      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-60000}
-      RATE_LIMIT_FAIL_OPEN: "${RATE_LIMIT_FAIL_OPEN:-true}"
+      # Database (SQLite - local file in container)
+      DATABASE_URL: /data/promissum.db
 
       # Encryption (Drand)
       MOCK_DRAND: "${MOCK_DRAND:-false}"
@@ -40,12 +33,8 @@ services:
       NEXT_PUBLIC_DATE_FORMAT: ${NEXT_PUBLIC_DATE_FORMAT:-yyyy-MM-dd HH:mm}
       NEXT_PUBLIC_AUTO_REFRESH_INTERVAL: ${NEXT_PUBLIC_AUTO_REFRESH_INTERVAL:-60}
       NEXT_PUBLIC_CACHE_TTL: ${NEXT_PUBLIC_CACHE_TTL:-5}
-    command: sh -c "npx prisma migrate deploy && npm run start"
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    volumes:
+      - promissum_data:/data
     networks:
       - promissum-network
     healthcheck:
@@ -54,51 +43,6 @@ services:
       timeout: 3s
       start_period: 10s
       retries: 3
-
-  # -------------------------------------------------------------------------
-  # PostgreSQL Database (Unified - stores all data)
-  # -------------------------------------------------------------------------
-  db:
-    image: postgres:16-alpine
-    container_name: promissum-db
-    ports:
-      - "5432:5432"  # Port mapping for local development access
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-promissum}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-promissum_password}
-      POSTGRES_DB: ${POSTGRES_DB:-promissum}
-    volumes:
-      - promissum_postgres_data:/var/lib/postgresql/data
-    networks:
-      - promissum-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-promissum} -d ${POSTGRES_DB:-promissum}"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-      start_period: 5s
-
-  # -------------------------------------------------------------------------
-  # Redis (Rate Limiting)
-  # -------------------------------------------------------------------------
-  redis:
-    image: redis:7-alpine
-    container_name: promissum-redis
-    ports:
-      - "6379:6379"  # Port mapping for local development access
-    restart: unless-stopped
-    command: redis-server --appendonly yes --appendfsync everysec
-    volumes:
-      - promissum_redis_data:/data
-    networks:
-      - promissum-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-      start_period: 5s
 
 # -----------------------------------------------------------------------------
 # Networks
@@ -112,7 +56,5 @@ networks:
 # Volumes
 # -----------------------------------------------------------------------------
 volumes:
-  promissum_postgres_data:
-    name: promissum_postgres_data
-  promissum_redis_data:
-    name: promissum_redis_data
+  promissum_data:
+    name: promissum_data
