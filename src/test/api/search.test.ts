@@ -7,9 +7,7 @@ vi.mock('@/lib/services/items/item-service', () => ({
     createItem: vi.fn(),
 }));
 
-vi.mock('@/lib/services/rate-limiting/wrapper', () => ({
-    withRateLimit: (handler: any) => handler,
-}));
+// Rate limiting removed - no mock needed
 
 import { getItems } from '@/lib/services/items/item-service';
 

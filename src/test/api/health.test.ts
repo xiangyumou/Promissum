@@ -2,10 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from '@/app/api/health/route';
 import { NextRequest } from 'next/server';
 
-// Mock the Prisma client
+// Mock the Drizzle client
 vi.mock('@/lib/db/client', () => ({
-    prisma: {
-        $queryRaw: vi.fn()
+    db: {
+        run: vi.fn()
     }
 }));
 
@@ -15,8 +15,8 @@ describe('Health API', () => {
     });
 
     it('should return health status', async () => {
-        const { prisma } = await import('@/lib/db/client');
-        vi.mocked(prisma.$queryRaw).mockResolvedValueOnce([{ '?column?': 1 }]);
+        const { db } = await import('@/lib/db/client');
+        vi.mocked(db.run).mockReturnValueOnce(undefined);
 
         const req = new NextRequest('http://localhost/api/health');
         const res = await GET(req);
@@ -29,12 +29,14 @@ describe('Health API', () => {
             database: 'connected',
         });
         expect(data.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/); // ISO format
-        expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
+        expect(db.run).toHaveBeenCalledTimes(1);
     });
 
     it('should handle database connection error', async () => {
-        const { prisma } = await import('@/lib/db/client');
-        vi.mocked(prisma.$queryRaw).mockRejectedValueOnce(new Error('Connection failed'));
+        const { db } = await import('@/lib/db/client');
+        vi.mocked(db.run).mockImplementationOnce(() => {
+            throw new Error('Connection failed');
+        });
 
         const req = new NextRequest('http://localhost/api/health');
         const res = await GET(req);
@@ -46,8 +48,10 @@ describe('Health API', () => {
     });
 
     it('should handle database error with non-production error message', async () => {
-        const { prisma } = await import('@/lib/db/client');
-        vi.mocked(prisma.$queryRaw).mockRejectedValueOnce(new Error('Database timeout'));
+        const { db } = await import('@/lib/db/client');
+        vi.mocked(db.run).mockImplementationOnce(() => {
+            throw new Error('Database timeout');
+        });
 
         const req = new NextRequest('http://localhost/api/health');
         const res = await GET(req);

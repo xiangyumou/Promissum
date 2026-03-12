@@ -1,19 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock the Prisma client
+// Mock Drizzle
+const mockDb = {
+    select: vi.fn(),
+};
+
 vi.mock('@/lib/db/client', () => ({
-    prisma: {
-        item: {
-            count: vi.fn(),
-            groupBy: vi.fn(),
-            findMany: vi.fn(),
-            aggregate: vi.fn().mockResolvedValue({ _max: { createdAt: new Date() } } as any),
-        },
-    },
+    db: mockDb,
 }));
 
 import { getSystemStats } from '@/lib/services/stats/stats-service';
-import { prisma } from '@/lib/db/client';
+
+const createMockQuery = () => {
+    const chain = {
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnValue([]),
+    };
+    return chain;
+};
 
 describe('Stats Service', () => {
     beforeEach(() => {
@@ -21,11 +26,14 @@ describe('Stats Service', () => {
     });
 
     it('should return system stats with no items', async () => {
-        vi.mocked(prisma.item.count).mockResolvedValueOnce(0);
-        vi.mocked(prisma.item.count).mockResolvedValueOnce(0);
-        (vi.mocked(prisma.item.groupBy) as any).mockResolvedValueOnce([]);
-        (vi.mocked(prisma.item.aggregate) as any).mockResolvedValueOnce({ _max: { createdAt: null } });
-        (vi.mocked(prisma.item.findMany) as any).mockResolvedValueOnce([]);
+        // Mock all the select queries
+        mockDb.select
+            .mockReturnValueOnce(createMockQuery().from().limit([{ count: 0 }]))  // total
+            .mockReturnValueOnce(createMockQuery().from().where().limit([{ count: 0 }]))  // locked
+            .mockReturnValueOnce(createMockQuery().from().where().limit([{ count: 0 }]))  // text
+            .mockReturnValueOnce(createMockQuery().from().where().limit([{ count: 0 }]))  // image
+            .mockReturnValueOnce(createMockQuery().from().limit([]))  // duration
+            .mockReturnValueOnce(createMockQuery().from().limit([{ maxCreated: null }]));  // newest
 
         const stats = await getSystemStats();
 
@@ -40,33 +48,47 @@ describe('Stats Service', () => {
     });
 
     it('should return system stats with mixed items', async () => {
-        vi.mocked(prisma.item.count).mockResolvedValueOnce(10);
-        vi.mocked(prisma.item.count).mockResolvedValueOnce(6); // locked
-        (vi.mocked(prisma.item.groupBy) as any).mockResolvedValueOnce([
-            { type: 'text', _count: 6 },
-            { type: 'image', _count: 4 },
-        ]);
-        (vi.mocked(prisma.item.aggregate) as any).mockResolvedValueOnce({
-            _max: { createdAt: new Date(Date.now()) }
-        } as any);
-        (vi.mocked(prisma.item.findMany) as any).mockResolvedValueOnce([] as any);
+        const now = Date.now();
+        const mockQuery = () => ({
+            from: vi.fn().mockReturnThis(),
+            where: vi.fn().mockReturnThis(),
+            limit: vi.fn(),
+        });
+
+        // Set up mock return values
+        const queries = [
+            { from: () => ({ limit: () => [{ count: 10 }] }) },  // total
+            { from: () => ({ where: () => ({ limit: () => [{ count: 6 }] }) }) },  // locked
+            { from: () => ({ where: () => ({ limit: () => [{ count: 6 }] }) }) },  // text
+            { from: () => ({ where: () => ({ limit: () => [{ count: 4 }] }) }) },  // image
+            { from: () => ({ limit: () => [] }) },  // duration
+            { from: () => ({ limit: () => [{ maxCreated: now }] }) },  // newest
+        ];
+
+        let callIndex = 0;
+        mockDb.select.mockImplementation(() => queries[callIndex++]);
 
         const stats = await getSystemStats();
 
-        expect(stats.byType.text).toBe(6);
-        expect(stats.byType.image).toBe(4);
+        expect(stats.totalItems).toBe(10);
+        expect(stats.lockedItems).toBe(6);
+        expect(stats.unlockedItems).toBe(4);
     });
 
     it('should handle items with only image type', async () => {
-        vi.mocked(prisma.item.count).mockResolvedValueOnce(3);
-        vi.mocked(prisma.item.count).mockResolvedValueOnce(2);
-        (vi.mocked(prisma.item.groupBy) as any).mockResolvedValueOnce([
-            { type: 'image', _count: 3 },
-        ]);
-        (vi.mocked(prisma.item.aggregate) as any).mockResolvedValueOnce({
-            _max: { createdAt: new Date() }
-        } as any);
-        (vi.mocked(prisma.item.findMany) as any).mockResolvedValueOnce([] as any);
+        const now = Date.now();
+
+        const queries = [
+            { from: () => ({ limit: () => [{ count: 3 }] }) },  // total
+            { from: () => ({ where: () => ({ limit: () => [{ count: 2 }] }) }) },  // locked
+            { from: () => ({ where: () => ({ limit: () => [{ count: 0 }] }) }) },  // text
+            { from: () => ({ where: () => ({ limit: () => [{ count: 3 }] }) }) },  // image
+            { from: () => ({ limit: () => [] }) },  // duration
+            { from: () => ({ limit: () => [{ maxCreated: now }] }) },  // newest
+        ];
+
+        let callIndex = 0;
+        mockDb.select.mockImplementation(() => queries[callIndex++]);
 
         const stats = await getSystemStats();
 

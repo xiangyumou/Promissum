@@ -7,9 +7,7 @@ vi.mock('@/lib/services/stats/stats-service', () => ({
     getSystemStats: vi.fn(),
 }));
 
-vi.mock('@/lib/services/rate-limiting/wrapper', () => ({
-    withRateLimit: (handler: any) => handler,
-}));
+// Rate limiting removed - no mock needed
 
 import { getSystemStats } from '@/lib/services/stats/stats-service';
 

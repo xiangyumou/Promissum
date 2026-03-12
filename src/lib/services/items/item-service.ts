@@ -88,9 +88,14 @@ export async function createItem(input: CreateItemInput): Promise<ItemResponse> 
     });
 
     return formatItemResponse({
-        ...item,
+        id: item.id!,
+        type: item.type!,
+        originalName: item.originalName ?? null,
+        decryptAt: item.decryptAt!,
         createdAt: item.createdAt!,
+        layerCount: item.layerCount!,
         metadata: item.metadata ?? null,
+        encryptedData: item.encryptedData,
     });
 }
 

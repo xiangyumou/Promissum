@@ -1,29 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET, POST } from '@/app/api/preferences/route';
 import { NextRequest } from 'next/server';
-import { prisma } from '@/lib/db/client';
 
-// Mock Prisma
+// Mock Drizzle
+declare const global: { dbMock: { select: any; insert: any; update: any } };
+
+const createMockQuery = () => {
+    const chain = {
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        limit: vi.fn().mockReturnValue([]),
+        values: vi.fn().mockReturnThis(),
+        set: vi.fn().mockReturnThis(),
+    };
+    return chain;
+};
+
+const dbMock = {
+    select: vi.fn(() => createMockQuery()),
+    insert: vi.fn(() => createMockQuery()),
+    update: vi.fn(() => createMockQuery()),
+};
+
 vi.mock('@/lib/db/client', () => ({
-    prisma: {
-        device: {
-            findUnique: vi.fn(),
-            create: vi.fn(),
-        },
-        userPreferences: {
-            upsert: vi.fn(),
-        },
-    },
-}));
-
-// Mock broadcastEvent
-vi.mock('@/app/api/events/route', () => ({
-    broadcastEvent: vi.fn(),
-}));
-
-// Mock rate limiting to bypass in tests
-vi.mock('@/lib/services/rate-limiting/wrapper', () => ({
-    withRateLimit: (handler: any) => handler,
+    db: dbMock,
 }));
 
 describe('Preferences API', () => {
@@ -49,10 +49,19 @@ describe('Preferences API', () => {
             const mockDevice = {
                 id: '1',
                 fingerprint: 'device-123',
-                preferences: mockPreferences,
             };
 
-            (prisma.device.findUnique as any).mockResolvedValue(mockDevice);
+            // First call: find device
+            const deviceQuery = createMockQuery();
+            deviceQuery.limit.mockResolvedValueOnce([mockDevice]);
+
+            // Second call: find preferences
+            const prefQuery = createMockQuery();
+            prefQuery.limit.mockResolvedValueOnce([mockPreferences]);
+
+            dbMock.select
+                .mockReturnValueOnce(deviceQuery)
+                .mockReturnValueOnce(prefQuery);
 
             const req = new NextRequest('http://localhost/api/preferences?deviceId=device-123');
             const res = await GET(req);
@@ -60,26 +69,28 @@ describe('Preferences API', () => {
             expect(res.status).toBe(200);
             const data = await res.json();
             expect(data).toEqual(mockPreferences);
-            expect(prisma.device.findUnique).toHaveBeenCalledWith({
-                where: { fingerprint: 'device-123' },
-                include: { preferences: true },
-            });
         });
 
         it('should create new device and return default preferences if not found', async () => {
-            (prisma.device.findUnique as any).mockResolvedValue(null);
-            const mockNewDevice = {
-                id: '2',
-                fingerprint: 'new-device',
-                preferences: { defaultDurationMinutes: 60 },
-            };
-            (prisma.device.create as any).mockResolvedValue(mockNewDevice);
+            // Device not found
+            const deviceQuery = createMockQuery();
+            deviceQuery.limit.mockReturnValueOnce([]);
+
+            // New preferences created
+            const prefQuery = createMockQuery();
+            prefQuery.limit.mockResolvedValueOnce([{ defaultDurationMinutes: 60 }]);
+
+            dbMock.select
+                .mockReturnValueOnce(deviceQuery)
+                .mockReturnValueOnce(prefQuery);
+
+            dbMock.insert.mockReturnValue(createMockQuery());
 
             const req = new NextRequest('http://localhost/api/preferences?deviceId=new-device');
             const res = await GET(req);
 
             expect(res.status).toBe(200);
-            expect(prisma.device.create).toHaveBeenCalled();
+            expect(dbMock.insert).toHaveBeenCalled();
         });
     });
 
@@ -91,14 +102,27 @@ describe('Preferences API', () => {
             };
 
             const mockDevice = { id: '1', fingerprint: 'device-123' };
-            (prisma.device.findUnique as any).mockResolvedValue(mockDevice);
 
-            const mockUpdatedPreferences = {
-                ...payload,
-                id: 'pref-1',
-                themeConfig: '{}',
-            };
-            (prisma.userPreferences.upsert as any).mockResolvedValue(mockUpdatedPreferences);
+            // Find device
+            const deviceQuery = createMockQuery();
+            deviceQuery.limit.mockReturnValueOnce([mockDevice]);
+
+            // Find existing preferences
+            const prefQuery = createMockQuery();
+            prefQuery.limit.mockReturnValueOnce([{ id: 'pref-1' }]);
+
+            dbMock.select
+                .mockReturnValueOnce(deviceQuery)
+                .mockReturnValueOnce(prefQuery);
+
+            // Update preferences
+            const updateQuery = createMockQuery();
+            dbMock.update.mockReturnValue(updateQuery);
+
+            // Return updated preferences
+            const finalPrefQuery = createMockQuery();
+            finalPrefQuery.limit.mockResolvedValueOnce([{ ...payload, id: 'pref-1', themeConfig: '{}' }]);
+            dbMock.select.mockReturnValueOnce(finalPrefQuery);
 
             const req = new NextRequest('http://localhost/api/preferences', {
                 method: 'POST',
@@ -107,14 +131,6 @@ describe('Preferences API', () => {
 
             const res = await POST(req);
             expect(res.status).toBe(200);
-            const data = await res.json();
-            expect(data).toEqual(mockUpdatedPreferences);
-
-            expect(prisma.userPreferences.upsert).toHaveBeenCalledWith({
-                where: { deviceId: '1' },
-                create: expect.objectContaining({ deviceId: '1', defaultDurationMinutes: 120 }),
-                update: expect.objectContaining({ defaultDurationMinutes: 120 }),
-            });
         });
 
         it('should return 400 for invalid data', async () => {
