@@ -9,12 +9,12 @@ import { encrypt } from '@/lib/services/encryption/tlock';
 import { decrypt } from '@/lib/services/encryption/decryption';
 import {
     CreateItemInput,
-    GetItemsInput,
+    QueryInput as GetItemsInput,
     ItemResponse,
-    createItemSchema,
-    extendSchema,
-    querySchema
-} from './item-validation';
+    CreateItemSchema,
+    ExtendItemSchema,
+    QuerySchema
+} from '@/lib/validation';
 import * as itemRepo from './item-repository';
 
 // Re-export types for consumers
@@ -51,7 +51,7 @@ export function formatItemResponse(item: {
 }
 
 export async function createItem(input: CreateItemInput): Promise<ItemResponse> {
-    const validated = createItemSchema.parse(input);
+    const validated = CreateItemSchema.parse(input);
 
     let decryptAt: Date;
     if (validated.decryptAt) {
@@ -103,7 +103,7 @@ export async function getItems(params?: GetItemsInput): Promise<{
     items: ItemResponse[];
     total: number;
 }> {
-    const query = querySchema.parse(params || {});
+    const query = QuerySchema.parse(params || {});
     const now = new Date();
 
     const where: itemRepo.FindItemsParams['where'] = {};
@@ -185,7 +185,7 @@ export async function extendItem(id: string, minutes: number): Promise<{
     decryptAt: number;
     layerCount: number;
 }> {
-    const { minutes: validatedMinutes } = extendSchema.parse({ minutes });
+    const { minutes: validatedMinutes } = ExtendItemSchema.parse({ minutes });
 
     const item = await itemRepo.findItemForExtension(id);
 

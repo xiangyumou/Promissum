@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createItem, getItems } from '@/lib/services/items/item-service';
 import { toSnakeCase } from '@/lib/utils';
 import { DEFAULT_LOCK_DURATION_MINUTES } from '@/lib/constants';
-import { apiQuerySchema, createItemSchema } from '@/lib/services/items/item-validation';
+import { ApiQuerySchema, CreateItemSchema } from '@/lib/validation';
 import { withApiHandler, successResponse, validateSearchParams } from '@/lib/api-utils';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
 async function getHandler(request: NextRequest) {
-    const query = validateSearchParams(request.url, apiQuerySchema);
+    const query = validateSearchParams(request.url, ApiQuerySchema);
 
     const result = await getItems({
         status: (query.status || undefined),
@@ -82,7 +82,7 @@ async function postHandler(request: NextRequest) {
 
     // Validate the constructed object against the Zod schema
     // This ensures that even if createItem is mocked in tests, we catch invalid inputs here
-    const validatedInput = createItemSchema.parse(rawData);
+    const validatedInput = CreateItemSchema.parse(rawData);
 
     const item = await createItem(validatedInput);
 
