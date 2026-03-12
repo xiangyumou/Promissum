@@ -29,11 +29,11 @@ Promissum 是一个时间锁加密内容保护系统，允许用户将文本或�
 
 ```
 ┌─────────────┐      ┌──────────────────────────┐      ┌─────────────────┐
-│   Browser   │ ───> │    Promissum App         │ ───> │ PostgreSQL DB   │
-└─────────────┘      │  (Next.js + Encryption)  │      └─────────────────┘
-                     └──────────────────────────┘                │
-                            │                                  Redis
-                            v                                  (Rate Limit)
+│   Browser   │ ───> │    Promissum App         │ ───> │   SQLite DB     │
+└─────────────┘      │  (Next.js + Encryption)  │      │ (better-sqlite3)│
+                     └──────────────────────────┘      └─────────────────┘
+                            │
+                            v
                      ┌──────────────┐
                      │ drand Network│
                      └──────────────┘
@@ -49,7 +49,6 @@ Promissum 是一个时间锁加密内容保护系统，允许用户将文本或�
 ### 环境要求
 
 - Node.js 22+
-- Docker & Docker Compose（用于数据库服务）
 - npm 或 pnpm
 
 ### 安装
@@ -76,24 +75,16 @@ nano .env
 ### 启动开发环境
 
 ```bash
-# 启动数据库服务（PostgreSQL + Redis）
-# 使用端口映射到宿主机，本地应用可以通过 localhost 访问
-docker compose up -d db redis
-
 # 运行数据库迁移
-npx prisma migrate dev
+npm run db:migrate
 
 # 启动开发服务器
-pnpm run dev
+npm run dev
 ```
 
 访问 http://localhost:3000
 
-**说明**：
-- **开发环境**: `docker compose up -d db redis` + `pnpm run dev`（应用在本地运行）
-- **生产环境**: `docker compose up -d`（所有服务包括 app 都在 Docker 中运行）
-
-## Docker 部署
+## 部署
 
 ### 生产环境部署
 
@@ -102,21 +93,24 @@ pnpm run dev
 cp .env.example .env
 # 编辑 .env 配置生产环境变量
 
-# 2. 启动所有服务
-docker compose up -d
+# 2. 安装依赖
+npm install
 
 # 3. 运行数据库迁移
-docker compose exec app npx prisma migrate deploy
+npm run db:migrate
+
+# 4. 构建并启动
+npm run build
+npm start
 ```
 
 ### 环境变量
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
-| `DATABASE_URL` | PostgreSQL 连接字符串 | `postgresql://promissum:promissum_password@promissum-db:5432/promissum` |
-| `REDIS_URL` | Redis 连接字符串（限流） | `redis://redis:6379` |
-| `RATE_LIMIT_MAX` | 限流请求数 | `100` |
-| `RATE_LIMIT_WINDOW_MS` | 限流时间窗口（毫秒） | `60000` |
+| `DATABASE_URL` | SQLite 数据库文件路径 | `./promissum.db` |
+| `PROMISSUM_API_URL` | API 基础 URL | `http://localhost:3000/api/v1` |
+| `PROMISSUM_API_TOKEN` | API 认证令牌 | - |
 | `MOCK_DRAND` | 是否模拟 drand 网络（开发环境） | `true` |
 | `DRAND_CHAIN_URL` | drand 链 URL | `https://api.drand.sh/...` |
 | `NEXT_PUBLIC_APP_URL` | 应用公开地址 | `http://localhost:3000` |
@@ -129,9 +123,18 @@ docker compose exec app npx prisma migrate deploy
 ### 更新部署
 
 ```bash
-docker compose pull
-docker compose up -d
-docker compose exec app npx prisma migrate deploy
+# 拉取最新代码
+git pull origin main
+
+# 安装依赖
+npm install
+
+# 运行数据库迁移
+npm run db:migrate
+
+# 重新构建并启动
+npm run build
+npm start
 ```
 
 ## 开发
@@ -151,10 +154,10 @@ pnpm run test:coverage # 运行测试并生成覆盖率报告
 ### 数据库操作
 
 ```bash
-npx prisma migrate dev    # 创建并应用新迁移
-npx prisma migrate deploy # 部署迁移（生产环境）
-npx prisma studio         # 打开 Prisma Studio
-npx prisma generate       # 生成 Prisma Client
+npm run db:generate       # 生成 Drizzle 迁移
+npm run db:migrate        # 应用迁移
+npm run db:push           # 推送 schema 变更（开发环境）
+npm run db:studio         # 打开 Drizzle Studio
 ```
 
 ### 项目结构
@@ -196,21 +199,19 @@ pnpm test -- --watch
 - **框架**: Next.js 16 + React 19
 - **语言**: TypeScript 5
 - **样式**: Tailwind CSS 4
-- **状态管理**: Zustand 5 + React Query 5
-- **数据库**: PostgreSQL + Prisma ORM
-- **缓存**: Redis（限流）
+- **状态管理**: Zustand 5 + TanStack Query 5
+- **数据库**: SQLite (better-sqlite3) + Drizzle ORM
 - **国际化**: next-intl
 - **UI 组件**: Radix UI
 - **加密**: tlock-js (IBE + drand)
-- **状态同步**: React Query 智能轮询
+- **状态同步**: TanStack Query 智能轮询
 
 ## 安全性
 
 - 集成加密服务，所有加密操作在服务端进行
 - 使用 BLS12-381 曲线的身份基加密（IBE）
 - 依赖 drand 去中心化随机性网络，无单点故障
-- Redis 实现请求限流保护
-- PostgreSQL 数据持久化，支持多设备同步
+- SQLite 数据持久化，支持多设备同步
 
 ## 文档
 
