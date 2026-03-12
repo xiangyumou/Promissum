@@ -10,10 +10,13 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@tanstack/query-sync-storage-persister": "^5.90.14",
     "@tanstack/react-query": "^5.90.12",
@@ -26,7 +29,6 @@
     "drand-client": "^1.4.2",
     "drizzle-orm": "^0.45.1",
     "framer-motion": "^12.23.26",
-    "ioredis": "^5.9.2",
     "lucide-react": "^0.562.0",
     "next": "16.0.10",
     "next-intl": "^4.6.1",
@@ -49,7 +51,6 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/canvas-confetti": "^1.9.0",
-    "@types/ioredis": "^5.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -60,7 +61,6 @@
     "eslint-config-next": "16.0.10",
     "jsdom": "^27.4.0",
     "msw": "^2.12.6",
-    "prisma": "^5.22.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.0.16"
