@@ -90,32 +90,34 @@ async function postHandler(request: NextRequest) {
 
         // Find or create device
         const device = await db.select().from(devices).where(eq(devices.fingerprint, deviceId)).limit(1);
-        const deviceRecord = device[0];
+        let deviceId_toUse: string;
 
-        if (!deviceRecord) {
+        if (!device[0]) {
             const newDeviceId = crypto.randomUUID();
             await db.insert(devices).values({
                 id: newDeviceId,
                 fingerprint: deviceId,
             });
-            deviceRecord = { id: newDeviceId } as typeof deviceRecord;
+            deviceId_toUse = newDeviceId;
+        } else {
+            deviceId_toUse = device[0].id;
         }
 
         // Upsert preferences
-        const existing = await db.select().from(userPreferences).where(eq(userPreferences.deviceId, deviceRecord.id)).limit(1);
+        const existing = await db.select().from(userPreferences).where(eq(userPreferences.deviceId, deviceId_toUse)).limit(1);
 
         if (existing[0]) {
             await db.update(userPreferences)
                 .set({ ...preferencesData, updatedAt: new Date() })
-                .where(eq(userPreferences.deviceId, deviceRecord.id));
+                .where(eq(userPreferences.deviceId, deviceId_toUse));
         } else {
             await db.insert(userPreferences).values({
-                deviceId: deviceRecord.id,
+                deviceId: deviceId_toUse,
                 ...preferencesData,
             });
         }
 
-        const preferences = await db.select().from(userPreferences).where(eq(userPreferences.deviceId, deviceRecord.id)).limit(1);
+        const preferences = await db.select().from(userPreferences).where(eq(userPreferences.deviceId, deviceId_toUse)).limit(1);
 
         return NextResponse.json(preferences[0] || {});
     } catch (error) {
