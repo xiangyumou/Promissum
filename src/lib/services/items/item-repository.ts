@@ -1,6 +1,6 @@
 import { db } from '@/lib/db/client';
 import { items, type NewItem } from '@/lib/db/schema';
-import { eq, and, desc, asc, sql, like, or } from 'drizzle-orm';
+import { eq, and, desc, asc, sql } from 'drizzle-orm';
 
 export interface CreateItemData {
     id: string;

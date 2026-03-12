@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db/client';
+import { db } from '@/lib/db/client';
+import { sql } from 'drizzle-orm';
 
 /**
  * Health Check Endpoint
@@ -7,8 +8,8 @@ import { prisma } from '@/lib/db/client';
  */
 export async function GET(_request: NextRequest) {
     try {
-        // Check database connection
-        await prisma.$queryRaw`SELECT 1`;
+        // Check database connection with a simple query
+        db.run(sql`SELECT 1`);
 
         return NextResponse.json({
             status: 'ok',

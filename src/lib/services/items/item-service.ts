@@ -5,7 +5,6 @@
  * Orchestrates Validation, Encryption, and Repository layers.
  */
 
-import { Prisma } from '@prisma/client';
 import { encrypt } from '@/lib/services/encryption/tlock';
 import { decrypt } from '@/lib/services/encryption/decryption';
 import {
@@ -18,7 +17,7 @@ import {
 } from './item-validation';
 import * as itemRepo from './item-repository';
 
-    // Re-export types for consumers
+// Re-export types for consumers
 export type { CreateItemInput, GetItemsInput, ItemResponse };
 
 export function formatItemResponse(item: {
@@ -28,14 +27,14 @@ export function formatItemResponse(item: {
     decryptAt: Date;
     createdAt: Date;
     layerCount: number;
-    metadata: Prisma.JsonValue | null;
+    metadata: string | null;
     encryptedData?: string;
 }): ItemResponse {
     const now = Date.now();
     const decryptAtMs = item.decryptAt.getTime();
     const unlocked = decryptAtMs <= now;
 
-    const metadata = (item.metadata as Record<string, unknown>) || null;
+    const metadata = item.metadata ? JSON.parse(item.metadata) as Record<string, unknown> : null;
 
     return {
         id: item.id,
@@ -85,10 +84,14 @@ export async function createItem(input: CreateItemInput): Promise<ItemResponse> 
         decryptAt: decryptAt,
         roundNumber: BigInt(roundNumber),
         layerCount: 1,
-        metadata: (validated.metadata as Prisma.InputJsonValue) ?? Prisma.JsonNull,
+        metadata: validated.metadata ?? {},
     });
 
-    return formatItemResponse(item);
+    return formatItemResponse({
+        ...item,
+        createdAt: item.createdAt!,
+        metadata: item.metadata ?? null,
+    });
 }
 
 export async function getItems(params?: GetItemsInput): Promise<{
@@ -98,23 +101,16 @@ export async function getItems(params?: GetItemsInput): Promise<{
     const query = querySchema.parse(params || {});
     const now = new Date();
 
-    const where: Prisma.ItemWhereInput = {};
+    const where: itemRepo.FindItemsParams['where'] = {};
 
     if (query.type) {
         where.type = query.type;
     }
 
     if (query.status === 'locked') {
-        where.decryptAt = { gt: now };
+        where.decryptAt = { gte: now };
     } else if (query.status === 'unlocked') {
         where.decryptAt = { lte: now };
-    }
-
-    if (query.search) {
-        where.metadata = {
-            path: ['title'],
-            string_contains: query.search
-        };
     }
 
     const orderBy = query.sort.startsWith('created')
@@ -128,7 +124,11 @@ export async function getItems(params?: GetItemsInput): Promise<{
         skip: query.offset,
     });
 
-    const items = dbItems.map(formatItemResponse);
+    const items = dbItems.map(item => formatItemResponse({
+        ...item,
+        createdAt: item.createdAt!,
+        metadata: item.metadata ?? null,
+    }));
 
     return {
         items,
@@ -146,7 +146,11 @@ export async function getItemById(id: string): Promise<ItemResponse> {
     const now = Date.now();
     const unlocked = itemHeader.decryptAt.getTime() <= now;
 
-    const response = formatItemResponse(itemHeader);
+    const response = formatItemResponse({
+        ...itemHeader,
+        createdAt: itemHeader.createdAt!,
+        metadata: itemHeader.metadata ?? null,
+    });
 
     if (unlocked) {
         const itemSecret = await itemRepo.findItemEncryptedData(id);
