@@ -43,7 +43,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     // No item selected state -> Show welcome message
     if (!selectedId) {
         return (
-            <div className="h-full overflow-y-auto bg-background custom-scrollbar relative flex-1 w-full">
+            <div className="h-full overflow-y-auto bg-background relative flex-1 w-full">
                 {/* Global Controls */}
                 <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
                     <ThemeToggle />
@@ -55,9 +55,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                     <button
                         onClick={onMenuClick}
                         aria-label="Open menu"
-                        className={cn(
-                            "p-2 bg-card/50 backdrop-blur-md rounded-lg border border-border text-foreground hover:bg-accent transition-colors"
-                        )}
+                        className="p-2 bg-card border border-border rounded-lg text-foreground hover:bg-accent transition-colors"
                     >
                         <Menu size={20} />
                     </button>
@@ -67,7 +65,9 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                         <div className="p-4 bg-primary/10 rounded-full w-20 h-20 mx-auto flex items-center justify-center">
                             <FileText size={40} className="text-primary" />
                         </div>
-                        <h2 className="text-2xl font-bold text-foreground">{tCommon('dashboard')}</h2>
+                        <h2 className="text-xl font-bold text-foreground" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+                            {tCommon('dashboard')}
+                        </h2>
                         <p className="text-muted-foreground">
                             {t('selectItem')}
                         </p>
@@ -81,8 +81,8 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center h-full w-full flex-1 space-y-4">
-                <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-muted-foreground animate-pulse">{t('decrypting')}</p>
+                <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-muted-foreground">{t('decrypting')}</p>
             </div>
         );
     }
@@ -91,7 +91,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     if (!item) {
         return (
             <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                <div className="p-4 bg-accent rounded-full mb-3">
+                <div className="p-4 bg-card rounded-full mb-3">
                     <FileText size={32} className="opacity-50" />
                 </div>
                 <p>{t('notFound')}</p>
@@ -102,7 +102,6 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     const isUnlocked = timeService.now() >= item.decrypt_at;
 
     // Derive image source if type is image and item is unlocked
-    // The API route already adds the data URL prefix if needed
     const imageSrc = item.type === 'image' && item.content
         ? (item.content.startsWith('data:') ? item.content : `data:image/png;base64,${item.content}`)
         : '';
@@ -110,41 +109,37 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
     return (
         <div className="h-full flex flex-col bg-background relative overflow-hidden flex-1 w-full">
             {/* Header / Meta Info */}
-            <div className="shrink-0 p-4 md:p-6 border-b border-border bg-card/30 backdrop-blur-xl z-20">
+            <div className="shrink-0 p-4 md:p-6 border-b border-border bg-card z-20">
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 md:gap-4">
                     <div className="flex items-center gap-3 md:gap-4">
                         {/* Mobile Menu Button */}
                         <button
                             onClick={onMenuClick}
                             aria-label="Open menu"
-                            className={cn(
-                                "p-2 -ml-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors md:hidden"
-                            )}
+                            className="p-2 -ml-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors md:hidden"
                         >
                             <Menu size={20} />
                         </button>
 
+                        {/* Type Icon - Monochrome */}
                         <div className={cn(
-                            "w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-xl shadow-lg shrink-0",
-                            item.type === 'text'
-                                ? "bg-type-text/10 text-type-text border border-type-text/20"
-                                : "bg-type-image/10 text-type-image border border-type-image/20"
+                            "w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center text-xl shrink-0",
+                            "bg-accent border border-border text-muted-foreground"
                         )}>
                             {item.type === 'text' ? <FileText size={20} className="md:w-6 md:h-6" /> : <ImageIcon size={20} className="md:w-6 md:h-6" />}
                         </div>
                         <div className="min-w-0 flex-1">
-                            <h2 className="text-lg md:text-xl font-bold text-foreground tracking-tight truncate">
+                            <h2 className="text-lg md:text-xl font-bold text-foreground truncate" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
                                 {item.metadata?.title ||
                                     (item.type === 'text' ? tCommon('textNote') : tCommon('image'))}
                             </h2>
                             <div className="flex flex-wrap items-center gap-2 mt-1 text-sm">
+                                {/* Status Badge */}
                                 <span className={cn(
-                                    "flex items-center gap-1.5 px-2 py-0.5 rounded-md font-medium text-xs border",
-                                    isUnlocked
-                                        ? "bg-success/10 text-success border-success/20"
-                                        : "bg-warning/10 text-warning border-warning/20"
+                                    "badge",
+                                    isUnlocked ? "badge-success" : "badge-warning"
                                 )}>
-                                    {isUnlocked ? <Unlock size={10} /> : <Lock size={10} />}
+                                    {isUnlocked ? <Unlock size={10} className="mr-1" /> : <Lock size={10} className="mr-1" />}
                                     {isUnlocked ? tCommon('unlocked') : tCommon('locked')}
                                 </span>
                                 <span className="text-muted-foreground flex items-center gap-1 text-xs">
@@ -174,28 +169,30 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                     <div className="h-full overflow-y-auto custom-scrollbar p-6">
                         <div className="max-w-4xl mx-auto space-y-6">
                             {item.type === 'text' ? (
-                                <div className="glass-card rounded-2xl p-8 border border-border shadow-xl min-h-[50vh]">
-                                    <div className="prose prose-invert max-w-none text-foreground leading-relaxed whitespace-pre-wrap">
+                                // Text Content - Clean card style
+                                <div className="card min-h-[50vh]">
+                                    <div className="text-foreground leading-relaxed whitespace-pre-wrap">
                                         {item.content}
                                     </div>
                                 </div>
                             ) : (
+                                // Image Content
                                 <div className="flex flex-col items-center gap-4">
                                     <div
-                                        className="relative rounded-2xl overflow-hidden shadow-2xl border border-border bg-black/50 cursor-pointer group"
+                                        className="relative rounded-xl overflow-hidden border border-border bg-black/50 cursor-pointer group"
                                         onClick={() => setIsLightboxOpen(true)}
                                     >
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
                                             src={imageSrc}
                                             alt="Decrypted content"
-                                            className="max-h-[70vh] w-auto object-contain transition-transform duration-300 group-hover:scale-[1.02]"
+                                            className="max-h-[70vh] w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
                                         />
                                     </div>
                                 </div>
                             )}
 
-                            {/* Professional Image Lightbox */}
+                            {/* Image Lightbox */}
                             <Lightbox
                                 open={isLightboxOpen}
                                 close={() => setIsLightboxOpen(false)}
@@ -215,31 +212,34 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                         </div>
                     </div>
                 ) : (
+                    // Locked State - Clean, no animation
                     <div className="absolute inset-0 flex items-center justify-center p-6">
-                        <div className="text-center space-y-6 max-w-md w-full animate-in fade-in zoom-in duration-500">
-                            <div className="relative mx-auto w-32 h-32 flex items-center justify-center">
-                                <div className="absolute inset-0 border-4 border-muted/20 rounded-full"></div>
-                                <div className="absolute inset-0 border-4 border-amber-500 rounded-full border-t-transparent animate-spin duration-[3s]"></div>
-                                <div className="bg-background rounded-full p-6 shadow-2xl z-10 border border-border">
-                                    <Lock size={48} className="text-amber-500" />
-                                </div>
+                        <div className="text-center space-y-6 max-w-md w-full">
+                            {/* Lock Icon - Static */}
+                            <div className="mx-auto w-20 h-20 flex items-center justify-center rounded-full bg-accent border border-border">
+                                <Lock size={32} className="text-warning" />
                             </div>
 
                             <div className="space-y-2">
-                                <h3 className="text-2xl font-bold text-foreground">{t('contentEncrypted')}</h3>
+                                <h3 className="text-xl font-bold text-foreground" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
+                                    {t('contentEncrypted')}
+                                </h3>
                                 <p className="text-muted-foreground">{t('timeLockActive')}</p>
                             </div>
 
-                            <div className="p-4 bg-muted/30 rounded-xl border border-border backdrop-blur-md">
-                                <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1 font-bold">{t('unlocksIn')}</div>
+                            {/* Countdown Card */}
+                            <div className="p-4 bg-accent rounded-xl border border-border">
+                                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2 font-medium">
+                                    {t('unlocksIn')}
+                                </div>
                                 <div className="flex justify-center">
                                     <CountdownVisuals
                                         targetDate={item.decrypt_at}
-                                        className="text-3xl"
+                                        className="text-2xl"
                                         showIcon={false}
                                     />
                                 </div>
-                                <div className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1.5 opacity-70">
+                                <div className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1.5">
                                     <Clock size={12} />
                                     {formatUnlockTime(item.decrypt_at, locale)}
                                 </div>
@@ -248,6 +248,6 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                     </div>
                 )}
             </div>
-        </div >
+        </div>
     );
 }

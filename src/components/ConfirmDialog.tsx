@@ -38,14 +38,14 @@ export default function ConfirmDialog({
             <div className="p-6 space-y-6">
                 <div className="flex flex-col items-center text-center space-y-3">
                     <div className={cn(
-                        "p-4 rounded-full",
+                        "p-3 rounded-full",
                         variant === 'danger' ? 'bg-destructive/10 text-destructive' :
                             variant === 'warning' ? 'bg-warning/10 text-warning' :
                                 'bg-info/10 text-info'
                     )}>
-                        <AlertTriangle size={32} />
+                        <AlertTriangle size={24} />
                     </div>
-                    <p className="text-muted-foreground leading-relaxed">
+                    <p className="text-muted-foreground text-sm leading-relaxed">
                         {description}
                     </p>
                 </div>
@@ -53,7 +53,7 @@ export default function ConfirmDialog({
                 <div className="flex items-center gap-3">
                     <button
                         onClick={onCancel}
-                        className="flex-1 px-4 py-2.5 rounded-xl border border-border text-foreground font-medium hover:bg-accent transition-colors"
+                        className="flex-1 btn btn-secondary"
                     >
                         {cancelLabel || tCommon('cancel')}
                     </button>
@@ -63,10 +63,8 @@ export default function ConfirmDialog({
                             onCancel();
                         }}
                         className={cn(
-                            "flex-1 py-2.5 rounded-xl font-medium shadow-lg transition-all transform active:scale-[0.98]",
-                            variant === 'danger'
-                                ? 'bg-destructive hover:bg-destructive/90 shadow-destructive/25 text-white'
-                                : 'premium-button'
+                            "flex-1 btn",
+                            variant === 'danger' ? 'btn-destructive' : 'btn-primary'
                         )}
                     >
                         {confirmLabel || tCommon('confirm')}

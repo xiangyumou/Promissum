@@ -24,7 +24,7 @@ export default function Step2ContentInput({
     const tWizard = useTranslations('Wizard');
 
     return (
-        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+        <div className="space-y-4">
             {/* Title Input (Optional) */}
             <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-2">
@@ -32,7 +32,7 @@ export default function Step2ContentInput({
                 </label>
                 <input
                     type="text"
-                    className="premium-input"
+                    className="input"
                     placeholder={t('titlePlaceholder')}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
@@ -47,7 +47,7 @@ export default function Step2ContentInput({
                 </label>
                 {type === 'text' ? (
                     <textarea
-                        className="premium-input resize-none"
+                        className="input resize-none"
                         placeholder={t('enterContent')}
                         value={text}
                         onChange={(e) => setText(e.target.value)}

@@ -68,13 +68,13 @@ export default function ImageUploadZone({ file, onFileChange, disabled = false }
             <div
                 {...getRootProps()}
                 className={cn(
-                    "relative border-2 border-dashed rounded-xl transition-all cursor-pointer",
+                    "relative border-2 border-dashed rounded-lg transition-colors cursor-pointer",
                     "flex flex-col items-center justify-center gap-3",
                     isDragActive && !disabled
-                        ? "border-primary bg-primary/10 scale-[1.02]"
+                        ? "border-primary bg-primary/10"
                         : file
                             ? "border-primary/50 bg-primary/5 h-40"
-                            : "border-border hover:border-primary/30 hover:bg-accent/30 h-40",
+                            : "border-border hover:border-primary/30 hover:bg-accent h-40",
                     disabled && "opacity-50 cursor-not-allowed",
                     errorMessage && "border-destructive/50 bg-destructive/5"
                 )}
@@ -112,19 +112,17 @@ export default function ImageUploadZone({ file, onFileChange, disabled = false }
                     <>
                         {/* Upload prompt */}
                         <div className={cn(
-                            "w-12 h-12 rounded-full flex items-center justify-center transition-colors",
+                            "w-12 h-12 rounded-full flex items-center justify-center",
                             isDragActive
                                 ? "bg-primary/20 text-primary"
-                                : "bg-accent text-muted-foreground"
+                                : "bg-accent text-muted-foreground border border-border"
                         )}>
                             <Upload size={24} />
                         </div>
                         <div className="text-center px-4">
                             <p className={cn(
-                                "text-sm font-medium transition-colors",
-                                isDragActive
-                                    ? "text-primary"
-                                    : "text-muted-foreground"
+                                "text-sm font-medium",
+                                isDragActive ? "text-primary" : "text-muted-foreground"
                             )}>
                                 {isDragActive ? t('dropHere') : t('dragDropHere')}
                             </p>
@@ -150,7 +148,7 @@ export default function ImageUploadZone({ file, onFileChange, disabled = false }
             {/* Paste hint */}
             {!file && !disabled && (
                 <p className="text-xs text-muted-foreground/60 text-center">
-                    💡 {t('pasteHint')}
+                    {t('pasteHint')}
                 </p>
             )}
         </div>

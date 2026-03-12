@@ -67,7 +67,7 @@ export default function AddModal(props: AddModalProps) {
             className="md:max-w-[550px]"
         >
             <form onSubmit={handleSubmit} className="p-6 pt-2">
-                {/* Progress Indicator */}
+                {/* Progress Indicator - Minimal */}
                 <div className="mb-6">
                     <div className="flex items-center justify-between">
                         {[1, 2, 3, 4].map((step) => (
@@ -77,20 +77,20 @@ export default function AddModal(props: AddModalProps) {
                                     onClick={() => handleStepClick(step as Step)}
                                     disabled={step > currentStep}
                                     className={cn(
-                                        "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all",
+                                        "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors",
                                         step < currentStep
-                                            ? "bg-primary text-primary-foreground cursor-pointer hover:scale-105"
+                                            ? "bg-primary text-primary-foreground"
                                             : step === currentStep
-                                                ? "bg-primary text-primary-foreground ring-4 ring-primary/20"
-                                                : "bg-primary/20 text-primary/60 cursor-not-allowed border-2 border-primary/30"
+                                                ? "bg-primary text-primary-foreground ring-2 ring-primary/20"
+                                                : "bg-accent text-muted-foreground border border-border"
                                     )}
                                 >
-                                    {step < currentStep ? <Check size={18} /> : step}
+                                    {step < currentStep ? <Check size={16} /> : step}
                                 </button>
                                 {step < 4 && (
                                     <div className={cn(
-                                        "flex-1 h-1 mx-2 rounded-full transition-all",
-                                        step < currentStep ? "bg-primary" : "bg-primary/30"
+                                        "flex-1 h-0.5 mx-2 rounded-full transition-colors",
+                                        step < currentStep ? "bg-primary" : "bg-border"
                                     )} />
                                 )}
                             </div>
@@ -107,7 +107,7 @@ export default function AddModal(props: AddModalProps) {
                 </div>
 
                 {/* Step Content */}
-                <div className="min-h-[300px]">
+                <div className="min-h-[280px]">
                     {/* Step 1: Content Type Selection */}
                     {currentStep === 1 && (
                         <Step1TypeSelection type={type} setType={setType} />
@@ -162,10 +162,10 @@ export default function AddModal(props: AddModalProps) {
                         <button
                             type="button"
                             onClick={handleBack}
-                            className="px-4 py-3 rounded-xl border border-border hover:bg-accent transition-colors flex items-center gap-2"
+                            className="btn btn-secondary"
                             disabled={isSubmitting}
                         >
-                            <ChevronLeft size={18} />
+                            <ChevronLeft size={16} />
                             {tWizard('previousStep')}
                         </button>
                     )}
@@ -177,25 +177,25 @@ export default function AddModal(props: AddModalProps) {
                             type="button"
                             onClick={handleNext}
                             disabled={!canProceed(currentStep)}
-                            className="premium-button px-6 py-3 rounded-xl text-white flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="btn btn-primary"
                         >
                             {tWizard('nextStep')}
-                            <ChevronRight size={18} />
+                            <ChevronRight size={16} />
                         </button>
                     ) : (
                         <button
                             type="submit"
-                            className="premium-button px-6 py-3 rounded-xl text-white flex items-center gap-2 disabled:opacity-50"
+                            className="btn btn-primary"
                             disabled={isSubmitting || !unlockTimeInfo.isValid}
                         >
                             {isSubmitting ? (
                                 <>
-                                    <RefreshCw size={18} className="animate-spin" />
+                                    <RefreshCw size={16} className="animate-spin" />
                                     {t('encrypting')}
                                 </>
                             ) : (
                                 <>
-                                    <Lock size={18} />
+                                    <Lock size={16} />
                                     {t('encryptAndSave')}
                                 </>
                             )}

@@ -1,19 +1,15 @@
 /**
  * CountdownVisuals Component
- * 
- * Progressive countdown display with time-based visual effects:
- * - Last hour: color gradient yellow → green
- * - Last 10 minutes: pulse animation
- * - Last minute: jumping/bouncing animation
- * 
- * NOTE: The infinite animations (jumping, pulsing) are intentional per UI.md §8.2
- * as they serve critical feedback purposes for countdown urgency indication.
+ *
+ * Minimal countdown display following UI.md design system:
+ * - No infinite animations
+ * - Color changes only for urgency indication
+ * - Clean, readable typography
  */
 
 'use client';
 
 import { useCountdown } from '@/hooks/useCountdown';
-import { motion } from 'framer-motion';
 import { Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -39,11 +35,6 @@ export default function CountdownVisuals({
     const isLastTenMinutes = timeLeft > 0 && timeLeft <= tenMinutes;
     const isLastMinute = timeLeft > 0 && timeLeft <= oneMinute;
 
-    // Calculate progress percentage for gradient (0-100)
-    const progressPercent = isLastHour
-        ? Math.max(0, Math.min(100, (timeLeft / oneHour) * 100))
-        : 100;
-
     // Format time display
     const formatTime = (ms: number): string => {
         if (ms <= 0) return '00:00:00';
@@ -51,13 +42,17 @@ export default function CountdownVisuals({
         const seconds = Math.floor(ms / 1000);
         const minutes = Math.floor(seconds / 60);
         const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
 
         const pad = (n: number) => n.toString().padStart(2, '0');
 
+        if (days > 0) {
+            return `${days}d ${pad(hours % 24)}:${pad(minutes % 60)}:${pad(seconds % 60)}`;
+        }
         return `${pad(hours)}:${pad(minutes % 60)}:${pad(seconds % 60)}`;
     };
 
-    // Dynamic color based on time remaining
+    // Color state based on time remaining - static, no animations
     const getColorClass = (): string => {
         if (timeLeft <= 0) return 'text-success';
         if (isLastMinute) return 'text-destructive';
@@ -66,93 +61,36 @@ export default function CountdownVisuals({
         return 'text-muted-foreground';
     };
 
+    // Badge style for critical states
+    const getBadgeStyle = () => {
+        if (isLastMinute) {
+            return 'bg-destructive/10 text-destructive px-2 py-0.5 rounded';
+        }
+        if (isLastTenMinutes) {
+            return 'bg-warning/10 text-warning px-2 py-0.5 rounded';
+        }
+        return '';
+    };
+
     return (
         <div className={cn('flex items-center gap-2', className)}>
             {showIcon && (
-                <motion.div
-                    animate={
-                        isLastMinute
-                            ? {
-                                // Jumping animation
-                                y: [0, -8, 0],
-                                scale: [1, 1.1, 1],
-                            }
-                            : isLastTenMinutes
-                                ? {
-                                    // Pulse animation
-                                    scale: [1, 1.15, 1],
-                                }
-                                : {}
-                    }
-                    transition={
-                        isLastMinute
-                            ? {
-                                duration: 0.6,
-                                repeat: Infinity,
-                                ease: 'easeInOut',
-                            }
-                            : isLastTenMinutes
-                                ? {
-                                    duration: 1.5,
-                                    repeat: Infinity,
-                                    ease: 'easeInOut',
-                                }
-                                : {}
-                    }
-                    className={cn('flex-shrink-0', getColorClass())}
-                >
+                <div className={cn('flex-shrink-0', getColorClass())}>
                     <Clock className="w-[1em] h-[1em]" />
-                </motion.div>
+                </div>
             )}
 
-            <motion.span
-                animate={
-                    isLastMinute
-                        ? {
-                            // Text jumping
-                            y: [0, -4, 0],
-                        }
-                        : {}
-                }
-                transition={
-                    isLastMinute
-                        ? {
-                            duration: 0.6,
-                            repeat: Infinity,
-                            ease: 'easeInOut',
-                        }
-                        : {}
-                }
-                className={cn(
-                    'font-mono font-bold tabular-nums transition-colors duration-300',
-                    isLastHour && timeLeft > 0 ? '' : getColorClass()
-                )}
-                style={
-                    isLastHour && timeLeft > 0
-                        ? {
-                            // Gradient from yellow to green
-                            backgroundImage: `linear-gradient(90deg, 
-                                  hsl(${progressPercent * 1.2}, 80%, 50%) 0%, 
-                                  hsl(${120 - progressPercent * 1.2}, 70%, 45%) 100%)`,
-                            WebkitBackgroundClip: 'text',
-                            backgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            color: 'transparent',
-                            display: 'inline-block'
-                        }
-                        : undefined
-                }
-            >
+            <span className={cn(
+                'font-mono font-semibold tabular-nums',
+                getColorClass(),
+                getBadgeStyle()
+            )}>
                 {formatTime(timeLeft)}
-            </motion.span>
+            </span>
 
-            {/* Urgency indicator */}
+            {/* Urgency dot indicator - static */}
             {isLastMinute && (
-                <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="w-2 h-2 rounded-full bg-destructive shadow-[0_0_8px_var(--destructive)]"
-                />
+                <div className="w-2 h-2 rounded-full bg-destructive" />
             )}
         </div>
     );

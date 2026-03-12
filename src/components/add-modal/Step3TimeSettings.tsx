@@ -74,18 +74,18 @@ export default function Step3TimeSettings({
     const tCommon = useTranslations('Common');
 
     return (
-        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+        <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     <Clock size={16} />
                     {t('lockDuration')}
                 </label>
-                <div className="flex bg-card/50 p-0.5 rounded-lg border border-border">
+                <div className="flex bg-card p-0.5 rounded-lg border border-border">
                     <button
                         type="button"
                         className={cn(
-                            "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                            timeMode === 'duration' ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+                            "px-3 py-1 text-xs font-medium rounded-md transition-colors",
+                            timeMode === 'duration' ? "bg-surface2 text-foreground border border-border" : "text-muted-foreground hover:text-foreground"
                         )}
                         onClick={() => setTimeMode('duration')}
                     >
@@ -94,8 +94,8 @@ export default function Step3TimeSettings({
                     <button
                         type="button"
                         className={cn(
-                            "px-3 py-1 text-xs font-medium rounded-md transition-all",
-                            timeMode === 'absolute' ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"
+                            "px-3 py-1 text-xs font-medium rounded-md transition-colors",
+                            timeMode === 'absolute' ? "bg-surface2 text-foreground border border-border" : "text-muted-foreground hover:text-foreground"
                         )}
                         onClick={() => setTimeMode('absolute')}
                     >
@@ -111,7 +111,7 @@ export default function Step3TimeSettings({
                             <button
                                 key={preset.label}
                                 type="button"
-                                className="px-3 py-1.5 bg-accent/30 hover:bg-accent border border-border rounded-full text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                                className="px-3 py-1.5 bg-accent hover:bg-accent/80 border border-border rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
                                 onClick={() => handlePresetClick(preset.minutes)}
                             >
                                 <Plus size={10} />
@@ -121,7 +121,7 @@ export default function Step3TimeSettings({
                         {accumulatedDuration > 0 && (
                             <button
                                 type="button"
-                                className="px-3 py-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-full text-xs font-medium transition-colors flex items-center gap-1 border border-destructive/20"
+                                className="px-3 py-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-md text-xs font-medium transition-colors flex items-center gap-1 border border-destructive/20"
                                 onClick={handleResetDuration}
                             >
                                 <RefreshCw size={10} />
@@ -136,13 +136,13 @@ export default function Step3TimeSettings({
                             value={accumulatedDuration || ''}
                             placeholder="0"
                             onChange={(e) => handleCustomDurationChange(e.target.value)}
-                            className="w-full pl-4 pr-12 py-3 bg-muted/30 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 font-mono text-lg text-foreground"
+                            className="input pl-4 pr-12 py-3 font-mono text-lg"
                         />
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">min</span>
                     </div>
                 </div>
             ) : (
-                <div className="flex flex-wrap items-center justify-center gap-2 p-3 bg-muted/30 rounded-xl border border-border">
+                <div className="flex flex-wrap items-center justify-center gap-2 p-3 bg-accent rounded-lg border border-border">
                     {/* Date Inputs */}
                     <div className="flex items-center gap-1">
                         <TimeInput
@@ -150,20 +150,20 @@ export default function Step3TimeSettings({
                             onChange={(v) => handleAbsoluteTimeChange('year', v)}
                             placeholder="YY"
                         />
-                        <span className="text-zinc-500">/</span>
+                        <span className="text-muted-foreground">/</span>
                         <TimeInput
                             value={absoluteTime.month}
                             onChange={(v) => handleAbsoluteTimeChange('month', v)}
                             placeholder="MM"
                         />
-                        <span className="text-zinc-500">/</span>
+                        <span className="text-muted-foreground">/</span>
                         <TimeInput
                             value={absoluteTime.day}
                             onChange={(v) => handleAbsoluteTimeChange('day', v)}
                             placeholder="DD"
                         />
                     </div>
-                    <span className="text-zinc-500">@</span>
+                    <span className="text-muted-foreground">@</span>
                     {/* Time Inputs */}
                     <div className="flex items-center gap-1">
                         <TimeInput
@@ -171,7 +171,7 @@ export default function Step3TimeSettings({
                             onChange={(v) => handleAbsoluteTimeChange('hour', v)}
                             placeholder="HH"
                         />
-                        <span className="text-zinc-500">:</span>
+                        <span className="text-muted-foreground">:</span>
                         <TimeInput
                             value={absoluteTime.minute}
                             onChange={(v) => handleAbsoluteTimeChange('minute', v)}
@@ -183,10 +183,10 @@ export default function Step3TimeSettings({
 
             {/* Unlock Preview */}
             <div className={cn(
-                "rounded-xl p-4 flex items-center justify-between border transition-all duration-300",
+                "rounded-lg p-4 flex items-center justify-between border",
                 unlockTimeInfo.isValid
-                    ? "bg-primary/10 border-primary/20 text-primary"
-                    : "bg-destructive/10 border-destructive/20 text-destructive"
+                    ? "bg-primary/10 border-primary/20"
+                    : "bg-destructive/10 border-destructive/20"
             )}>
                 <div className="flex items-center gap-3">
                     <div className={cn(
@@ -196,18 +196,24 @@ export default function Step3TimeSettings({
                         {unlockTimeInfo.isValid ? <Lock size={18} /> : <AlertCircle size={18} />}
                     </div>
                     <div>
-                        <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">
+                        <p className={cn(
+                            "text-[10px] uppercase font-semibold tracking-wider",
+                            unlockTimeInfo.isValid ? "text-primary/70" : "text-destructive/70"
+                        )}>
                             {unlockTimeInfo.isValid ? tCommon('unlocksAt') : t('invalidTime')}
                         </p>
-                        <p className="text-lg font-bold font-mono tracking-tight">
+                        <p className={cn(
+                            "text-lg font-semibold font-mono",
+                            unlockTimeInfo.isValid ? "text-primary" : "text-destructive"
+                        )}>
                             {unlockTimeInfo.isValid ? unlockTimeInfo.formatted : t('checkInput')}
                         </p>
                     </div>
                 </div>
                 {unlockTimeInfo.isValid && (
                     <div className="text-right">
-                        <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">{t('remaining')}</p>
-                        <p className="text-sm font-medium">{unlockTimeInfo.remaining}</p>
+                        <p className="text-[10px] uppercase font-semibold tracking-wider text-primary/70">{t('remaining')}</p>
+                        <p className="text-sm font-medium text-primary">{unlockTimeInfo.remaining}</p>
                     </div>
                 )}
             </div>

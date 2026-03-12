@@ -28,7 +28,7 @@ export default function LanguageSwitcher() {
         <button
             onClick={toggleLanguage}
             disabled={isPending}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent rounded-xl transition-all border border-transparent hover:border-border/50"
+            className="btn btn-ghost text-sm"
             title="Switch Language"
         >
             <Languages size={18} />

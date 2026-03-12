@@ -12,7 +12,7 @@ export default function Step1TypeSelection({ type, setType }: Step1TypeSelection
     const tWizard = useTranslations('Wizard');
 
     return (
-        <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+        <div className="space-y-4">
             <p className="text-sm text-muted-foreground text-center mb-6">
                 {tWizard('selectContentType')}
             </p>
@@ -20,21 +20,21 @@ export default function Step1TypeSelection({ type, setType }: Step1TypeSelection
                 <button
                     type="button"
                     className={cn(
-                        "p-6 rounded-xl border-2 transition-all flex flex-col items-center gap-3",
+                        "p-6 rounded-lg border transition-all flex flex-col items-center gap-3",
                         type === 'text'
-                            ? "border-primary bg-primary/10 shadow-lg scale-105"
-                            : "border-border hover:border-primary/50 hover:bg-accent/30"
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50 hover:bg-accent"
                     )}
                     onClick={() => setType('text')}
                 >
                     <div className={cn(
-                        "w-14 h-14 rounded-full flex items-center justify-center",
-                        type === 'text' ? "bg-primary text-primary-foreground" : "bg-accent text-muted-foreground"
+                        "w-12 h-12 rounded-full flex items-center justify-center",
+                        type === 'text' ? "bg-primary text-primary-foreground" : "bg-accent text-muted-foreground border border-border"
                     )}>
-                        <FileText size={28} />
+                        <FileText size={24} />
                     </div>
                     <div className="text-center">
-                        <p className="font-semibold">{tCommon('textNote')}</p>
+                        <p className="font-medium">{tCommon('textNote')}</p>
                         <p className="text-xs text-muted-foreground mt-1">
                             {tWizard('textNoteDesc')}
                         </p>
@@ -44,21 +44,21 @@ export default function Step1TypeSelection({ type, setType }: Step1TypeSelection
                 <button
                     type="button"
                     className={cn(
-                        "p-6 rounded-xl border-2 transition-all flex flex-col items-center gap-3",
+                        "p-6 rounded-lg border transition-all flex flex-col items-center gap-3",
                         type === 'image'
-                            ? "border-primary bg-primary/10 shadow-lg scale-105"
-                            : "border-border hover:border-primary/50 hover:bg-accent/30"
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50 hover:bg-accent"
                     )}
                     onClick={() => setType('image')}
                 >
                     <div className={cn(
-                        "w-14 h-14 rounded-full flex items-center justify-center",
-                        type === 'image' ? "bg-primary text-primary-foreground" : "bg-accent text-muted-foreground"
+                        "w-12 h-12 rounded-full flex items-center justify-center",
+                        type === 'image' ? "bg-primary text-primary-foreground" : "bg-accent text-muted-foreground border border-border"
                     )}>
-                        <ImageIcon size={28} />
+                        <ImageIcon size={24} />
                     </div>
                     <div className="text-center">
-                        <p className="font-semibold">{tCommon('image')}</p>
+                        <p className="font-medium">{tCommon('image')}</p>
                         <p className="text-xs text-muted-foreground mt-1">
                             {tWizard('imageDesc')}
                         </p>

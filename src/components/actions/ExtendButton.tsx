@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Clock, Plus } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useSettings } from '@/lib/stores/settings-store';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -53,43 +52,37 @@ export function ExtendButton({ onExtend }: ExtendButtonProps) {
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
-                    "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border",
-                    isOpen
-                        ? "bg-accent text-accent-foreground border-border"
-                        : "bg-transparent text-muted-foreground border-transparent hover:bg-accent hover:text-foreground hover:border-border"
+                    "btn btn-ghost",
+                    isOpen && "bg-accent text-foreground border border-border"
                 )}
                 title={t('extendLock')}
             >
                 <Clock size={16} />
                 <span className="hidden sm:inline">{t('extend')}</span>
             </button>
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 5, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 5, scale: 0.95 }}
-                        className="absolute right-0 mt-2 w-48 bg-popover rounded-xl shadow-xl border border-border overflow-hidden z-50 p-1"
-                    >
-                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">{t('addTime')}</div>
-                        {[
-                            { label: `+10 ${t('minutes')}`, val: 10 },
-                            { label: `+1 ${t('hour')}`, val: 60 },
-                            { label: `+6 ${t('hours')}`, val: 360 },
-                            { label: `+24 ${t('hours')}`, val: 1440 }
-                        ].map((opt) => (
-                            <button
-                                key={opt.val}
-                                onClick={() => handleExtendClick(opt.val)}
-                                className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-accent rounded-lg transition-colors flex items-center justify-between group"
-                            >
-                                <span>{opt.label}</span>
-                                <Plus size={12} className="opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
-                            </button>
-                        ))}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+
+            {isOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-popover rounded-lg border border-border overflow-hidden z-50 p-1 shadow-lg">
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        {t('addTime')}
+                    </div>
+                    {[
+                        { label: `+10 ${t('minutes')}`, val: 10 },
+                        { label: `+1 ${t('hour')}`, val: 60 },
+                        { label: `+6 ${t('hours')}`, val: 360 },
+                        { label: `+24 ${t('hours')}`, val: 1440 }
+                    ].map((opt) => (
+                        <button
+                            key={opt.val}
+                            onClick={() => handleExtendClick(opt.val)}
+                            className="w-full text-left px-3 py-2 text-sm text-foreground hover:bg-accent rounded-md transition-colors flex items-center justify-between"
+                        >
+                            <span>{opt.label}</span>
+                            <Plus size={12} className="text-primary" />
+                        </button>
+                    ))}
+                </div>
+            )}
 
             <ConfirmDialog
                 isOpen={!!confirmMinutes}

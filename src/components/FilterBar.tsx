@@ -42,7 +42,7 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
                     value={searchInput}
                     onChange={handleSearchChange}
                     placeholder={t('searchPlaceholder')}
-                    className="w-full pl-9 pr-3 py-2 text-xs bg-muted/30 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground placeholder-muted-foreground transition-all"
+                    className="input pl-9 pr-8 text-xs"
                 />
                 {searchInput && (
                     <button
@@ -59,8 +59,10 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
 
             {/* Status Filter */}
             <div className="space-y-2">
-                <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider pl-1 font-mono">{t('statusLabel')}</div>
-                <div className="flex bg-card/50 p-1 rounded-xl border border-border">
+                <div className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider pl-1">
+                    {t('statusLabel')}
+                </div>
+                <div className="flex bg-card p-1 rounded-lg border border-border">
                     <FilterButton
                         active={filters.status === 'all'}
                         onClick={() => handleStatusChange('all')}
@@ -83,8 +85,10 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
 
             {/* Type Filter */}
             <div className="space-y-2">
-                <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider pl-1 font-mono">{t('typeLabel')}</div>
-                <div className="flex bg-card/50 p-1 rounded-xl border border-border">
+                <div className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider pl-1">
+                    {t('typeLabel')}
+                </div>
+                <div className="flex bg-card p-1 rounded-lg border border-border">
                     <FilterButton
                         active={!filters.type}
                         onClick={() => handleTypeChange(undefined)}
@@ -108,12 +112,11 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
             {/* Reset Button */}
             {hasActiveFilters && (
                 <button
-                    className="w-full mt-2 py-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors border border-transparent hover:border-border"
+                    className="w-full py-2 flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground hover:bg-accent rounded-lg transition-colors border border-border border-dashed hover:border-solid"
                     onClick={() => {
                         setSearchInput('');
                         onFilterChange({ status: 'all' });
                     }}
-                    title="Reset Filters"
                 >
                     <X size={12} />
                     {t('clearFilters')}
@@ -127,9 +130,9 @@ function FilterButton({ active, onClick, icon, label }: { active: boolean, onCli
     return (
         <button
             className={cn(
-                "flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded-lg transition-all",
+                "flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded-md transition-colors",
                 active
-                    ? "bg-accent text-accent-foreground shadow-sm border border-border"
+                    ? "bg-surface2 text-foreground border border-border"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
             )}
             onClick={onClick}

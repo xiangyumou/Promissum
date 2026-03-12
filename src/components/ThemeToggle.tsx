@@ -17,21 +17,21 @@ export default function ThemeToggle() {
     return (
         <div className="flex bg-muted/50 p-1 rounded-xl border border-border">
             <button
-                className={`flex-1 p-1.5 rounded-lg transition-all flex items-center justify-center ${theme === 'light' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`flex-1 p-1.5 rounded-lg transition-colors flex items-center justify-center ${theme === 'light' ? 'bg-background text-foreground border border-border' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setTheme('light')}
                 title={t('light')}
             >
                 <Sun size={16} />
             </button>
             <button
-                className={`flex-1 p-1.5 rounded-lg transition-all flex items-center justify-center ${theme === 'system' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`flex-1 p-1.5 rounded-lg transition-colors flex items-center justify-center ${theme === 'system' ? 'bg-background text-foreground border border-border' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setTheme('system')}
                 title={t('system')}
             >
                 <Monitor size={16} />
             </button>
             <button
-                className={`flex-1 p-1.5 rounded-lg transition-all flex items-center justify-center ${theme === 'dark' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`flex-1 p-1.5 rounded-lg transition-colors flex items-center justify-center ${theme === 'dark' ? 'bg-background text-foreground border border-border' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setTheme('dark')}
                 title={t('dark')}
             >

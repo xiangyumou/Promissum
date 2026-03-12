@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Trash2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useSettings } from '@/lib/stores/settings-store';
 
@@ -44,26 +43,17 @@ export function DeleteButton({ id, onDelete }: DeleteButtonProps) {
         <button
             onClick={handleClick}
             className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 border",
+                "btn",
                 isConfirming
-                    ? "bg-destructive text-destructive-foreground border-destructive hover:bg-destructive/90"
-                    : "bg-transparent text-muted-foreground border-transparent hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20"
+                    ? "btn-destructive"
+                    : "btn-ghost text-muted-foreground hover:text-destructive hover:bg-destructive/10"
             )}
             title={isConfirming ? tCommon('confirmDelete') : tCommon('delete')}
         >
-            <Trash2 size={16} className={isConfirming ? "animate-pulse" : ""} />
-            <AnimatePresence>
-                {isConfirming && (
-                    <motion.span
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: "auto" }}
-                        exit={{ opacity: 0, width: 0 }}
-                        className="overflow-hidden whitespace-nowrap"
-                    >
-                        {tCommon('confirm')}
-                    </motion.span>
-                )}
-            </AnimatePresence>
+            <Trash2 size={16} />
+            {isConfirming && (
+                <span className="ml-1">{tCommon('confirm')}</span>
+            )}
         </button>
     );
 }
