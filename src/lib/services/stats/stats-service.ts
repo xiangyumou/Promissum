@@ -4,49 +4,51 @@
  * System-wide statistics for encrypted items.
  */
 
-import { prisma } from '@/lib/db/client';
+import { db } from '@/lib/db/client';
+import { items } from '@/lib/db/schema';
+import { sql } from 'drizzle-orm';
 import type { SystemStats } from '@/lib/types';
 
 export async function getSystemStats(): Promise<SystemStats> {
     const now = new Date();
 
-    const [totalItems, lockedItems, typeGroups, maxCreatedAt] = await Promise.all([
-        prisma.item.count(),
-        prisma.item.count({ where: { decryptAt: { gt: now } } }),
-        prisma.item.groupBy({
-            by: ['type'],
-            _count: true,
-        }),
-        prisma.item.aggregate({
-            _max: {
-                createdAt: true,
-            },
-        }),
-    ]);
+    // Get total count
+    const totalResult = await db.select({
+        count: sql<number>`count(*)`,
+    }).from(items);
+    const totalItems = totalResult[0]?.count || 0;
+
+    // Get locked items (decryptAt > now)
+    const lockedResult = await db.select({
+        count: sql<number>`count(*)`,
+    }).from(items).where(sql`${items.decryptAt} > ${now}`);
+    const lockedItems = lockedResult[0]?.count || 0;
+
+    // Get counts by type
+    const textResult = await db.select({
+        count: sql<number>`count(*)`,
+    }).from(items).where(sql`${items.type} = 'text'`);
+    const textCount = textResult[0]?.count || 0;
+
+    const imageResult = await db.select({
+        count: sql<number>`count(*)`,
+    }).from(items).where(sql`${items.type} = 'image'`);
+    const imageCount = imageResult[0]?.count || 0;
 
     const unlockedItems = totalItems - lockedItems;
 
     const byType = {
-        text: 0,
-        image: 0,
+        text: textCount,
+        image: imageCount,
     };
-    for (const group of typeGroups) {
-        if (group.type === 'text') {
-            byType.text = group._count;
-        } else if (group.type === 'image') {
-            byType.image = group._count;
-        }
-    }
 
+    // Calculate average lock duration
     let avgLockDurationMinutes = 0;
     if (totalItems > 0) {
-        const durationData = await prisma.item.findMany({
-            select: {
-                createdAt: true,
-                decryptAt: true,
-            },
-            take: 1000,
-        });
+        const durationData = await db.select({
+            createdAt: items.createdAt,
+            decryptAt: items.decryptAt,
+        }).from(items).limit(1000);
 
         if (durationData.length > 0) {
             const totalDuration = durationData.reduce(
@@ -57,8 +59,12 @@ export async function getSystemStats(): Promise<SystemStats> {
         }
     }
 
-    const newestItem = maxCreatedAt._max.createdAt
-        ? maxCreatedAt._max.createdAt.getTime()
+    // Get newest item timestamp
+    const maxCreatedResult = await db.select({
+        maxCreated: sql<number>`max(${items.createdAt})`,
+    }).from(items);
+    const newestItem = maxCreatedResult[0]?.maxCreated
+        ? new Date(maxCreatedResult[0].maxCreated).getTime()
         : undefined;
 
     return {
