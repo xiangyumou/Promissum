@@ -1,7 +1,7 @@
 const env = {
-  apiUrl: process.env.PROMISSUM_API_URL || process.env.CHASTER_API_URL || 'http://localhost:3000/api/v1',
+  apiUrl: process.env.PROMISSUM_API_URL || 'http://localhost:3000/api/v1',
 
-  apiToken: process.env.PROMISSUM_API_TOKEN || process.env.CHASTER_API_TOKEN || '',
+  apiToken: process.env.PROMISSUM_API_TOKEN || '',
 
   appUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
 
