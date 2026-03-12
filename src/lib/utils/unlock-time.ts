@@ -6,6 +6,7 @@
  */
 
 import { timeService } from '@/lib/services/time-service';
+import { MS_PER_MINUTE } from '@/lib/constants';
 
 export interface AbsoluteTime {
     year: string;
@@ -21,6 +22,32 @@ export interface UnlockTimeInfo {
     remaining: string; // e.g., "1d 2h 30m"
     isValid: boolean;  // whether duration is at least 1 minute/future
     errorReason?: 'past' | 'incomplete' | null; // specific error reason
+}
+
+/**
+ * Parse year input into a full 4-digit year.
+ * Handles both 2-digit and 4-digit inputs intelligently.
+ */
+function parseYear(yearInput: string): number {
+    const year = parseInt(yearInput, 10);
+
+    // If already 4 digits, use as-is
+    if (year >= 1000) {
+        return year;
+    }
+
+    // For 2-digit years, infer the century based on current year
+    const currentYear = new Date().getFullYear();
+    const currentCentury = Math.floor(currentYear / 100) * 100;
+    const fullYear = currentCentury + year;
+
+    // If the result is more than 30 years in the past, assume next century
+    // This handles the "year 2000 problem" for dates like "95" -> 2095 (when current year is 2025)
+    if (fullYear < currentYear - 30) {
+        return fullYear + 100;
+    }
+
+    return fullYear;
 }
 
 /**
@@ -40,7 +67,7 @@ export function calculateDurationMinutes(
     if (timeMode === 'duration') {
         return accumulatedDuration;
     } else {
-        const year = parseInt(absoluteTime.year) + 2000;
+        const year = parseYear(absoluteTime.year);
         const month = parseInt(absoluteTime.month) - 1;
         const day = parseInt(absoluteTime.day);
         const hour = parseInt(absoluteTime.hour);
@@ -48,7 +75,7 @@ export function calculateDurationMinutes(
 
         const targetDate = new Date(year, month, day, hour, minute);
         const diffMs = targetDate.getTime() - currentTime;
-        return Math.ceil(diffMs / 60000);
+        return Math.ceil(diffMs / MS_PER_MINUTE);
     }
 }
 
@@ -76,7 +103,7 @@ export function calculateUnlockTimeInfo(
             errorReason = 'incomplete';
         }
 
-        const year = parseInt(absoluteTime.year) + 2000;
+        const year = parseYear(absoluteTime.year);
         const month = parseInt(absoluteTime.month) - 1;
         const day = parseInt(absoluteTime.day);
         const hour = parseInt(absoluteTime.hour);
@@ -85,7 +112,7 @@ export function calculateUnlockTimeInfo(
         diffMs = unlockDate.getTime() - currentTime;
 
         // Check if time is in the past
-        if (!errorReason && diffMs < 60000) {
+        if (!errorReason && diffMs < MS_PER_MINUTE) {
             errorReason = 'past';
         }
     } else {
@@ -100,7 +127,7 @@ export function calculateUnlockTimeInfo(
     const minuteStr = unlockDate.getMinutes().toString().padStart(2, '0');
 
     // Calculate remaining string
-    const totalMinutes = Math.ceil(diffMs / 60000);
+    const totalMinutes = Math.ceil(diffMs / MS_PER_MINUTE);
     const isValid = totalMinutes >= 1 && !errorReason;
 
     const days = Math.floor(totalMinutes / 1440);
