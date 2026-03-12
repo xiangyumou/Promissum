@@ -25,8 +25,8 @@ export async function createItemInDb(data: CreateItemData) {
         metadata: JSON.stringify(data.metadata),
     };
 
-    await db.insert(items).values(newItem);
-    return newItem;
+    const result = await db.insert(items).values(newItem).returning();
+    return result[0];
 }
 
 export interface FindItemsParams {
