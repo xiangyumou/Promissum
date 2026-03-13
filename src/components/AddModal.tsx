@@ -10,10 +10,8 @@ import {
     Check
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import Step1TypeSelection from './add-modal/Step1TypeSelection';
-import Step2ContentInput from './add-modal/Step2ContentInput';
 import Step3TimeSettings from './add-modal/Step3TimeSettings';
-import Step4Preview from './add-modal/Step4Preview';
+import { Step1TypeSelection, Step2ContentInput, Step4Preview } from './add-modal/WizardSteps';
 import { useAddItemWizard, Step } from '@/hooks/useAddItemWizard';
 
 interface AddModalProps {
