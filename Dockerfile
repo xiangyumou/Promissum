@@ -11,19 +11,16 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN npm install -g pnpm@9 && pnpm install --frozen-lockfile
+RUN npm ci
 
 # Copy source files
 COPY . .
 
-# Generate Prisma client for PostgreSQL
-RUN npx prisma generate
-
 # Build the Next.js application
-RUN pnpm run build
+RUN npm run build
 
 # =============================================================================
 # Runner Stage
@@ -50,7 +47,6 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/prisma ./prisma
 
 # Set correct permissions
 RUN chown -R nextjs:nodejs /app
