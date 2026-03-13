@@ -24,7 +24,6 @@
     "@tanstack/react-query-persist-client": "^5.90.14",
     "better-sqlite3": "^12.6.2",
     "clsx": "^2.1.1",
-    "date-fns": "^4.1.0",
     "drand-client": "^1.4.2",
     "drizzle-orm": "^0.45.1",
     "framer-motion": "^12.23.26",
