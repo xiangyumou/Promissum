@@ -2,7 +2,7 @@
 
 import { FilterParams } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { FileText, Image as ImageIcon, Lock, Unlock, X, Search } from 'lucide-react';
+import { Lock, Unlock, X, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
@@ -13,15 +13,10 @@ interface FilterBarProps {
 
 export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
     const t = useTranslations('Sidebar');
-    const tCommon = useTranslations('Common');
     const [searchInput, setSearchInput] = useState(filters.search || '');
 
     const handleStatusChange = (status: FilterParams['status']) => {
         onFilterChange({ ...filters, status });
-    };
-
-    const handleTypeChange = (type: FilterParams['type']) => {
-        onFilterChange({ ...filters, type });
     };
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,7 +25,7 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
         onFilterChange({ ...filters, search: value });
     };
 
-    const hasActiveFilters = filters.status !== 'all' || !!filters.type || !!filters.search;
+    const hasActiveFilters = filters.status !== 'all' || !!filters.search;
 
     return (
         <div className="px-3 py-2 space-y-4 mb-2">
@@ -79,32 +74,6 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
                         onClick={() => handleStatusChange('unlocked')}
                         icon={<Unlock size={12} />}
                         label={t('unlocked')}
-                    />
-                </div>
-            </div>
-
-            {/* Type Filter */}
-            <div className="space-y-2">
-                <div className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider pl-1">
-                    {t('typeLabel')}
-                </div>
-                <div className="flex bg-card p-1 rounded-lg border border-border">
-                    <FilterButton
-                        active={!filters.type}
-                        onClick={() => handleTypeChange(undefined)}
-                        label={t('all')}
-                    />
-                    <FilterButton
-                        active={filters.type === 'text'}
-                        onClick={() => handleTypeChange('text')}
-                        icon={<FileText size={12} />}
-                        label={tCommon('textNote')}
-                    />
-                    <FilterButton
-                        active={filters.type === 'image'}
-                        onClick={() => handleTypeChange('image')}
-                        icon={<ImageIcon size={12} />}
-                        label={tCommon('image')}
                     />
                 </div>
             </div>

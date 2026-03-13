@@ -202,9 +202,10 @@ export function formatTime(ms: number): string {
 // ============================================
 
 export function getItemDisplayTitle(
-    item: { type: string; metadata?: { title?: string } | null },
+    item: { metadata?: { title?: string } | null; content_summary?: string | null },
     t: (key: string) => string
 ): string {
     return item.metadata?.title ||
-        (item.type === 'text' ? t('textNote') : t('image'));
+        item.content_summary ||
+        t('untitled');
 }

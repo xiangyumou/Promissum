@@ -30,15 +30,16 @@ vi.mock('@/components/ui/Modal', () => ({
     }
 }));
 
-// Mock ImageUploadZone
-vi.mock('@/components/ImageUploadZone', () => ({
-    default: ({ file, onFileChange }: { file: File | null; onFileChange: (file: File | null) => void }) => (
-        <div data-testid="image-upload-zone">
-            {file ? <span>File: {file.name}</span> : <span>No file</span>}
+// Mock FileUploadZone
+vi.mock('@/components/FileUploadZone', () => ({
+    default: ({ files, onFilesChange }: { files: File[]; onFilesChange: (files: File[]) => void }) => (
+        <div data-testid="file-upload-zone">
+            <span>{files.length} files selected</span>
             <input
                 type="file"
                 data-testid="file-input"
-                onChange={(e) => onFileChange(e.target.files?.[0] || null)}
+                multiple
+                onChange={(e) => onFilesChange(Array.from(e.target.files || []))}
             />
         </div>
     )
@@ -49,7 +50,7 @@ vi.mock('next-intl', async (importOriginal) => {
     const actual = await importOriginal() as object;
     return {
         ...actual,
-        useTranslations: (namespace: string) => (key: string) => {
+        useTranslations: (namespace: string) => (key: string, params?: Record<string, unknown>) => {
             const translations: Record<string, Record<string, string>> = {
                 AddModal: {
                     title: 'New Entry',
@@ -67,29 +68,38 @@ vi.mock('next-intl', async (importOriginal) => {
                     encryptAndSave: 'Encrypt & Save'
                 },
                 Wizard: {
-                    step1Title: 'Choose Content Type',
-                    step2Title: 'Enter Content',
-                    step3Title: 'Set Lock Duration',
-                    step4Title: 'Review & Confirm',
+                    step1Title: 'Add Content',
+                    step2Title: 'Set Lock Duration',
+                    step3Title: 'Review & Confirm',
                     stepProgress: 'Step {current} of {total}',
-                    selectContentType: 'What type of content?',
-                    textNoteDesc: 'Write a secret note',
-                    imageDesc: 'Upload an image',
+                    addContentDesc: 'Add text, files, or both',
                     textContent: 'Text Content',
-                    imageContent: 'Image Content',
+                    files: 'Files',
+                    optional: 'optional',
                     contentType: 'Content Type',
                     contentPreview: 'Content Preview',
                     reviewBeforeSubmit: 'Review before submitting',
                     previousStep: 'Back',
-                    nextStep: 'Next'
+                    nextStep: 'Next',
+                    mixedContent: 'Mixed Content'
                 },
                 Common: {
+                    text: 'Text',
                     textNote: 'Text Note',
                     image: 'Image',
-                    unlocksAt: 'Unlocks at'
+                    file: 'File',
+                    unlocksAt: 'Unlocks at',
+                    untitled: 'Untitled'
                 }
             };
-            return translations[namespace]?.[key] || key;
+            let result = translations[namespace]?.[key] || key;
+            // Replace params
+            if (params) {
+                Object.entries(params).forEach(([k, v]) => {
+                    result = result.replace(`{${k}}`, String(v));
+                });
+            }
+            return result;
         }
     };
 });
@@ -138,14 +148,14 @@ describe('AddModal', () => {
                 />
             );
             // Step 1 title
-            expect(screen.getByText('Choose Content Type')).toBeInTheDocument();
+            expect(screen.getByText('Add Content')).toBeInTheDocument();
             // Step progress
-            expect(screen.getByText(/Step \{current\} of \{total\}/)).toBeInTheDocument();
+            expect(screen.getByText(/Step 1 of 3/)).toBeInTheDocument();
         });
     });
 
-    describe('Step 1: Content Type Selection', () => {
-        it('should show content type options', () => {
+    describe('Step 1: Content Input', () => {
+        it('should show content input fields', () => {
             renderWithProviders(
                 <AddModal
                     isOpen={true}
@@ -155,11 +165,26 @@ describe('AddModal', () => {
                 />
             );
 
-            expect(screen.getByText('Text Note')).toBeInTheDocument();
-            expect(screen.getByText('Image')).toBeInTheDocument();
+            expect(screen.getByPlaceholderText('Title (optional)')).toBeInTheDocument();
+            expect(screen.getByPlaceholderText('Enter your content')).toBeInTheDocument();
+            expect(screen.getByTestId('file-upload-zone')).toBeInTheDocument();
         });
 
-        it('should allow selecting text type', async () => {
+        it('should disable Next button when no content entered', () => {
+            renderWithProviders(
+                <AddModal
+                    isOpen={true}
+                    defaultDuration={60}
+                    onClose={mockOnClose}
+                    onSubmit={mockOnSubmit}
+                />
+            );
+
+            const nextButton = screen.getByText('Next');
+            expect(nextButton).toBeDisabled();
+        });
+
+        it('should enable Next button after entering text content', async () => {
             const user = userEvent.setup();
             renderWithProviders(
                 <AddModal
@@ -170,26 +195,11 @@ describe('AddModal', () => {
                 />
             );
 
-            await user.click(screen.getByText('Text Note'));
-            // Text type should be selected (visual feedback via classes)
-            const textButton = screen.getByText('Text Note').closest('button');
-            expect(textButton?.className).toContain('border-primary');
-        });
+            const textarea = screen.getByPlaceholderText('Enter your content');
+            await user.type(textarea, 'My secret content');
 
-        it('should allow selecting image type', async () => {
-            const user = userEvent.setup();
-            renderWithProviders(
-                <AddModal
-                    isOpen={true}
-                    defaultDuration={60}
-                    onClose={mockOnClose}
-                    onSubmit={mockOnSubmit}
-                />
-            );
-
-            await user.click(screen.getByText('Image'));
-            const imageButton = screen.getByText('Image').closest('button');
-            expect(imageButton?.className).toContain('border-primary');
+            const nextButton = screen.getByText('Next');
+            expect(nextButton).not.toBeDisabled();
         });
 
         it('should proceed to step 2 when Next is clicked', async () => {
@@ -203,14 +213,16 @@ describe('AddModal', () => {
                 />
             );
 
+            const textarea = screen.getByPlaceholderText('Enter your content');
+            await user.type(textarea, 'Test content');
             await user.click(screen.getByText('Next'));
-            // Should now be on Step 2
-            expect(screen.getByText('Enter Content')).toBeInTheDocument();
+
+            expect(screen.getByText('Set Lock Duration')).toBeInTheDocument();
         });
     });
 
-    describe('Step 2: Content Input', () => {
-        it('should show title input on step 2', async () => {
+    describe('Step 2: Time Settings', () => {
+        it('should show duration presets', async () => {
             const user = userEvent.setup();
             renderWithProviders(
                 <AddModal
@@ -221,74 +233,14 @@ describe('AddModal', () => {
                 />
             );
 
-            await user.click(screen.getByText('Next'));
-            expect(screen.getByPlaceholderText('Title (optional)')).toBeInTheDocument();
-        });
-
-        it('should show text content input for text type', async () => {
-            const user = userEvent.setup();
-            renderWithProviders(
-                <AddModal
-                    isOpen={true}
-                    defaultDuration={60}
-                    onClose={mockOnClose}
-                    onSubmit={mockOnSubmit}
-                />
-            );
-
-            await user.click(screen.getByText('Next'));
-            expect(screen.getByPlaceholderText('Enter your content')).toBeInTheDocument();
-        });
-
-        it('should show image upload for image type', async () => {
-            const user = userEvent.setup();
-            renderWithProviders(
-                <AddModal
-                    isOpen={true}
-                    defaultDuration={60}
-                    onClose={mockOnClose}
-                    onSubmit={mockOnSubmit}
-                />
-            );
-
-            await user.click(screen.getByText('Image'));
-            await user.click(screen.getByText('Next'));
-            expect(screen.getByTestId('image-upload-zone')).toBeInTheDocument();
-        });
-
-        it('should disable Next button when no content entered', async () => {
-            const user = userEvent.setup();
-            renderWithProviders(
-                <AddModal
-                    isOpen={true}
-                    defaultDuration={60}
-                    onClose={mockOnClose}
-                    onSubmit={mockOnSubmit}
-                />
-            );
-
-            await user.click(screen.getByText('Next')); // Go to step 2
-            const nextButton = screen.getByText('Next');
-            expect(nextButton).toBeDisabled();
-        });
-
-        it('should enable Next button after entering content', async () => {
-            const user = userEvent.setup();
-            renderWithProviders(
-                <AddModal
-                    isOpen={true}
-                    defaultDuration={60}
-                    onClose={mockOnClose}
-                    onSubmit={mockOnSubmit}
-                />
-            );
-
-            await user.click(screen.getByText('Next')); // Go to step 2
+            // Navigate to step 2
             const textarea = screen.getByPlaceholderText('Enter your content');
-            await user.type(textarea, 'My secret content');
+            await user.type(textarea, 'Test');
+            await user.click(screen.getByText('Next'));
 
-            const nextButton = screen.getByText('Next');
-            expect(nextButton).not.toBeDisabled();
+            expect(screen.getByText('Set Lock Duration')).toBeInTheDocument();
+            expect(screen.getByText('Duration')).toBeInTheDocument();
+            expect(screen.getByText('Custom Date')).toBeInTheDocument();
         });
 
         it('should allow going back to step 1', async () => {
@@ -302,57 +254,16 @@ describe('AddModal', () => {
                 />
             );
 
-            await user.click(screen.getByText('Next')); // Go to step 2
+            const textarea = screen.getByPlaceholderText('Enter your content');
+            await user.type(textarea, 'Test');
+            await user.click(screen.getByText('Next'));
             await user.click(screen.getByText('Back'));
-            expect(screen.getByText('Choose Content Type')).toBeInTheDocument();
+
+            expect(screen.getByText('Add Content')).toBeInTheDocument();
         });
     });
 
-    describe('Step 3: Time Settings', () => {
-        it('should show duration presets', async () => {
-            const user = userEvent.setup();
-            renderWithProviders(
-                <AddModal
-                    isOpen={true}
-                    defaultDuration={60}
-                    onClose={mockOnClose}
-                    onSubmit={mockOnSubmit}
-                />
-            );
-
-            // Navigate to step 3
-            await user.click(screen.getByText('Next')); // Step 2
-            await user.type(screen.getByPlaceholderText('Enter your content'), 'Test');
-            await user.click(screen.getByText('Next')); // Step 3
-
-            expect(screen.getByText('Set Lock Duration')).toBeInTheDocument();
-            expect(screen.getByText('1m')).toBeInTheDocument();
-            expect(screen.getByText('1h')).toBeInTheDocument();
-            expect(screen.getByText('1d')).toBeInTheDocument();
-        });
-
-        it('should show time mode toggle', async () => {
-            const user = userEvent.setup();
-            renderWithProviders(
-                <AddModal
-                    isOpen={true}
-                    defaultDuration={60}
-                    onClose={mockOnClose}
-                    onSubmit={mockOnSubmit}
-                />
-            );
-
-            // Navigate to step 3
-            await user.click(screen.getByText('Next'));
-            await user.type(screen.getByPlaceholderText('Enter your content'), 'Test');
-            await user.click(screen.getByText('Next'));
-
-            expect(screen.getByText('Duration')).toBeInTheDocument();
-            expect(screen.getByText('Custom Date')).toBeInTheDocument();
-        });
-    });
-
-    describe('Step 4: Review & Submit', () => {
+    describe('Step 3: Review & Submit', () => {
         it('should show review summary', async () => {
             const user = userEvent.setup();
             renderWithProviders(
@@ -365,10 +276,10 @@ describe('AddModal', () => {
             );
 
             // Navigate through all steps
+            const textarea = screen.getByPlaceholderText('Enter your content');
+            await user.type(textarea, 'Test content');
             await user.click(screen.getByText('Next')); // Step 2
-            await user.type(screen.getByPlaceholderText('Enter your content'), 'Test content');
             await user.click(screen.getByText('Next')); // Step 3
-            await user.click(screen.getByText('Next')); // Step 4
 
             expect(screen.getByText('Review & Confirm')).toBeInTheDocument();
             expect(screen.getByText('Content Type')).toBeInTheDocument();
@@ -387,10 +298,10 @@ describe('AddModal', () => {
             );
 
             // Navigate through all steps
+            const textarea = screen.getByPlaceholderText('Enter your content');
+            await user.type(textarea, 'Test content');
             await user.click(screen.getByText('Next')); // Step 2
-            await user.type(screen.getByPlaceholderText('Enter your content'), 'Test content');
             await user.click(screen.getByText('Next')); // Step 3
-            await user.click(screen.getByText('Next')); // Step 4
 
             // Submit
             await user.click(screen.getByText('Encrypt & Save'));
@@ -402,8 +313,7 @@ describe('AddModal', () => {
             // Verify FormData content
             const formData = mockOnSubmit.mock.calls[0][0];
             expect(formData).toBeInstanceOf(FormData);
-            expect(formData.get('type')).toBe('text');
-            expect(formData.get('content')).toBe('Test content');
+            expect(formData.get('text')).toBe('Test content');
         });
 
         it('should call onClose after successful submission', async () => {
@@ -418,8 +328,8 @@ describe('AddModal', () => {
             );
 
             // Navigate through all steps
-            await user.click(screen.getByText('Next'));
-            await user.type(screen.getByPlaceholderText('Enter your content'), 'Test');
+            const textarea = screen.getByPlaceholderText('Enter your content');
+            await user.type(textarea, 'Test');
             await user.click(screen.getByText('Next'));
             await user.click(screen.getByText('Next'));
 
@@ -443,14 +353,11 @@ describe('AddModal', () => {
                 />
             );
 
-            // Step 1 -> Step 2
-            await user.click(screen.getByText('Next'));
-
-            // Enter title and content
+            // Enter title and content on step 1
             await user.type(screen.getByPlaceholderText('Title (optional)'), 'My Title');
             await user.type(screen.getByPlaceholderText('Enter your content'), 'Content here');
 
-            // Step 2 -> Step 3 -> Step 4
+            // Navigate to step 3
             await user.click(screen.getByText('Next'));
             await user.click(screen.getByText('Next'));
 

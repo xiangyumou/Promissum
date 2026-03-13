@@ -10,7 +10,7 @@ import Database from 'better-sqlite3';
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { eq, and, desc, asc, sql } from 'drizzle-orm';
 import { decrypt } from './crypto';
-import type { FilterParams, Item, ItemMetadata } from '@/lib/types';
+import type { FilterParams, Item, ItemMetadata, ContentBundle } from '@/lib/types';
 
 // ============================================
 // Schema
@@ -18,9 +18,8 @@ import type { FilterParams, Item, ItemMetadata } from '@/lib/types';
 
 export const itemsTable = sqliteTable('items', {
     id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-    type: text('type').notNull(), // 'text' | 'image'
     encryptedData: text('encrypted_data').notNull(),
-    originalName: text('original_name'),
+    contentSummary: text('content_summary'), // Summary/title of content
     decryptAt: integer('decrypt_at', { mode: 'timestamp' }).notNull(),
     roundNumber: integer('round_number').notNull(),
     createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
@@ -60,12 +59,11 @@ function isUnlocked(decryptAt: Date): boolean {
 
 function formatItemResponse(item: {
     id: string;
-    type: string;
-    originalName: string | null;
+    contentSummary: string | null;
     decryptAt: Date;
     createdAt: Date;
     metadata: string | null;
-    content?: string | null;
+    content?: ContentBundle | null;
 }): Item {
     const now = Date.now();
     const decryptAtMs = item.decryptAt.getTime();
@@ -73,12 +71,11 @@ function formatItemResponse(item: {
 
     const response: Item = {
         id: item.id,
-        type: item.type as 'text' | 'image',
         unlocked,
         decrypt_at: decryptAtMs,
         created_at: item.createdAt.getTime(),
         metadata: item.metadata ? JSON.parse(item.metadata) as ItemMetadata : undefined,
-        original_name: item.originalName ?? null,
+        content_summary: item.contentSummary ?? null,
     };
 
     if (!unlocked) {
@@ -99,9 +96,6 @@ function formatItemResponse(item: {
 export async function listItems(filters?: FilterParams): Promise<{ items: Item[]; total: number }> {
     // Build where conditions
     const conditions = [];
-    if (filters?.type) {
-        conditions.push(eq(itemsTable.type, filters.type));
-    }
     if (filters?.status === 'locked') {
         conditions.push(sql`${itemsTable.decryptAt} >= ${new Date()}`);
     } else if (filters?.status === 'unlocked') {
@@ -128,8 +122,7 @@ export async function listItems(filters?: FilterParams): Promise<{ items: Item[]
     // Get paginated results
     const dbItems = await db.select({
         id: itemsTable.id,
-        type: itemsTable.type,
-        originalName: itemsTable.originalName,
+        contentSummary: itemsTable.contentSummary,
         decryptAt: itemsTable.decryptAt,
         createdAt: itemsTable.createdAt,
         metadata: itemsTable.metadata,
@@ -141,8 +134,7 @@ export async function listItems(filters?: FilterParams): Promise<{ items: Item[]
 
     const mappedItems = dbItems.map(item => formatItemResponse({
         id: item.id!,
-        type: item.type!,
-        originalName: item.originalName ?? null,
+        contentSummary: item.contentSummary ?? null,
         decryptAt: item.decryptAt!,
         createdAt: item.createdAt!,
         metadata: item.metadata ?? null,
@@ -154,8 +146,7 @@ export async function listItems(filters?: FilterParams): Promise<{ items: Item[]
 export async function getItem(id: string): Promise<Item | null> {
     const [itemHeader] = await db.select({
         id: itemsTable.id,
-        type: itemsTable.type,
-        originalName: itemsTable.originalName,
+        contentSummary: itemsTable.contentSummary,
         decryptAt: itemsTable.decryptAt,
         createdAt: itemsTable.createdAt,
         metadata: itemsTable.metadata,
@@ -169,8 +160,7 @@ export async function getItem(id: string): Promise<Item | null> {
 
     const response = formatItemResponse({
         id: itemHeader.id!,
-        type: itemHeader.type!,
-        originalName: itemHeader.originalName ?? null,
+        contentSummary: itemHeader.contentSummary ?? null,
         decryptAt: itemHeader.decryptAt!,
         createdAt: itemHeader.createdAt!,
         metadata: itemHeader.metadata ?? null,
@@ -187,12 +177,10 @@ export async function getItem(id: string): Promise<Item | null> {
                 const decryptedBuffer = await decrypt(itemSecret.encryptedData);
 
                 if (decryptedBuffer) {
-                    if (itemHeader.type === 'text') {
-                        response.content = decryptedBuffer.toString('utf-8');
-                    } else {
-                        const base64Content = decryptedBuffer.toString('base64');
-                        response.content = `data:image/png;base64,${base64Content}`;
-                    }
+                    // Parse ContentBundle from decrypted data
+                    const jsonString = decryptedBuffer.toString('utf-8');
+                    const bundle: ContentBundle = JSON.parse(jsonString);
+                    response.content = bundle;
                 } else {
                     response.content = null;
                 }
@@ -207,18 +195,16 @@ export async function getItem(id: string): Promise<Item | null> {
 }
 
 export async function createItem(data: {
-    type: 'text' | 'image';
     encryptedData: string;
-    originalName: string | null;
+    contentSummary: string | null;
     decryptAt: Date;
     roundNumber: number;
     metadata?: ItemMetadata;
 }): Promise<Item> {
     const [item] = await db.insert(itemsTable).values({
         id: crypto.randomUUID(),
-        type: data.type,
         encryptedData: data.encryptedData,
-        originalName: data.originalName,
+        contentSummary: data.contentSummary,
         decryptAt: data.decryptAt,
         roundNumber: data.roundNumber,
         metadata: JSON.stringify(data.metadata ?? {}),
@@ -226,8 +212,7 @@ export async function createItem(data: {
 
     return formatItemResponse({
         id: item.id!,
-        type: item.type!,
-        originalName: item.originalName ?? null,
+        contentSummary: item.contentSummary ?? null,
         decryptAt: item.decryptAt!,
         createdAt: item.createdAt!,
         metadata: item.metadata ?? null,
@@ -243,22 +228,15 @@ export async function getStats(): Promise<{
     totalItems: number;
     lockedItems: number;
     unlockedItems: number;
-    byType: { text: number; image: number };
 }> {
     const allItems = await db.select({
-        type: itemsTable.type,
         decryptAt: itemsTable.decryptAt,
     }).from(itemsTable);
 
     const now = Date.now();
-    let textCount = 0;
-    let imageCount = 0;
     let unlockedCount = 0;
 
     for (const item of allItems) {
-        if (item.type === 'text') textCount++;
-        else if (item.type === 'image') imageCount++;
-
         if (item.decryptAt && item.decryptAt.getTime() <= now) {
             unlockedCount++;
         }
@@ -268,6 +246,5 @@ export async function getStats(): Promise<{
         totalItems: allItems.length,
         lockedItems: allItems.length - unlockedCount,
         unlockedItems: unlockedCount,
-        byType: { text: textCount, image: imageCount },
     };
 }

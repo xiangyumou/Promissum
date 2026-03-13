@@ -10,8 +10,8 @@ import {
     Check
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import Step3TimeSettings from './add-modal/Step3TimeSettings';
-import { Step1TypeSelection, Step2ContentInput, Step4Preview } from './add-modal/WizardSteps';
+import Step2TimeSettings from './add-modal/Step2TimeSettings';
+import { Step1ContentInput, Step3Preview } from './add-modal/WizardSteps';
 import { useAddItemWizard, Step } from '@/hooks/useAddItemWizard';
 
 interface AddModalProps {
@@ -30,14 +30,12 @@ export default function AddModal(props: AddModalProps) {
 
     const {
         currentStep,
-        type,
-        setType,
         title,
         setTitle,
         text,
         setText,
-        file,
-        setFile,
+        files,
+        addFiles,
         timeMode,
         setTimeMode,
         accumulatedDuration,
@@ -57,6 +55,21 @@ export default function AddModal(props: AddModalProps) {
         handleAbsoluteTimeChange
     } = wizard;
 
+    // Handle file changes - convert add/remove to onFilesChange pattern
+    const handleFilesChange = (newFiles: File[]) => {
+        // Clear current and add new (to maintain compatibility with FileUploadZone)
+        const currentFiles = files;
+        // Only add files that are not already in the list
+        const uniqueNewFiles = newFiles.filter(
+            newFile => !currentFiles.some(
+                existingFile => existingFile.name === newFile.name && existingFile.size === newFile.size
+            )
+        );
+        if (uniqueNewFiles.length > 0) {
+            addFiles(uniqueNewFiles);
+        }
+    };
+
     return (
         <Modal
             isOpen={isOpen}
@@ -68,7 +81,7 @@ export default function AddModal(props: AddModalProps) {
                 {/* Progress Indicator - Minimal */}
                 <div className="mb-6">
                     <div className="flex items-center justify-between">
-                        {[1, 2, 3, 4].map((step) => (
+                        {[1, 2, 3].map((step) => (
                             <div key={step} className="flex items-center flex-1">
                                 <button
                                     type="button"
@@ -85,7 +98,7 @@ export default function AddModal(props: AddModalProps) {
                                 >
                                     {step < currentStep ? <Check size={16} /> : step}
                                 </button>
-                                {step < 4 && (
+                                {step < 3 && (
                                     <div className={cn(
                                         "flex-1 h-0.5 mx-2 rounded-full transition-colors",
                                         step < currentStep ? "bg-primary" : "bg-border"
@@ -99,34 +112,28 @@ export default function AddModal(props: AddModalProps) {
                             {tWizard(`step${currentStep}Title`)}
                         </p>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                            {tWizard('stepProgress', { current: currentStep, total: 4 })}
+                            {tWizard('stepProgress', { current: currentStep, total: 3 })}
                         </p>
                     </div>
                 </div>
 
                 {/* Step Content */}
                 <div className="min-h-[280px]">
-                    {/* Step 1: Content Type Selection */}
+                    {/* Step 1: Content Input */}
                     {currentStep === 1 && (
-                        <Step1TypeSelection type={type} setType={setType} />
-                    )}
-
-                    {/* Step 2: Content Input */}
-                    {currentStep === 2 && (
-                        <Step2ContentInput
-                            type={type}
+                        <Step1ContentInput
                             title={title}
                             setTitle={setTitle}
                             text={text}
                             setText={setText}
-                            file={file}
-                            setFile={setFile}
+                            files={files}
+                            onFilesChange={handleFilesChange}
                         />
                     )}
 
-                    {/* Step 3: Time Lock Settings */}
-                    {currentStep === 3 && (
-                        <Step3TimeSettings
+                    {/* Step 2: Time Lock Settings */}
+                    {currentStep === 2 && (
+                        <Step2TimeSettings
                             timeMode={timeMode}
                             setTimeMode={setTimeMode}
                             accumulatedDuration={accumulatedDuration}
@@ -142,13 +149,12 @@ export default function AddModal(props: AddModalProps) {
                         />
                     )}
 
-                    {/* Step 4: Preview & Confirm */}
-                    {currentStep === 4 && (
-                        <Step4Preview
-                            type={type}
+                    {/* Step 3: Preview & Confirm */}
+                    {currentStep === 3 && (
+                        <Step3Preview
                             title={title}
                             text={text}
-                            file={file}
+                            files={files}
                             unlockTimeInfo={unlockTimeInfo}
                         />
                     )}
@@ -170,7 +176,7 @@ export default function AddModal(props: AddModalProps) {
 
                     <div className="flex-1" />
 
-                    {currentStep < 4 ? (
+                    {currentStep < 3 ? (
                         <button
                             type="button"
                             onClick={handleNext}

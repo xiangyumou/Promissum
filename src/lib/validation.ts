@@ -10,11 +10,22 @@
 import { z } from 'zod';
 
 // =============================================================================
-// Item Types
+// Content Bundle Schemas
 // =============================================================================
 
-export const ItemTypeSchema = z.enum(['text', 'image']);
-export type ItemType = z.infer<typeof ItemTypeSchema>;
+export const BundleFileSchema = z.object({
+    id: z.string(),
+    name: z.string(),
+    mimeType: z.string(),
+    size: z.number().int().nonnegative(),
+    data: z.string(), // base64 encoded
+});
+
+export const ContentBundleSchema = z.object({
+    version: z.literal(1),
+    text: z.string().optional(),
+    files: z.array(BundleFileSchema),
+});
 
 // =============================================================================
 // Filter & Query Schemas
@@ -25,7 +36,6 @@ export type ItemType = z.infer<typeof ItemTypeSchema>;
  */
 export const ItemQuerySchema = z.object({
     status: z.enum(['all', 'locked', 'unlocked']).optional().nullable().default('all'),
-    type: z.enum(['text', 'image']).optional().nullable(),
     search: z.string().optional(),
     limit: z.number().int().positive().max(1000).optional().default(50),
     offset: z.number().int().nonnegative().optional().default(0),
@@ -57,10 +67,9 @@ export type { ApiItemQueryInput as ApiQueryInput };
 
 /**
  * Create item request schema
+ * Note: Content is validated at runtime from FormData, not JSON body
  */
 export const CreateItemSchema = z.object({
-    type: ItemTypeSchema,
-    content: z.string().min(1, 'Content is required'),
     durationMinutes: z.number().int().positive().optional(),
     decryptAt: z.number().int().positive().optional(),
     metadata: z.record(z.string(), z.unknown()).optional(),
@@ -87,16 +96,34 @@ export const ItemIdSchema = z.string().min(1, 'Item ID is required');
 // =============================================================================
 
 /**
+ * File info for responses (without binary data)
+ */
+export interface FileInfo {
+    id: string;
+    name: string;
+    mimeType: string;
+    size: number;
+}
+
+/**
+ * Content bundle response (without binary data)
+ */
+export interface ContentBundleResponse {
+    version: 1;
+    text?: string;
+    files: FileInfo[];
+}
+
+/**
  * Item response type (used in API routes)
  */
 export interface ItemResponse {
     id: string;
-    type: string;
-    originalName: string | null;
+    unlocked: boolean;
     decryptAt: number;
     createdAt: number;
-    unlocked: boolean;
     metadata: Record<string, unknown> | null;
-    content?: string | null;
+    content?: ContentBundleResponse | null;
     timeRemainingMs?: number;
+    contentSummary?: string | null;
 }

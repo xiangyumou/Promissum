@@ -4,7 +4,7 @@ import { calculateDurationMinutes, calculateUnlockTimeInfo, AbsoluteTime } from 
 import { MS_PER_HOUR } from '@/lib/constants';
 
 export type TimeMode = 'duration' | 'absolute';
-export type Step = 1 | 2 | 3 | 4;
+export type Step = 1 | 2 | 3;
 
 interface UseAddItemWizardProps {
     isOpen: boolean;
@@ -19,13 +19,12 @@ export function useAddItemWizard({ isOpen, defaultDuration, onClose, onSubmit }:
     // Wizard state
     const [currentStep, setCurrentStep] = useState<Step>(1);
 
-    // Step 1 & 2: Content
-    const [type, setType] = useState<'text' | 'image'>('text');
+    // Step 1: Content (simplified - no type selection)
     const [title, setTitle] = useState('');
     const [text, setText] = useState('');
-    const [file, setFile] = useState<File | null>(null);
+    const [files, setFiles] = useState<File[]>([]);
 
-    // Step 3: Time settings
+    // Step 2: Time settings
     const [timeMode, setTimeMode] = useState<TimeMode>('duration');
     const [accumulatedDuration, setAccumulatedDuration] = useState(defaultDuration);
 
@@ -45,7 +44,7 @@ export function useAddItemWizard({ isOpen, defaultDuration, onClose, onSubmit }:
 
     const [absoluteTime, setAbsoluteTime] = useState<AbsoluteTime>(getDefaultAbsoluteTime);
 
-    // Reset duration and step when modal opens
+    // Reset form when modal opens
     useEffect(() => {
         if (isOpen) {
             setCurrentStep(1);
@@ -99,18 +98,30 @@ export function useAddItemWizard({ isOpen, defaultDuration, onClose, onSubmit }:
         setAbsoluteTime(prev => ({ ...prev, [field as keyof typeof absoluteTime]: value }));
     };
 
+    // File handling
+    const addFiles = useCallback((newFiles: File[]) => {
+        setFiles(prev => [...prev, ...newFiles]);
+    }, []);
+
+    const removeFile = useCallback((index: number) => {
+        setFiles(prev => prev.filter((_, i) => i !== index));
+    }, []);
+
+    const clearFiles = useCallback(() => {
+        setFiles([]);
+    }, []);
+
     const handleSubmit = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
 
-        if (type === 'text' && !text.trim()) return;
-        if (type === 'image' && !file) return;
+        // Must have at least text or one file
+        if (!text.trim() && files.length === 0) return;
         if (!unlockTimeInfo.isValid) return;
 
         setIsSubmitting(true);
 
         try {
             const formData = new FormData();
-            formData.append('type', type);
 
             if (timeMode === 'absolute') {
                 formData.append('decryptAt', unlockTimeInfo.unlockDate.getTime().toString());
@@ -123,10 +134,14 @@ export function useAddItemWizard({ isOpen, defaultDuration, onClose, onSubmit }:
                 formData.append('metadata', JSON.stringify({ title: title.trim() }));
             }
 
-            if (type === 'text') {
-                formData.append('content', text);
-            } else if (file) {
-                formData.append('file', file);
+            // Add text content
+            if (text.trim()) {
+                formData.append('text', text);
+            }
+
+            // Add all files
+            for (const file of files) {
+                formData.append('files', file);
             }
 
             await onSubmit(formData);
@@ -135,7 +150,7 @@ export function useAddItemWizard({ isOpen, defaultDuration, onClose, onSubmit }:
             setCurrentStep(1);
             setTitle('');
             setText('');
-            setFile(null);
+            setFiles([]);
             setAccumulatedDuration(defaultDuration);
             setTimeMode('duration');
             onClose();
@@ -144,48 +159,51 @@ export function useAddItemWizard({ isOpen, defaultDuration, onClose, onSubmit }:
         }
     };
 
-    // Paste event handler for images
+    // Paste event handler for files
     useEffect(() => {
         const handlePaste = (e: ClipboardEvent) => {
-            if (!isOpen || type !== 'image' || currentStep !== 2) return;
+            if (!isOpen || currentStep !== 1) return;
 
             const items = e.clipboardData?.items;
             if (!items) return;
 
+            const pastedFiles: File[] = [];
             for (let i = 0; i < items.length; i++) {
-                if (items[i].type.indexOf('image') !== -1) {
-                    const blob = items[i].getAsFile();
+                const item = items[i];
+                if (item.kind === 'file') {
+                    const blob = item.getAsFile();
                     if (blob) {
-                        setFile(blob);
-                        e.preventDefault();
-                        break;
+                        pastedFiles.push(blob);
                     }
                 }
+            }
+
+            if (pastedFiles.length > 0) {
+                addFiles(pastedFiles);
+                e.preventDefault();
             }
         };
 
         window.addEventListener('paste', handlePaste);
         return () => window.removeEventListener('paste', handlePaste);
-    }, [isOpen, type, currentStep]);
+    }, [isOpen, currentStep, addFiles]);
 
     // Step validation
     const canProceed = useCallback((step: Step): boolean => {
         switch (step) {
             case 1:
-                return true; // Type is always valid
+                return text.trim().length > 0 || files.length > 0; // Must have content
             case 2:
-                return type === 'text' ? text.trim().length > 0 : file !== null;
-            case 3:
                 return unlockTimeInfo.isValid;
-            case 4:
+            case 3:
                 return true; // Review step
             default:
                 return false;
         }
-    }, [type, text, file, unlockTimeInfo.isValid]);
+    }, [text, files.length, unlockTimeInfo.isValid]);
 
     const handleNext = () => {
-        if (currentStep < 4 && canProceed(currentStep)) {
+        if (currentStep < 3 && canProceed(currentStep)) {
             setCurrentStep((prev) => (prev + 1) as Step);
         }
     };
@@ -205,14 +223,14 @@ export function useAddItemWizard({ isOpen, defaultDuration, onClose, onSubmit }:
 
     return {
         currentStep,
-        type,
-        setType,
         title,
         setTitle,
         text,
         setText,
-        file,
-        setFile,
+        files,
+        addFiles,
+        removeFile,
+        clearFiles,
         timeMode,
         setTimeMode,
         accumulatedDuration,

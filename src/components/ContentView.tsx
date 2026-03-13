@@ -1,14 +1,14 @@
 'use client';
 
-import { Item } from '@/lib/types';
-import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Menu } from 'lucide-react';
+import { Item, ContentBundle, detectContentType, getContentTypeIcon } from '@/lib/types';
+import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Menu, File, Film, Music, Archive, Layers, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations, useLocale } from 'next-intl';
 import { formatUnlockTime, getItemDisplayTitle } from '@/core/time';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 import ThemeToggle from './shared/ThemeToggle';
 import LanguageSwitcher from './shared/LanguageSwitcher';
@@ -23,6 +23,17 @@ interface ContentViewProps {
     onMenuClick?: () => void;
 }
 
+// Icon mapping
+const iconComponents: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
+    FileText,
+    Image: ImageIcon,
+    Video: Film,
+    Music,
+    Archive,
+    File,
+    Layers,
+};
+
 export default function ContentView({ selectedId, item, isLoading, onDelete, onMenuClick }: ContentViewProps) {
     const t = useTranslations('ContentView');
     const tCommon = useTranslations('Common');
@@ -30,6 +41,31 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
 
     // Image lightbox state
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
+
+    // Parse content bundle
+    const contentBundle = useMemo(() => {
+        if (!item?.content) return null;
+        return item.content as ContentBundle;
+    }, [item?.content]);
+
+    // Detect content type
+    const contentType = useMemo(() => {
+        if (!contentBundle) return 'file';
+        return detectContentType(contentBundle);
+    }, [contentBundle]);
+
+    // Get images for lightbox
+    const images = useMemo(() => {
+        if (!contentBundle?.files) return [];
+        return contentBundle.files
+            .filter(f => f.mimeType.startsWith('image/'))
+            .map(f => `data:${f.mimeType};base64,${f.data}`);
+    }, [contentBundle]);
+
+    // Get icon component
+    const iconName = getContentTypeIcon(contentType);
+    const TypeIcon = iconComponents[iconName] || File;
 
     // No item selected state -> Show welcome message
     if (!selectedId) {
@@ -92,11 +128,6 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
 
     const isUnlocked = Date.now() >= item.decrypt_at;
 
-    // Derive image source if type is image and item is unlocked
-    const imageSrc = item.type === 'image' && item.content
-        ? (item.content.startsWith('data:') ? item.content : `data:image/png;base64,${item.content}`)
-        : '';
-
     return (
         <div className="h-full flex flex-col bg-background relative overflow-hidden flex-1 w-full">
             {/* Header / Meta Info */}
@@ -117,7 +148,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                             "w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center text-xl shrink-0",
                             "bg-accent border border-border text-muted-foreground"
                         )}>
-                            {item.type === 'text' ? <FileText size={20} className="md:w-6 md:h-6" /> : <ImageIcon size={20} className="md:w-6 md:h-6" />}
+                            <TypeIcon size={20} className="md:w-6 md:h-6" />
                         </div>
                         <div className="min-w-0 flex-1">
                             <h2 className="text-lg md:text-xl font-bold text-foreground truncate" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
@@ -157,51 +188,106 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                 {isUnlocked ? (
                     <div className="h-full overflow-y-auto custom-scrollbar p-6">
                         <div className="max-w-4xl mx-auto space-y-6">
-                            {item.type === 'text' ? (
-                                // Text Content - Clean card style
-                                <div className="card min-h-[50vh]">
+                            {/* Text Content */}
+                            {contentBundle?.text && (
+                                <div className="card">
                                     <div className="text-foreground leading-relaxed whitespace-pre-wrap">
-                                        {item.content}
+                                        {contentBundle.text}
                                     </div>
                                 </div>
-                            ) : (
-                                // Image Content
-                                <div className="flex flex-col items-center gap-4">
-                                    <div
-                                        className="relative rounded-xl overflow-hidden border border-border bg-black/50 cursor-pointer group"
-                                        onClick={() => setIsLightboxOpen(true)}
-                                    >
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
-                                            src={imageSrc}
-                                            alt="Decrypted content"
-                                            className="max-h-[70vh] w-auto object-contain transition-transform duration-200 group-hover:scale-[1.02]"
-                                        />
+                            )}
+
+                            {/* Files */}
+                            {contentBundle?.files && contentBundle.files.length > 0 && (
+                                <div className="space-y-4">
+                                    {/* Image Gallery */}
+                                    {images.length > 0 && (
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                            {images.map((src, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className="relative aspect-square rounded-xl overflow-hidden border border-border bg-black/50 cursor-pointer group"
+                                                    onClick={() => {
+                                                        setLightboxIndex(idx);
+                                                        setIsLightboxOpen(true);
+                                                    }}
+                                                >
+                                                    <img
+                                                        src={src}
+                                                        alt={`Image ${idx + 1}`}
+                                                        className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* File List */}
+                                    <div className="card">
+                                        <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                                            {t('attachments')}
+                                        </h3>
+                                        <div className="space-y-2">
+                                            {contentBundle.files.map((file, idx) => {
+                                                const isImage = file.mimeType.startsWith('image/');
+                                                const isVideo = file.mimeType.startsWith('video/');
+                                                const isAudio = file.mimeType.startsWith('audio/');
+
+                                                return (
+                                                    <div
+                                                        key={file.id || idx}
+                                                        className="flex items-center gap-3 p-3 rounded-lg bg-accent border border-border"
+                                                    >
+                                                        <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center shrink-0">
+                                                            {isImage && <ImageIcon size={20} className="text-primary" />}
+                                                            {isVideo && <Film size={20} className="text-primary" />}
+                                                            {isAudio && <Music size={20} className="text-primary" />}
+                                                            {!isImage && !isVideo && !isAudio && <File size={20} className="text-primary" />}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm font-medium truncate" title={file.name}>
+                                                                {file.name}
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground">
+                                                                {(file.size / 1024).toFixed(1)} KB
+                                                            </p>
+                                                        </div>
+                                                        <a
+                                                            href={`data:${file.mimeType};base64,${file.data}`}
+                                                            download={file.name}
+                                                            className="p-2 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                                                            title={t('download')}
+                                                        >
+                                                            <Download size={18} />
+                                                        </a>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
                                 </div>
                             )}
 
                             {/* Image Lightbox */}
-                            <Lightbox
-                                open={isLightboxOpen}
-                                close={() => setIsLightboxOpen(false)}
-                                slides={[{ src: imageSrc }]}
-                                plugins={[Zoom]}
-                                zoom={{
-                                    maxZoomPixelRatio: 3,
-                                    scrollToZoom: true,
-                                }}
-                                carousel={{ finite: true }}
-                                controller={{ closeOnBackdropClick: true }}
-                                render={{
-                                    buttonPrev: () => null,
-                                    buttonNext: () => null,
-                                }}
-                            />
+                            {images.length > 0 && (
+                                <Lightbox
+                                    open={isLightboxOpen}
+                                    close={() => setIsLightboxOpen(false)}
+                                    slides={images.map(src => ({ src }))}
+                                    index={lightboxIndex}
+                                    plugins={[Zoom]}
+                                    zoom={{
+                                        maxZoomPixelRatio: 3,
+                                        scrollToZoom: true,
+                                    }}
+                                    carousel={{ finite: true }}
+                                    controller={{ closeOnBackdropClick: true }}
+                                />
+                            )}
                         </div>
                     </div>
                 ) : (
-                    // Locked State - Clean, no animation
+                    // Locked State
                     <div className="absolute inset-0 flex items-center justify-center p-6">
                         <div className="text-center space-y-6 max-w-md w-full">
                             {/* Lock Icon - Static */}

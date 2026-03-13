@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Item, FilterParams } from '@/lib/types';
 import { isUnlocked as checkUnlocked, getItemDisplayTitle } from '@/core/time';
 import FilterBar from './FilterBar';
-import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, PanelLeftClose } from 'lucide-react';
+import { Plus, X, FileText, Lock, Unlock, PanelLeftClose, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import { useHasMounted } from '@/hooks/useHasMounted';
@@ -221,6 +221,11 @@ function ItemCard({
     const timeRemaining = hasMounted ? getRelativeTimeRemaining(item.decrypt_at) : '...';
     const tCommon = useTranslations('Common');
 
+    // Determine icon based on content_summary or default to generic
+    // In locked state we can't access the actual content, so we use a generic icon
+    // When unlocked, the content type could be detected from the bundle
+    const ContentIcon = item.content ? Layers : FileText;
+
     return (
         <div
             className={cn(
@@ -234,7 +239,7 @@ function ItemCard({
                 "flex items-center justify-center rounded-md w-9 h-9 shrink-0",
                 "bg-[var(--surface)] border border-border text-muted-foreground"
             )}>
-                {item.type === 'text' ? <FileText size={16} /> : <ImageIcon size={16} />}
+                <ContentIcon size={16} />
             </div>
 
             <div className="flex-1 min-w-0">

@@ -1,101 +1,50 @@
 'use client';
 
-import { FileText, ImageIcon, Lock } from 'lucide-react';
+import { FileText, Lock, Layers, File, Image, Film, Music, Archive, FileIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { cn } from '@/lib/utils';
-import ImageUploadZone from '../ImageUploadZone';
+import FileUploadZone from '../FileUploadZone';
 
-interface Step1TypeSelectionProps {
-    type: 'text' | 'image';
-    setType: (type: 'text' | 'image') => void;
+// Get icon based on content type
+function getContentTypeIcon(files: File[], hasText: boolean) {
+    if (hasText && files.length > 0) return Layers;
+    if (hasText) return FileText;
+    if (files.length === 0) return File;
+    if (files.length === 1) {
+        const file = files[0];
+        if (file.type.startsWith('image/')) return Image;
+        if (file.type.startsWith('video/')) return Film;
+        if (file.type.startsWith('audio/')) return Music;
+        if (['application/zip', 'application/x-zip-compressed'].includes(file.type)) return Archive;
+    }
+    return FileIcon;
 }
 
-export function Step1TypeSelection({ type, setType }: Step1TypeSelectionProps) {
-    const tCommon = useTranslations('Common');
-    const tWizard = useTranslations('Wizard');
-
-    return (
-        <div className="space-y-4">
-            <p className="text-sm text-muted-foreground text-center mb-6">
-                {tWizard('selectContentType')}
-            </p>
-            <div className="grid grid-cols-2 gap-4">
-                <button
-                    type="button"
-                    className={cn(
-                        "p-6 rounded-lg border transition-all flex flex-col items-center gap-3",
-                        type === 'text'
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50 hover:bg-accent"
-                    )}
-                    onClick={() => setType('text')}
-                >
-                    <div className={cn(
-                        "w-12 h-12 rounded-full flex items-center justify-center",
-                        type === 'text' ? "bg-primary text-primary-foreground" : "bg-accent text-muted-foreground border border-border"
-                    )}>
-                        <FileText size={24} />
-                    </div>
-                    <div className="text-center">
-                        <p className="font-medium">{tCommon('textNote')}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            {tWizard('textNoteDesc')}
-                        </p>
-                    </div>
-                </button>
-
-                <button
-                    type="button"
-                    className={cn(
-                        "p-6 rounded-lg border transition-all flex flex-col items-center gap-3",
-                        type === 'image'
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50 hover:bg-accent"
-                    )}
-                    onClick={() => setType('image')}
-                >
-                    <div className={cn(
-                        "w-12 h-12 rounded-full flex items-center justify-center",
-                        type === 'image' ? "bg-primary text-primary-foreground" : "bg-accent text-muted-foreground border border-border"
-                    )}>
-                        <ImageIcon size={24} />
-                    </div>
-                    <div className="text-center">
-                        <p className="font-medium">{tCommon('image')}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                            {tWizard('imageDesc')}
-                        </p>
-                    </div>
-                </button>
-            </div>
-        </div>
-    );
-}
-
-interface Step2ContentInputProps {
-    type: 'text' | 'image';
+interface Step1ContentInputProps {
     title: string;
     setTitle: (title: string) => void;
     text: string;
     setText: (text: string) => void;
-    file: File | null;
-    setFile: (file: File | null) => void;
+    files: File[];
+    onFilesChange: (files: File[]) => void;
 }
 
-export function Step2ContentInput({
-    type,
+export function Step1ContentInput({
     title,
     setTitle,
     text,
     setText,
-    file,
-    setFile
-}: Step2ContentInputProps) {
+    files,
+    onFilesChange
+}: Step1ContentInputProps) {
     const t = useTranslations('AddModal');
     const tWizard = useTranslations('Wizard');
 
     return (
         <div className="space-y-4">
+            <p className="text-sm text-muted-foreground text-center mb-4">
+                {tWizard('addContentDesc')}
+            </p>
+
             {/* Title Input (Optional) */}
             <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-2">
@@ -111,36 +60,38 @@ export function Step2ContentInput({
                 />
             </div>
 
-            {/* Content Input */}
+            {/* Text Input */}
             <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-2">
-                    {type === 'text' ? tWizard('textContent') : tWizard('imageContent')}
+                    {tWizard('textContent')} <span className="text-muted-foreground/50">({tWizard('optional')})</span>
                 </label>
-                {type === 'text' ? (
-                    <textarea
-                        className="input resize-none"
-                        placeholder={t('enterContent')}
-                        value={text}
-                        onChange={(e) => setText(e.target.value)}
-                        rows={8}
-                        autoFocus
-                    />
-                ) : (
-                    <ImageUploadZone
-                        file={file}
-                        onFileChange={setFile}
-                    />
-                )}
+                <textarea
+                    className="input resize-none"
+                    placeholder={t('enterContent')}
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    rows={5}
+                />
+            </div>
+
+            {/* File Upload */}
+            <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-2">
+                    {tWizard('files')} <span className="text-muted-foreground/50">({tWizard('optional')})</span>
+                </label>
+                <FileUploadZone
+                    files={files}
+                    onFilesChange={onFilesChange}
+                />
             </div>
         </div>
     );
 }
 
-interface Step4PreviewProps {
-    type: 'text' | 'image';
+interface Step3PreviewProps {
     title: string;
     text: string;
-    file: File | null;
+    files: File[];
     unlockTimeInfo: {
         isValid: boolean;
         formatted: string;
@@ -148,16 +99,18 @@ interface Step4PreviewProps {
     };
 }
 
-export function Step4Preview({
-    type,
+export function Step3Preview({
     title,
     text,
-    file,
+    files,
     unlockTimeInfo
-}: Step4PreviewProps) {
+}: Step3PreviewProps) {
     const t = useTranslations('AddModal');
     const tCommon = useTranslations('Common');
     const tWizard = useTranslations('Wizard');
+
+    const hasText = text.trim().length > 0;
+    const ContentIcon = getContentTypeIcon(files, hasText);
 
     return (
         <div className="space-y-4">
@@ -171,8 +124,12 @@ export function Step4Preview({
                 <div className="p-4 rounded-lg bg-accent border border-border">
                     <p className="text-xs text-muted-foreground mb-1">{tWizard('contentType')}</p>
                     <div className="flex items-center gap-2">
-                        {type === 'text' ? <FileText size={16} className="text-muted-foreground" /> : <ImageIcon size={16} className="text-muted-foreground" />}
-                        <p className="font-medium">{type === 'text' ? tCommon('textNote') : tCommon('image')}</p>
+                        <ContentIcon size={16} className="text-muted-foreground" />
+                        <p className="font-medium">
+                            {hasText && files.length > 0 && tWizard('mixedContent')}
+                            {hasText && files.length === 0 && tCommon('text')}
+                            {!hasText && files.length > 0 && tWizard('files', { count: files.length })}
+                        </p>
                     </div>
                 </div>
 
@@ -187,15 +144,25 @@ export function Step4Preview({
                 {/* Content Preview */}
                 <div className="p-4 rounded-lg bg-accent border border-border">
                     <p className="text-xs text-muted-foreground mb-2">{tWizard('contentPreview')}</p>
-                    {type === 'text' ? (
-                        <p className="text-sm line-clamp-3">{text}</p>
-                    ) : file ? (
-                        <div className="flex items-center gap-2">
-                            <ImageIcon size={16} className="text-muted-foreground" />
-                            <span className="text-sm">{file.name}</span>
-                            <span className="text-xs text-muted-foreground">({(file.size / 1024).toFixed(1)} KB)</span>
+                    {hasText && (
+                        <p className="text-sm line-clamp-3 mb-2">{text}</p>
+                    )}
+                    {files.length > 0 && (
+                        <div className="space-y-1">
+                            {files.slice(0, 3).map((file, i) => (
+                                <div key={i} className="flex items-center gap-2 text-sm">
+                                    <File size={14} className="text-muted-foreground" />
+                                    <span className="truncate">{file.name}</span>
+                                    <span className="text-xs text-muted-foreground">({(file.size / 1024).toFixed(1)} KB)</span>
+                                </div>
+                            ))}
+                            {files.length > 3 && (
+                                <p className="text-xs text-muted-foreground">
+                                    +{files.length - 3} {tWizard('moreFiles')}
+                                </p>
+                            )}
                         </div>
-                    ) : null}
+                    )}
                 </div>
 
                 {/* Time Lock */}

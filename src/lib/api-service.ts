@@ -9,30 +9,19 @@
  * uses snake_case for frontend compatibility.
  */
 
-import type { FilterParams, SystemStats } from '@/lib/types';
+import type { FilterParams, SystemStats, Item } from '@/lib/types';
 
 // Re-export types for backward compatibility
 export type { FilterParams, SystemStats };
 
-export interface ApiItemResponse {
-    id: string;
-    type: 'text' | 'image';
-    unlocked: boolean;
-    decrypt_at: number;
-    created_at: number;
-    content?: string | null;
-    metadata?: Record<string, unknown>;
-    original_name?: string | null;
-}
+// Use Item type directly for consistency
+export type ApiItemResponse = Item;
 
 export async function getItems(filters?: FilterParams): Promise<ApiItemResponse[]> {
     const params = new URLSearchParams();
 
     if (filters?.status && filters.status !== 'all') {
         params.set('status', filters.status);
-    }
-    if (filters?.type) {
-        params.set('type', filters.type);
     }
     if (filters?.search) {
         params.set('search', filters.search);
