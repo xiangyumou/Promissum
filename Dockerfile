@@ -5,9 +5,12 @@ FROM node:22-slim AS builder
 
 WORKDIR /app
 
-# Install runtime dependencies (no Python/make needed without SQLite)
+# Install build dependencies (needed for native modules like better-sqlite3)
 RUN apt-get update && apt-get install -y \
     openssl \
+    python3 \
+    make \
+    g++ \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
@@ -33,36 +36,26 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV DATABASE_URL=/data/promissum.db
 
-# Install runtime dependencies
+# Install runtime dependencies, create user, and set up directories in one layer
 RUN apt-get update && apt-get install -y \
     openssl \
-    && rm -rf /var/lib/apt/lists/*
+    gosu \
+    && rm -rf /var/lib/apt/lists/* \
+    && addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 nextjs \
+    && mkdir -p /data \
+    && chown nextjs:nodejs /data
 
-# Create non-root user for security
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-# Copy necessary files from builder
-COPY --from=builder /app/next.config.ts ./
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/drizzle.config.ts ./
-COPY --from=builder /app/drizzle ./drizzle
-
-# Copy entrypoint script
-COPY --from=builder /app/docker-entrypoint.sh ./
+# Copy necessary files from builder (with --chown to set ownership during copy)
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle ./drizzle
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./
+COPY --from=builder --chown=nextjs:nodejs /app/next.config.ts ./
+COPY --from=builder --chown=nextjs:nodejs /app/drizzle.config.ts ./
+COPY --from=builder --chown=nextjs:nodejs /app/docker-entrypoint.sh ./
 RUN chmod +x ./docker-entrypoint.sh
-
-# Install gosu for user switching in entrypoint
-RUN apt-get update && apt-get install -y gosu && rm -rf /var/lib/apt/lists/*
-
-# Create data directory and set permissions
-RUN mkdir -p /data && chown -R nextjs:nodejs /data
-
-# Set correct permissions for app directory
-RUN chown -R nextjs:nodejs /app
 
 # Expose the application port
 EXPOSE 3000

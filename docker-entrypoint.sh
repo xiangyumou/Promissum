@@ -31,15 +31,11 @@ echo "${YELLOW}Setting data directory permissions...${NC}"
 chmod 755 /data
 chown nextjs:nodejs /data
 
-# Check if database file exists
-if [ ! -f "/data/promissum.db" ]; then
-    echo "${YELLOW}Database not found. Creating new database...${NC}"
-    # Touch the file to create it (Drizzle will handle the schema)
-    touch /data/promissum.db
-    chown nextjs:nodejs /data/promissum.db
-    echo "${GREEN}Database file created.${NC}"
-else
+# Database file will be created automatically by drizzle.ts if it doesn't exist
+if [ -f "/data/promissum.db" ]; then
     echo "${GREEN}Database file exists.${NC}"
+else
+    echo "${YELLOW}Database file not found. It will be created automatically.${NC}"
 fi
 
 # Apply migrations using drizzle-kit
