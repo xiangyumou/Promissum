@@ -121,7 +121,6 @@ vi.mock('canvas-confetti', () => ({
 // Fix File/Blob arrayBuffer in test environment
 // jsdom's File implementation doesn't properly handle arrayBuffer()
 if (typeof File !== 'undefined') {
-    const originalArrayBuffer = File.prototype.arrayBuffer;
     File.prototype.arrayBuffer = async function () {
         // For mocked files or files created from array buffers, return the buffer directly
         const reader = new FileReader();
