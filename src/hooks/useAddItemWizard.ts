@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { calculateDurationMinutes, calculateUnlockTimeInfo, AbsoluteTime } from '@/lib/utils/unlock-time';
+import { calculateDurationMinutes, calculateUnlockTimeInfo, AbsoluteTime } from '@/core/time';
 import { MS_PER_HOUR } from '@/lib/constants';
 
 export type TimeMode = 'duration' | 'absolute';

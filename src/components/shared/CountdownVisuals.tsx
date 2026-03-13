@@ -13,7 +13,7 @@ import { useCountdown } from '@/hooks/useCountdown';
 import { Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MS_PER_HOUR, MS_PER_MINUTE } from '@/lib/constants';
-import { formatTime } from '@/lib/utils/unlock-time';
+import { formatTime } from '@/core/time';
 
 interface CountdownVisualsProps {
     targetDate: number;
