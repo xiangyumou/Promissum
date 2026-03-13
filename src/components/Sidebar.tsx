@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ApiItemListView } from '@/lib/types';
-import { FilterParams } from '@/lib/queries';
+import { Item, FilterParams } from '@/lib/types';
 import FilterBar from './FilterBar';
 import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, PanelLeftClose } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -14,7 +13,7 @@ import { getRelativeTimeRemaining } from '@/lib/utils/unlock-time';
 const STORAGE_KEY = 'promissum-sidebar-open';
 
 interface SidebarProps {
-    items: ApiItemListView[];
+    items: Item[];
     selectedId: string | null;
     onSelectItem: (id: string) => void;
     onAddClick: () => void;
@@ -119,7 +118,7 @@ export default function Sidebar({
 }
 
 interface SidebarContentProps {
-    items: ApiItemListView[];
+    items: Item[];
     selectedId: string | null;
     onSelectItem: (id: string) => void;
     onAddClick: () => void;
@@ -206,7 +205,7 @@ function SidebarContent({
 }
 
 interface ItemCardProps {
-    item: ApiItemListView;
+    item: Item;
     isSelected: boolean;
     onClick: () => void;
 }

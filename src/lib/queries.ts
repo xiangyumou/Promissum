@@ -16,8 +16,6 @@ import {
     MAX_API_RETRIES,
 } from '@/lib/constants';
 
-export type { FilterParams };
-
 class ApiError extends Error {
     status: number;
 

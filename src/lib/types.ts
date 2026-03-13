@@ -25,45 +25,33 @@ export interface ItemMetadata {
 // ============================================
 
 /**
- * API list view format (from API routes)
+ * Unified Item type for list and detail views
  */
-export interface ApiItemListView {
+export interface Item {
     id: string;
     type: 'text' | 'image';
     unlocked: boolean;
     decrypt_at: number;
-    created_at?: number;
-    metadata?: ItemMetadata;
-}
-
-/**
- * API detail format (from API routes)
- */
-export interface ApiItemDetail {
-    id: string;
-    type: 'text' | 'image';
-    unlocked: boolean;
-    timeRemainingMs?: number;
-    decrypt_at: number;
-    content: string | null;
+    created_at: number;
+    content?: string | null;
     metadata?: ItemMetadata;
     original_name?: string | null;
-    created_at?: number;
 }
 
 /**
- * API Item response format (from local API routes)
- * Uses snake_case for frontend compatibility
+ * @deprecated Use Item instead
  */
-export interface ApiItemResponse {
-    id: string;
-    type: 'text' | 'image';
-    decrypt_at: number;
-    created_at?: number;
-    unlocked: boolean;
-    content: string | null;
-    metadata?: Record<string, unknown>;
-}
+export type ApiItemListView = Item;
+
+/**
+ * @deprecated Use Item instead
+ */
+export type ApiItemDetail = Item;
+
+/**
+ * @deprecated Use Item instead
+ */
+export type ApiItemResponse = Item;
 
 /**
  * Request to create a new item
@@ -78,20 +66,15 @@ export interface CreateItemRequest {
 
 /**
  * Filter parameters for listing items
- * CANONICAL DEFINITION - import from @/lib/types, not from queries.ts
+ * CANONICAL DEFINITION - import from @/lib/types
  */
 export interface FilterParams {
     status?: 'all' | 'locked' | 'unlocked';
     type?: 'text' | 'image';
     search?: string;
+    sort?: 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc';
     limit?: number;
     offset?: number;
-    sort?: 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc';
-    dateRange?: {
-        start: number;
-        end: number;
-    };
-    quickFilter?: 'unlocking-soon' | 'long-locked' | 'recent';
 }
 
 /**

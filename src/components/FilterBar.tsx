@@ -1,6 +1,6 @@
 'use client';
 
-import { FilterParams } from '@/lib/queries';
+import { FilterParams } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { FileText, Image as ImageIcon, Lock, Unlock, X, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';

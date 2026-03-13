@@ -7,7 +7,7 @@ import { useRouter, usePathname } from '@/i18n/routing';
 import Sidebar from '@/components/Sidebar';
 import AddModal from '@/components/AddModal';
 import ContentView from '@/components/ContentView';
-import { FilterParams } from '@/lib/queries';
+import { FilterParams } from '@/lib/types';
 import { useItems, useCreateItem, useItem, useDeleteItem } from '@/lib/queries';
 
 
