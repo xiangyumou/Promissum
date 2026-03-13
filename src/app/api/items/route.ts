@@ -65,8 +65,10 @@ async function postHandler(request: NextRequest) {
             }
             const arrayBuffer = await file.arrayBuffer();
             dataToEncrypt = Buffer.from(arrayBuffer);
+            rawData.content = dataToEncrypt.toString('base64');
         } else if (typeof imageContent === 'string' && imageContent.length > 0) {
             dataToEncrypt = Buffer.from(imageContent, 'base64');
+            rawData.content = imageContent;
         } else {
             throw new Error('Image content is required');
         }

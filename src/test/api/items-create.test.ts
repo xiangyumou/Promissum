@@ -44,4 +44,22 @@ describe('POST /api/items', () => {
         const data = await res.json();
         expect(data.success).toBe(true);
     });
+
+    it('should successfully create image item with base64 content', async () => {
+        const formData = new FormData();
+        formData.append('type', 'image');
+        formData.append('content', 'base64encodedimagedata');
+        formData.append('durationMinutes', '60');
+
+        const req = new NextRequest('http://localhost/api/items', {
+            method: 'POST',
+            body: formData,
+        });
+
+        const res = await POST(req);
+
+        expect(res.status).toBe(201);
+        const data = await res.json();
+        expect(data.success).toBe(true);
+    });
 });
