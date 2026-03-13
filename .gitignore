@@ -70,5 +70,6 @@ temp/
 # Note: data/.gitkeep is tracked to preserve the empty directory
 data/*.db
 data/*.db-*
+!data/.gitkeep
 
 docs/plans/*

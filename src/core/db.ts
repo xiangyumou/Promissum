@@ -37,7 +37,7 @@ export type NewDbItem = typeof itemsTable.$inferInsert;
 const globalForDb = global as unknown as { db: ReturnType<typeof drizzle> | undefined };
 
 function createDb() {
-    const dbPath = process.env.DATABASE_URL || './promissum.db';
+    const dbPath = process.env.DATABASE_URL || './data/promissum.db';
     const sqlite = new Database(dbPath);
     sqlite.pragma('journal_mode = WAL');
 
