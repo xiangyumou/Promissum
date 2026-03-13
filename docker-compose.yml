@@ -1,6 +1,5 @@
 services:
   app:
-    image: ghcr.io/xiangyumou/promissum:latest
     build: .
     container_name: promissum-app
     ports:
@@ -11,10 +10,3 @@ services:
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
     volumes:
       - ./data:/data
-    networks:
-      - promissum-network
-
-networks:
-  promissum-network:
-    driver: bridge
-    name: promissum-network
