@@ -17,17 +17,16 @@ describe('Stats Service', () => {
     });
 
     it('should return system stats with no items', async () => {
-        // Mock all the select queries
         let callCount = 0;
         mockSelect.mockImplementation(() => {
             callCount++;
             const queries = [
-                { from: () => ({ limit: () => Promise.resolve([{ count: 0 }]) }) },  // total
-                { from: () => ({ where: () => ({ limit: () => Promise.resolve([{ count: 0 }]) }) }) },  // locked
-                { from: () => ({ where: () => ({ limit: () => Promise.resolve([{ count: 0 }]) }) }) },  // text
-                { from: () => ({ where: () => ({ limit: () => Promise.resolve([{ count: 0 }]) }) }) },  // image
-                { from: () => ({ limit: () => Promise.resolve([]) }) },  // duration
-                { from: () => ({ limit: () => Promise.resolve([{ maxCreated: null }]) }) },  // newest
+                { from: () => Promise.resolve([{ count: 0 }]) },  // total
+                { from: () => ({ where: () => Promise.resolve([{ count: 0 }]) }) },  // locked
+                { from: () => ({ where: () => Promise.resolve([{ count: 0 }]) }) },  // text
+                { from: () => ({ where: () => Promise.resolve([{ count: 0 }]) }) },  // image
+                { from: () => ({ limit: () => Promise.resolve([]) }) },  // duration - has .limit()
+                { from: () => Promise.resolve([{ maxCreated: null }]) },  // newest
             ];
             return queries[callCount - 1] || queries[0];
         });
@@ -51,12 +50,12 @@ describe('Stats Service', () => {
         mockSelect.mockImplementation(() => {
             callCount++;
             const queries = [
-                { from: () => ({ limit: () => Promise.resolve([{ count: 10 }]) }) },  // total
-                { from: () => ({ where: () => ({ limit: () => Promise.resolve([{ count: 6 }]) }) }) },  // locked
-                { from: () => ({ where: () => ({ limit: () => Promise.resolve([{ count: 6 }]) }) }) },  // text
-                { from: () => ({ where: () => ({ limit: () => Promise.resolve([{ count: 4 }]) }) }) },  // image
-                { from: () => ({ limit: () => Promise.resolve([]) }) },  // duration
-                { from: () => ({ limit: () => Promise.resolve([{ maxCreated: now }]) }) },  // newest
+                { from: () => Promise.resolve([{ count: 10 }]) },  // total
+                { from: () => ({ where: () => Promise.resolve([{ count: 6 }]) }) },  // locked
+                { from: () => ({ where: () => Promise.resolve([{ count: 6 }]) }) },  // text
+                { from: () => ({ where: () => Promise.resolve([{ count: 4 }]) }) },  // image
+                { from: () => ({ limit: () => Promise.resolve([]) }) },  // duration - has .limit()
+                { from: () => Promise.resolve([{ maxCreated: now }]) },  // newest
             ];
             return queries[callCount - 1] || queries[0];
         });
@@ -75,12 +74,12 @@ describe('Stats Service', () => {
         mockSelect.mockImplementation(() => {
             callCount++;
             const queries = [
-                { from: () => ({ limit: () => Promise.resolve([{ count: 3 }]) }) },  // total
-                { from: () => ({ where: () => ({ limit: () => Promise.resolve([{ count: 2 }]) }) }) },  // locked
-                { from: () => ({ where: () => ({ limit: () => Promise.resolve([{ count: 0 }]) }) }) },  // text
-                { from: () => ({ where: () => ({ limit: () => Promise.resolve([{ count: 3 }]) }) }) },  // image
-                { from: () => ({ limit: () => Promise.resolve([]) }) },  // duration
-                { from: () => ({ limit: () => Promise.resolve([{ maxCreated: now }]) }) },  // newest
+                { from: () => Promise.resolve([{ count: 3 }]) },  // total
+                { from: () => ({ where: () => Promise.resolve([{ count: 2 }]) }) },  // locked
+                { from: () => ({ where: () => Promise.resolve([{ count: 0 }]) }) },  // text
+                { from: () => ({ where: () => Promise.resolve([{ count: 3 }]) }) },  // image
+                { from: () => ({ limit: () => Promise.resolve([]) }) },  // duration - has .limit()
+                { from: () => Promise.resolve([{ maxCreated: now }]) },  // newest
             ];
             return queries[callCount - 1] || queries[0];
         });
