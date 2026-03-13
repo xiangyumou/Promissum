@@ -11,11 +11,10 @@ import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
 import { useState } from 'react';
 
-import ThemeToggle from './ThemeToggle';
-import LanguageSwitcher from './LanguageSwitcher';
-import CountdownVisuals from './CountdownVisuals';
-
-import { DeleteButton } from './actions/DeleteButton';
+import ThemeToggle from './shared/ThemeToggle';
+import LanguageSwitcher from './shared/LanguageSwitcher';
+import CountdownVisuals from './shared/CountdownVisuals';
+import { DeleteButton } from './DeleteButton';
 
 interface ContentViewProps {
     selectedId: string | null;

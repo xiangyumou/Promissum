@@ -1,6 +1,6 @@
 'use client';
 
-import Modal from './ui/Modal';
+import Modal from './Modal';
 import { useTranslations } from 'next-intl';
 import { AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
