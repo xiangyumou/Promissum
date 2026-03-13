@@ -1,6 +1,6 @@
 # Promissum
 
-A time-lock encryption content protection system based on Timelock Encryption and the drand decentralized randomness beacon network. Allows users to encrypt text or images with a specified unlock time that cannot be bypassed, even by the user themselves.
+A time-lock encryption content protection system based on Timelock Encryption and the drand decentralized randomness beacon network. Allows users to encrypt text or images with a specified unlock time that cannot be bypassed, even by the server.
 
 [中文文档](./README.md) | [English Documentation](./README_EN.md)
 
@@ -17,7 +17,6 @@ Promissum is a time-lock encryption system that allows users to encrypt content 
 - **Extend Lock**: Support for extending lock time through multi-layer encryption
 - **Multi-Device Sync**: Real-time state sync across devices
 - **Real-Time Updates**: Smart Polling for near real-time updates
-- **Session Tracking**: See which devices are currently viewing items
 - **Advanced Filtering**: Time-range filters (today/this week/this month), filter presets, fuzzy search
 - **Unlock Effects**: Celebration confetti and sound effects
 - **Countdown Visuals**: Gradient colors and pulse animations for items unlocking soon
@@ -31,11 +30,11 @@ Promissum is a time-lock encryption system that allows users to encrypt content 
 
 ```
 ┌─────────────┐      ┌──────────────────────────┐      ┌─────────────────┐
-│   Browser   │ ───> │    Promissum App         │ ───> │ PostgreSQL DB   │
-└─────────────┘      │  (Next.js + Encryption)  │      └─────────────────┘
-                     └──────────────────────────┘                │
-                            │                                  Redis
-                            v                                  (Rate Limit)
+│   Browser   │ ───> │    Promissum App         │ ───> │   SQLite DB     │
+└─────────────┘      │  (Next.js + Encryption)  │      │ (better-sqlite3)│
+                     └──────────────────────────┘      └─────────────────┘
+                            │
+                            v
                      ┌──────────────┐
                      │ drand Network│
                      └──────────────┘
@@ -51,8 +50,7 @@ Promissum is a time-lock encryption system that allows users to encrypt content 
 ### Requirements
 
 - Node.js 22+
-- Docker & Docker Compose (for database services)
-- pnpm (recommended) or npm
+- npm or pnpm
 
 ### Installation
 
@@ -78,24 +76,16 @@ nano .env
 ### Start Development Environment
 
 ```bash
-# Start database services (PostgreSQL + Redis)
-# With port mapping to host, local app can access via localhost
-docker compose up -d db redis
-
 # Run database migrations
-npx prisma migrate dev
+npm run db:migrate
 
 # Start development server
-pnpm run dev
+npm run dev
 ```
 
 Visit http://localhost:3000
 
-**Note**:
-- **Development**: `docker compose up -d db redis` + `pnpm run dev` (app runs locally)
-- **Production**: `docker compose up -d` (all services including app run in Docker)
-
-## Docker Deployment
+## Deployment
 
 ### Production Deployment
 
@@ -104,36 +94,41 @@ Visit http://localhost:3000
 cp .env.example .env
 # Edit .env for production configuration
 
-# 2. Start all services
-docker compose up -d
+# 2. Install dependencies
+npm install
 
 # 3. Run database migrations
-docker compose exec app npx prisma migrate deploy
+npm run db:migrate
+
+# 4. Build and start
+npm run build
+npm start
 ```
 
 ### Environment Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://promissum:promissum_password@promissum-db:5432/promissum` |
-| `REDIS_URL` | Redis connection string (rate limiting) | `redis://redis:6379` |
-| `RATE_LIMIT_MAX` | Rate limit requests per window | `100` |
-| `RATE_LIMIT_WINDOW_MS` | Rate limit window in milliseconds | `60000` |
-| `MOCK_DRAND` | Mock drand network (development) | `true` |
-| `DRAND_CHAIN_URL` | drand chain URL | `https://api.drand.sh/...` |
+| `MOCK_DRAND` | Use mock drand network (set to `true` for instant decryption in dev) | `false` |
 | `NEXT_PUBLIC_APP_URL` | Public application URL | `http://localhost:3000` |
-| `NEXT_PUBLIC_DATE_FORMAT` | Date format | `yyyy-MM-dd HH:mm` |
-| `NEXT_PUBLIC_AUTO_REFRESH_INTERVAL` | Auto-refresh interval (seconds) | `60` |
-| `NEXT_PUBLIC_CACHE_TTL` | Cache TTL (minutes) | `5` |
 
 For complete configuration options, see [`.env.example`](./.env.example).
 
 ### Update Deployment
 
 ```bash
-docker compose pull
-docker compose up -d
-docker compose exec app npx prisma migrate deploy
+# Pull latest code
+git pull origin main
+
+# Install dependencies
+npm install
+
+# Run database migrations
+npm run db:migrate
+
+# Rebuild and restart
+npm run build
+npm start
 ```
 
 ## Development
@@ -153,10 +148,10 @@ pnpm run test:coverage # Run tests with coverage report
 ### Database Operations
 
 ```bash
-npx prisma migrate dev    # Create and apply new migrations
-npx prisma migrate deploy # Deploy migrations (production)
-npx prisma studio         # Open Prisma Studio
-npx prisma generate       # Generate Prisma Client
+npm run db:generate       # Generate Drizzle migrations
+npm run db:migrate        # Apply migrations
+npm run db:push           # Push schema changes (development)
+npm run db:studio         # Open Drizzle Studio
 ```
 
 ### Project Structure
@@ -171,10 +166,7 @@ src/
 │   └── ui/             # Base UI components
 ├── hooks/              # Custom Hooks
 ├── lib/                # Utilities and state management
-│   ├── db/             # Database client
-│   ├── services/       # Business logic
-│   ├── stores/         # Zustand stores
-│   └── utils/          # Utility functions
+│   └── stores/         # Zustand stores
 ├── i18n/               # Internationalization config
 └── test/               # Test files
 ```
@@ -201,21 +193,19 @@ pnpm test -- --watch
 - **Framework**: Next.js 16 + React 19
 - **Language**: TypeScript 5
 - **Styling**: Tailwind CSS 4
-- **State Management**: Zustand 5 + React Query 5
-- **Database**: PostgreSQL + Prisma ORM
-- **Cache**: Redis (rate limiting)
+- **State Management**: Zustand 5 + TanStack Query 5
+- **Database**: SQLite (better-sqlite3) + Drizzle ORM
 - **Internationalization**: next-intl
 - **UI Components**: Radix UI
 - **Encryption**: tlock-js (IBE + drand)
-- **State Sync**: React Query Smart Polling
+- **State Sync**: TanStack Query Smart Polling
 
 ## Security
 
-- Integrated encryption service with all encryption operations server-side
+- Integrated encryption service, all encryption operations performed server-side
 - Uses BLS12-381 Identity-Based Encryption (IBE)
 - Depends on drand decentralized randomness network, no single point of failure
-- Redis for request rate limiting protection
-- PostgreSQL data persistence with multi-device sync support
+- SQLite data persistence, supports multi-device sync
 
 ## Documentation
 
@@ -224,7 +214,6 @@ pnpm test -- --watch
 - [System Architecture](docs/ARCHITECTURE.md)
 - [Deployment Guide](docs/DEPLOYMENT.md)
 - [Development Guide](docs/DEVELOPMENT.md)
-- [Database Guide](docs/POSTGRES_MIGRATION.md)
 
 ## License
 
@@ -232,5 +221,5 @@ MIT License
 
 ---
 
-**Last Updated**: 2025-12-28
+**Last Updated**: 2026-03-13
 **Version**: v0.5.0

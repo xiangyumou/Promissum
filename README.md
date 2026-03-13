@@ -108,15 +108,8 @@ npm start
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
-| `DATABASE_URL` | SQLite 数据库文件路径 | `./promissum.db` |
-| `PROMISSUM_API_URL` | API 基础 URL | `http://localhost:3000/api/v1` |
-| `PROMISSUM_API_TOKEN` | API 认证令牌 | - |
-| `MOCK_DRAND` | 是否模拟 drand 网络（开发环境） | `true` |
-| `DRAND_CHAIN_URL` | drand 链 URL | `https://api.drand.sh/...` |
+| `MOCK_DRAND` | 是否模拟 drand 网络（开发环境设为 `true` 可即时解密） | `false` |
 | `NEXT_PUBLIC_APP_URL` | 应用公开地址 | `http://localhost:3000` |
-| `NEXT_PUBLIC_DATE_FORMAT` | 日期格式 | `yyyy-MM-dd HH:mm` |
-| `NEXT_PUBLIC_AUTO_REFRESH_INTERVAL` | 自动刷新间隔（秒） | `60` |
-| `NEXT_PUBLIC_CACHE_TTL` | 缓存时间（分钟） | `5` |
 
 完整配置选项请查看 [`.env.example`](./.env.example)。
 
@@ -220,7 +213,6 @@ pnpm test -- --watch
 - [系统架构文档](docs/ARCHITECTURE.md)
 - [部署指南](docs/DEPLOYMENT.md)
 - [开发指南](docs/DEVELOPMENT.md)
-- [数据库指南](docs/POSTGRES_MIGRATION.md)
 
 ## License
 

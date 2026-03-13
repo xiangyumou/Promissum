@@ -9,12 +9,11 @@ This guide provides a comprehensive reference for integrating with Promissum.
 
 ## 🔐 Authentication
 
-Promissum uses device fingerprinting for single-user deployments. Rate limiting is enforced via Redis.
+Promissum is designed for single-user self-hosted deployments.
 
 **For self-hosted deployments:**
 - No authentication required for endpoints
-- Rate limiting applies to all requests
-- Device fingerprint identifies the client
+- Simple and lightweight access control
 
 ---
 
@@ -275,9 +274,8 @@ Check if the API server is running. No authentication required.
 ```json
 {
   "status": "ok",
-  "timestamp": "2025-12-28T10:00:00.000Z",
-  "database": "connected",
-  "redis": "connected"
+  "timestamp": "2026-03-13T10:00:00.000Z",
+  "database": "connected"
 }
 ```
 
@@ -297,8 +295,6 @@ Promissum uses **Smart Polling** via React Query. Clients should poll the `/api/
 1.  **Time Precision**: Time locks rely on drand rounds (approx. every 3 seconds). Do not expect millisecond-level precision for unlock times.
 2.  **Immutability**: Once created, the unlock time can only be **extended**, never reduced.
 3.  **Content Size**: Large Base64 images will increase payload size significantly. Consider request body size limits (default Next.js limit is 4MB).
-4.  **Rate Limiting**: All endpoints are rate-limited via Redis. Default: 100 requests per minute per device.
-5.  **Device Fingerprinting**: Use a consistent device identifier for requests to enable proper multi-device sync.
 
 ---
 

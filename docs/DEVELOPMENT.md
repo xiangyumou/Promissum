@@ -12,8 +12,6 @@ This guide covers setting up a local development environment for Promissum, incl
 
 - **Node.js**: 22+ / **Node.js**: 22+
 - **pnpm**: 9+ (package manager) / **pnpm**: 9+（包管理器）
-- **Docker**: 20.10+ (for database) / **Docker**: 20.10+（用于数据库）
-- **Docker Compose**: 2.0+ / **Docker Compose**: 2.0+
 - **Git**: Latest / **Git**: 最新版本
 
 ---
@@ -33,48 +31,34 @@ cd Promissum
 pnpm install
 ```
 
-### 2. Start Database Services / 启动数据库服务
-
-```bash
-# Start PostgreSQL and Redis (with port mapping to localhost)
-# 启动 PostgreSQL 和 Redis（端口映射到 localhost）
-docker compose up -d db redis
-
-# Verify services are running
-# 验证服务运行状态
-docker compose ps
-```
-
-### 3. Configure Environment / 配置环境
+### 2. Configure Environment / 配置环境
 
 ```bash
 # Copy environment template
 # 复制环境变量模板
-cp .env.example .env
+cp .env.example .env.local
 
-# Edit .env if needed (defaults work for local dev)
-# 如需编辑 .env（默认值适用于本地开发）
-nano .env
+# Edit if needed (defaults work for local dev)
+# 如需编辑（默认值适用于本地开发）
+nano .env.local
 ```
 
 **Development defaults / 开发默认值**:
 
 ```bash
 NODE_ENV=development
-DATABASE_URL=postgresql://promissum:promissum_password@localhost:5432/promissum
-REDIS_URL=redis://localhost:6379
 MOCK_DRAND=true  # Use mock drand for faster development
 ```
 
-### 4. Run Migrations / 运行迁移
+### 3. Run Migrations / 运行迁移
 
 ```bash
-# Generate Prisma Client and run migrations
-# 生成 Prisma 客户端并运行迁移
-npx prisma migrate dev
+# Run database migrations
+# 运行数据库迁移
+npm run db:migrate
 ```
 
-### 5. Start Development Server / 启动开发服务器
+### 4. Start Development Server / 启动开发服务器
 
 ```bash
 pnpm run dev
@@ -88,10 +72,6 @@ Visit http://localhost:3000
 
 ```
 promissum/
-├── prisma/
-│   ├── schema.prisma          # Database schema / 数据库 schema
-│   └── migrations/            # Database migrations / 数据库迁移
-│
 ├── public/                    # Static assets / 静态资源
 │
 ├── src/
@@ -124,27 +104,24 @@ promissum/
 │   │   └── use-media-query.ts # Responsive design / 响应式设计
 │   │
 │   ├── lib/                   # Utilities and services / 工具和服务
-│   │   ├── db/                # Database client / 数据库客户端
+│   │   ├── db/                # Database client (Drizzle) / 数据库客户端
 │   │   ├── services/          # Business logic / 业务逻辑
 │   │   │   ├── api/           # API client / API 客户端
 │   │   │   ├── encryption/    # Encryption service / 加密服务
-│   │   │   ├── stats/         # Statistics service / 统计服务
-│   │   │   └── rate-limiting/ # Rate limiting / 限流
+│   │   │   └── stats/         # Statistics service / 统计服务
 │   │   ├── stores/            # Zustand stores / Zustand 存储
 │   │   └── utils/             # Utility functions / 工具函数
 │   │
 │   ├── i18n/                  # Internationalization / 国际化
 │   │   └── config.ts          # i18n configuration / i18n 配置
 │   │
-│   ├── test/                  # Test files / 测试文件
-│   │   ├── api/               # API tests / API 测试
-│   │   ├── components/        # Component tests / 组件测试
-│   │   ├── integration/       # Integration tests / 集成测试
-│   │   ├── mocks/             # Mock data and server / 模拟数据和服务
-│   │   ├── unit/              # Unit tests / 单元测试
-│   │   └── setup.ts           # Test setup / 测试设置
-│   │
-│   └── types/                 # TypeScript types / TypeScript 类型
+│   └── test/                  # Test files / 测试文件
+│       ├── api/               # API route tests / API 路由测试
+│       ├── components/        # Component tests / 组件测试
+│       ├── integration/       # Integration tests / 集成测试
+│       ├── unit/              # Unit tests / 单元测试
+│       ├── mocks/             # Mock data / 模拟数据
+│       └── setup.ts           # Test setup / 测试设置
 │
 ├── messages/                  # Translation files / 翻译文件
 │   ├── en.json                # English translations / 英文翻译
@@ -158,6 +135,7 @@ promissum/
 ├── tailwind.config.ts         # Tailwind configuration / Tailwind 配置
 ├── tsconfig.json              # TypeScript configuration / TypeScript 配置
 ├── vitest.config.ts           # Vitest configuration / Vitest 配置
+├── drizzle.config.ts          # Drizzle configuration / Drizzle 配置
 └── package.json               # Dependencies and scripts / 依赖和脚本
 ```
 
@@ -333,58 +311,45 @@ pnpm run test:coverage
 
 ## Database Operations / 数据库操作
 
-### Prisma Studio / Prisma Studio
+### Drizzle Studio / Drizzle Studio
 
 ```bash
-# Open Prisma Studio (GUI database browser)
-# 打开 Prisma Studio（GUI 数据库浏览器）
-npx prisma studio
+# Open Drizzle Studio (GUI database browser)
+# 打开 Drizzle Studio（GUI 数据库浏览器）
+npm run db:studio
 ```
 
 ### Creating Migrations / 创建迁移
 
 ```bash
-# Create a new migration
-# 创建新迁移
-npx prisma migrate dev --name add_user_table
+# Generate migrations from schema changes
+# 从 schema 变更生成迁移
+npm run db:generate
 
-# Reset database (WARNING: deletes all data)
-# 重置数据库（警告：删除所有数据）
-npx prisma migrate reset
+# Apply migrations
+# 应用迁移
+npm run db:migrate
+
+# Push schema changes directly (development only)
+# 直接推送 schema 变更（仅开发）
+npm run db:push
 ```
 
-### Seed Data / 种子数据
+### Database Schema / 数据库 Schema
 
-Create `prisma/seed.ts`:
-
-创建 `prisma/seed.ts`：
+Schema is defined in `src/lib/db/schema.ts`:
 
 ```typescript
-import { PrismaClient } from '@prisma/client'
+// Example schema definition
+import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 
-const prisma = new PrismaClient()
-
-async function main() {
-  await prisma.item.create({
-    data: {
-      type: 'text',
-      encryptedData: 'encrypted-content',
-      decryptAt: BigInt(Date.now() + 3600000),
-      roundNumber: BigInt(12345),
-      createdAt: BigInt(Date.now()),
-      layerCount: 1,
-    },
-  })
-}
-
-main()
-  .catch((e) => {
-    console.error(e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+export const items = sqliteTable('items', {
+  id: text('id').primaryKey(),
+  type: text('type').notNull(),
+  encryptedData: text('encrypted_data').notNull(),
+  decryptAt: integer('decrypt_at').notNull(),
+  // ...
+})
 ```
 
 ---
@@ -478,28 +443,13 @@ lsof -ti:3000 | xargs kill -9
 PORT=3001 pnpm run dev
 ```
 
-### Database Connection Issues / 数据库连接问题
+### Database Issues / 数据库问题
 
 ```bash
-# Check if database is running
-# 检查数据库是否运行
-docker compose ps
-
-# Restart database
-# 重启数据库
-docker compose restart db
-
-# View database logs
-# 查看数据库日志
-docker compose logs db
-```
-
-### Prisma Client Not Generated / Prisma 客户端未生成
-
-```bash
-# Regenerate Prisma Client
-# 重新生成 Prisma 客户端
-npx prisma generate
+# Reset database (WARNING: deletes all data)
+# 重置数据库（警告：删除所有数据）
+rm -f ./data/promissum.db
+npm run db:migrate
 ```
 
 ### Hydration Errors / 水合错误
@@ -558,5 +508,3 @@ pnpm run lint --fix
 - [Architecture Documentation](./ARCHITECTURE.md)
 - [API Reference](./API_REFERENCE.md)
 - [Deployment Guide](./DEPLOYMENT.md)
-- [Database Guide](./POSTGRES_MIGRATION.md)
-- [Project Standards](../SOP/PROJECT_STANDARDS.md)

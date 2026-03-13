@@ -31,7 +31,6 @@ Promissum 是基于 Next.js 构建的统一时间锁加密平台。该架构将�
 │  │  • /api/preferences - User preferences management            │  │
 │  │  • /api/stats      - Statistics aggregation                   │  │
 │  │  • /api/health     - Health check endpoint                    │  │
-│  │  • /api/items      - Smart polling support                   │  │
 │  └──────────────────────────────────────────────────────────────┘  │
 │  ┌──────────────────────────────────────────────────────────────┐  │
 │  │             Encryption Service / 加密服务                     │  │
@@ -41,15 +40,13 @@ Promissum 是基于 Next.js 构建的统一时间锁加密平台。该架构将�
 │  └──────────────────────────────────────────────────────────────┘  │
 └───────────────────────────────┬─────────────────────────────────────┘
                                 │
-          ┌─────────────────────┼─────────────────────┐
-          ▼                     ▼                     ▼
-┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-│  PostgreSQL DB  │  │  Redis Cache   │  │  drand Network  │
-│  • Items        │  │  • Rate Limit   │  │  • Randomness   │
-│  • Preferences  │  │  • Session Data │  │  • Future Beacons│
-│  • Sessions     │  │                 │  │                 │
-│  • Devices      │  │                 │  │                 │
-└─────────────────┘  └─────────────────┘  └─────────────────┘
+          ┌─────────────────────┴─────────────────────┐
+          ▼                                           ▼
+┌─────────────────┐                        ┌─────────────────┐
+│   SQLite DB     │                        │  drand Network  │
+│  • Items        │                        │  • Randomness   │
+│  • Preferences  │                        │  • Future Beacons│
+└─────────────────┘                        └─────────────────┘
 ```
 
 ---
@@ -110,10 +107,8 @@ src/app/api/
 │   └── route.ts           # GET, POST (user preferences)
 ├── stats/
 │   └── route.ts           # GET (statistics)
-├── health/
-│   └── route.ts           # GET (health check)
-└── sse/
-    └── route.ts           # GET (Server-Sent Events)
+└── health/
+    └── route.ts           # GET (health check)
 ```
 
 ### Encryption Service / 加密服务
@@ -137,8 +132,8 @@ src/lib/services/encryption/
    服务器计算未来的 drand 轮次号
 3. Content is encrypted using the round's beacon
    使用轮次的信标对内容进行加密
-4. Ciphertext is stored in PostgreSQL
-   密文存储在 PostgreSQL 中
+4. Ciphertext is stored in SQLite
+   密文存储在 SQLite 中
 5. At unlock time, server fetches drand beacon to decrypt
    解锁时，服务器获取 drand 信标进行解密
 
@@ -167,14 +162,14 @@ src/lib/services/encryption/
 │            │                                 │      │  │
 │            ▼                                 │      │  │
 │      ┌─────────┐                             │      │  │
-│      │PostgreSQL│                            │      │  │
+│      │ SQLite  │                             │      │  │
 │      └─────────┘                             │      │  │
 └─────────────────────────────────────────────┘      │  │
       │                                              │  │
       │ 5. Response: { id, decryptAt, roundNumber }  │  │
       │                                              │  │
       ▼                                              │  │
-┌──────────┐                                    ┌─────┴────┘
+┌──────────┐                                    ┌─────┴────┐
 │  Client  │                                    │  Future
 └──────────┘                                    │  Beacon
                                                └──────────
@@ -195,15 +190,14 @@ src/lib/services/encryption/
 │  │  Encryption Service                 │    │      │
 │  │  2. Check if decryptAt > now        │    │      │
 │  │  3. Fetch drand beacon for round    │──┼──────┼──┐
-│  │  4. Decrypt ciphertext               │    │      │  │
-│  │  5. Cache in Redis (TTL)            │    │      │  │
+│  │  4. Decrypt ciphertext              │    │      │  │
 │  └─────────────────────────────────────┘    │      │  │
 └─────────────────────────────────────────────┘      │  │
       │                                              │  │
-      │ 6. Response: { content } OR { locked }       │  │
+      │ 5. Response: { content } OR { locked }       │  │
       │                                              │  │
       ▼                                              │  │
-┌──────────┐                                    ┌─────┴────┘
+┌──────────┐                                    ┌─────┴────┐
 │  Client  │                                    │ Current
 └──────────┘                                    │ Beacon
                                                └──────────
@@ -221,9 +215,8 @@ src/lib/services/encryption/
 ┌─────────────────────────────────────────────────────┐
 │              Next.js API Route                      │
 │  ┌─────────────────────────────────────────────┐   │
-│  │  1. Create item in PostgreSQL               │   │
-│  │  2. Broadcast SSE event                     │   │
-│  └──────────────────────────────────────────────────────────────┘   │
+│  │  1. Create item in SQLite                   │   │
+│  └─────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────┘
       │                                              │
       │ 2. Smart Polling: items.list refetch         │
@@ -261,7 +254,8 @@ src/lib/services/encryption/
 |-------------------|---------------|---------------|
 | Node.js | 22.x | Runtime / 运行时 |
 | Next.js API Routes | 16.0.10 | API layer / API 层 |
-| Prisma | 5.x | ORM / 对象关系映射 |
+| Drizzle ORM | 0.45.x | ORM / 对象关系映射 |
+| better-sqlite3 | 12.6.x | SQLite driver / SQLite 驱动 |
 | tlock-js | 0.9.0 | Timelock encryption / 时间锁加密 |
 | drand-client | 1.4.2 | drand network client / drand 网络客户端 |
 
@@ -269,8 +263,7 @@ src/lib/services/encryption/
 
 | Technology / 技术 | Version / 版本 | Purpose / 用途 |
 |-------------------|---------------|---------------|
-| PostgreSQL | 16 | Primary database / 主数据库 |
-| Redis | 7 | Rate limiting, caching / 限流、缓存 |
+| SQLite | 3.x | Primary database / 主数据库 |
 | Docker | Latest | Containerization / 容器化 |
 | nginx | (optional) | Reverse proxy / 反向代理 |
 
@@ -278,24 +271,12 @@ src/lib/services/encryption/
 
 ## Multi-Device Synchronization / 多设备同步
 
-### Device Identification / 设备识别
-
-Each device is identified by a unique fingerprint:
-
-每个设备通过唯一指纹识别：
-
-```
-Browser Fingerprint → Device ID → User Preferences
-                                                    ↓
-                                              Active Sessions
-```
-
 ### Sync Mechanism / 同步机制
 
 1. **Local State** (localStorage): Fast UI updates
    **本地状态**（localStorage）：快速 UI 更新
-2. **Database State** (PostgreSQL): Persistent storage
-   **数据库状态**（PostgreSQL）：持久化存储
+2. **Database State** (SQLite): Persistent storage
+   **数据库状态**（SQLite）：持久化存储
 3. **Smart Polling** (React Query): Dynamic interval updates
    **智能轮询**（React Query）：动态间隔更新
 
@@ -305,8 +286,6 @@ Browser Fingerprint → Device ID → User Preferences
   **最后写入优先**：最近的更改优先
 - **Automatic Merge**: Non-conflicting changes are merged
   **自动合并**：非冲突更改合并
-- **User Notification**: Manual resolution for conflicts (future)
-  **用户通知**：冲突时手动解决（未来功能）
 
 ---
 
@@ -327,14 +306,12 @@ Browser Fingerprint → Device ID → User Preferences
 |------------|---------------------------|
 | Transport | TLS/HTTPS |
 | Storage | Encrypted ciphertext in DB |
-| Cache | TTL-based expiration |
-| API | Rate limiting via Redis |
-| Authentication | Device fingerprint (future: user accounts) |
+| API | Input validation via Zod |
 
 ### Access Control / 访问控制
 
-- **Single-user mode**: Current default (device-based)
-  **单用户模式**：当前默认（基于设备）
+- **Single-user mode**: Current default
+  **单用户模式**：当前默认
 - **Multi-user mode**: Future (account-based)
   **多用户模式**：未来（基于账号）
 - **Shared items**: Future feature
@@ -348,15 +325,13 @@ Browser Fingerprint → Device ID → User Preferences
 
 - **Single-server deployment**: Suitable for personal/small team use
   **单服务器部署**：适合个人/小团队使用
-- **Database connection pooling**: Prisma handles optimization
-  **数据库连接池**：Prisma 处理优化
-- **Redis caching**: Reduces redundant operations
-  **Redis 缓存**：减少冗余操作
+- **SQLite**: Serverless database, zero configuration
+  **SQLite**：无服务器数据库，零配置
 
 ### Future Scaling Options / 未来扩展选项
 
-1. **Database Replication**: Read replicas for better performance
-   **数据库复制**：读副本以提升性能
+1. **Database Migration**: Migrate to PostgreSQL if needed for high concurrency
+   **数据库迁移**：如需高并发可迁移到 PostgreSQL
 2. **Horizontal Scaling**: Multiple app instances behind load balancer
    **水平扩展**：负载均衡后的多个应用实例
 3. **CDN Integration**: Static asset delivery
@@ -376,9 +351,8 @@ GET /api/health
 Response:
 {
   "status": "ok",
-  "timestamp": "2025-12-28T10:00:00.000Z",
-  "database": "connected",
-  "redis": "connected"
+  "timestamp": "2026-03-13T10:00:00.000Z",
+  "database": "connected"
 }
 ```
 
@@ -386,8 +360,6 @@ Response:
 
 - **Application logs**: Docker stdout/stderr
   **应用日志**：Docker stdout/stderr
-- **Database logs**: PostgreSQL query logs (optional)
-  **数据库日志**：PostgreSQL 查询日志（可选）
 - **Access logs**: nginx (if used)
   **访问日志**：nginx（如果使用）
 
@@ -399,15 +371,13 @@ Key metrics to monitor:
 
 - Response times / 响应时间
 - Error rates / 错误率
-- Database connection pool usage / 数据库连接池使用率
-- Redis hit/miss ratios / Redis 命中/未命中率
-- Active devices / 活跃设备数
+- Database size / 数据库大小
+- Active sessions / 活跃会话数
 
 ---
 
 ## References / 参考
 
 - [API Reference](./API_REFERENCE.md)
-- [Database Guide](./POSTGRES_MIGRATION.md)
 - [Deployment Guide](./DEPLOYMENT.md)
 - [Development Guide](./DEVELOPMENT.md)
