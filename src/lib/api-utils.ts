@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ZodError, ZodSchema } from 'zod';
 import { toSnakeCase } from '@/lib/utils';
-import { DrandError } from '@/lib/services/encryption/tlock';
+import { DrandError } from '@/core/crypto';
 
 type ApiHandler<T = unknown> = () => Promise<NextResponse<T>>;
 

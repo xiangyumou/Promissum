@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { Item, FilterParams } from '@/lib/types';
-import { isItemUnlocked, getItemDisplayTitle } from '@/lib/utils/item-utils';
+import { isUnlocked as checkUnlocked, getItemDisplayTitle } from '@/core/time';
 import FilterBar from './FilterBar';
 import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, PanelLeftClose } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { getRelativeTimeRemaining } from '@/lib/utils/unlock-time';
+import { getRelativeTimeRemaining } from '@/core/time';
 
 const STORAGE_KEY = 'promissum-sidebar-open';
 
@@ -217,7 +217,7 @@ function ItemCard({
     onClick
 }: ItemCardProps) {
     const hasMounted = useHasMounted();
-    const isUnlocked = hasMounted ? isItemUnlocked(item.decrypt_at) : false;
+    const isUnlocked = hasMounted ? checkUnlocked(item.decrypt_at) : false;
     const timeRemaining = hasMounted ? getRelativeTimeRemaining(item.decrypt_at) : '...';
     const tCommon = useTranslations('Common');
 

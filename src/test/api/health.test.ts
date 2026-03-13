@@ -3,7 +3,7 @@ import { GET } from '@/app/api/health/route';
 import { NextRequest } from 'next/server';
 
 // Mock the Drizzle client
-vi.mock('@/lib/db/client', () => ({
+vi.mock('@/core/db', () => ({
     db: {
         run: vi.fn()
     }
@@ -15,7 +15,7 @@ describe('Health API', () => {
     });
 
     it('should return health status', async () => {
-        const { db } = await import('@/lib/db/client');
+        const { db } = await import('@/core/db');
         vi.mocked(db.run as any).mockReturnValueOnce(undefined);
 
         const req = new NextRequest('http://localhost/api/health');
@@ -33,7 +33,7 @@ describe('Health API', () => {
     });
 
     it('should handle database connection error', async () => {
-        const { db } = await import('@/lib/db/client');
+        const { db } = await import('@/core/db');
         vi.mocked(db.run).mockImplementationOnce(() => {
             throw new Error('Connection failed');
         });
@@ -48,7 +48,7 @@ describe('Health API', () => {
     });
 
     it('should handle database error with non-production error message', async () => {
-        const { db } = await import('@/lib/db/client');
+        const { db } = await import('@/core/db');
         vi.mocked(db.run).mockImplementationOnce(() => {
             throw new Error('Database timeout');
         });

@@ -90,6 +90,14 @@ function createMockClient(): HttpChainClient {
 // ============================================
 
 /**
+ * Get chain info from drand
+ */
+export async function getChainInfo() {
+    const client = await getChainClient();
+    return await client.chain().info();
+}
+
+/**
  * Calculate the drand round number for a given target time
  */
 export async function getRoundForTime(targetTime: Date): Promise<number> {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateDurationMinutes, calculateUnlockTimeInfo } from '@/lib/utils/unlock-time';
+import { calculateDurationMinutes, calculateUnlockTimeInfo } from '@/core/time';
 
 describe('Unlock Time Utilities', () => {
     describe('calculateDurationMinutes', () => {

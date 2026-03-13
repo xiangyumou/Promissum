@@ -9,7 +9,7 @@ import {
     createItem,
     deleteItem,
     getStats,
-} from './services/api-service';
+} from './api-service';
 import type { FilterParams } from '@/lib/types';
 import {
     POLLING_INTERVAL_MS,

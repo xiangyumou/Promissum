@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 // Set MOCK_DRAND before importing the module
 process.env.MOCK_DRAND = 'true';
 
-import { encrypt, decrypt, getRoundForTime, canDecrypt, getChainInfo } from '@/lib/services/encryption/tlock';
+import { encrypt, decrypt, getRoundForTime, canDecrypt, getChainInfo } from '@/core/crypto';
 
 describe('Tlock Encryption Service', () => {
     let originalEnv: NodeJS.ProcessEnv;

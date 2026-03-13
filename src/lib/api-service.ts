@@ -9,10 +9,21 @@
  * uses snake_case for frontend compatibility.
  */
 
-import type { FilterParams, SystemStats, ApiItemResponse } from '@/lib/types';
+import type { FilterParams, SystemStats } from '@/lib/types';
 
 // Re-export types for backward compatibility
-export type { FilterParams, SystemStats, ApiItemResponse };
+export type { FilterParams, SystemStats };
+
+export interface ApiItemResponse {
+    id: string;
+    type: 'text' | 'image';
+    unlocked: boolean;
+    decrypt_at: number;
+    created_at: number;
+    content?: string | null;
+    metadata?: Record<string, unknown>;
+    original_name?: string | null;
+}
 
 export async function getItems(filters?: FilterParams): Promise<ApiItemResponse[]> {
     const params = new URLSearchParams();
