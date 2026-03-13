@@ -162,11 +162,34 @@ src/
 │   ├── api/            # API Routes
 │   └── globals.css     # 全局样式
 ├── components/         # React 组件
-│   └── ui/             # 基础 UI 组件
+│   ├── ui/             # 基础 UI 组件
+│   │   ├── Modal.tsx
+│   │   ├── Skeleton.tsx
+│   │   └── ConfirmDialog.tsx
+│   ├── shared/         # 共享业务组件
+│   │   ├── ThemeToggle.tsx
+│   │   ├── LanguageSwitcher.tsx
+│   │   └── CountdownVisuals.tsx
+│   ├── add-modal/      # 添加向导
+│   │   ├── Step3TimeSettings.tsx  # 保持独立（复杂）
+│   │   └── WizardSteps.tsx         # 合并简单步骤
+│   ├── Sidebar.tsx     # 主布局组件
+│   ├── ContentView.tsx
+│   ├── AddModal.tsx
+│   ├── FilterBar.tsx
+│   ├── ImageUploadZone.tsx
+│   └── DeleteButton.tsx
 ├── hooks/              # 自定义 Hooks
-├── lib/                # 工具库和状态管理
-│   └── stores/         # Zustand stores
-├── i18n/               # 国际化配置
+├── lib/                # 工具库
+│   ├── db/             # 数据库 (Drizzle ORM)
+│   ├── services/       # 服务层
+│   ├── utils/          # 工具函数
+│   │   ├── unlock-time.ts
+│   │   └── item-utils.ts    # 统一工具
+│   ├── types.ts        # 统一类型定义
+│   ├── validation.ts   # Zod schemas
+│   ├── queries.ts      # React Query hooks
+│   └── ...
 └── test/               # 测试文件
 ```
 
