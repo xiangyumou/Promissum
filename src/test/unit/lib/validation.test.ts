@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
-    FilterParamsSchema,
+    ItemQuerySchema,
+    ApiItemQuerySchema,
     CreateItemSchema,
     ExtendItemSchema,
     ItemIdSchema,
@@ -10,9 +11,9 @@ import {
 import { z } from 'zod';
 
 describe('validation', () => {
-    describe('FilterParamsSchema', () => {
+    describe('ItemQuerySchema', () => {
         it('should validate valid params', () => {
-            const result = FilterParamsSchema.safeParse({
+            const result = ItemQuerySchema.safeParse({
                 status: 'locked',
                 type: 'text',
                 sort: 'created_desc',
@@ -22,19 +23,57 @@ describe('validation', () => {
             expect(result.success).toBe(true);
         });
 
-        it('should allow optional params', () => {
-            const result = FilterParamsSchema.safeParse({});
+        it('should allow optional params with defaults', () => {
+            const result = ItemQuerySchema.safeParse({});
             expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.data.status).toBe('all');
+                expect(result.data.limit).toBe(50);
+                expect(result.data.offset).toBe(0);
+            }
         });
 
-        it('should coerce numbers', () => {
-            const result = FilterParamsSchema.safeParse({
-                limit: '10',
-                offset: '0'
+        it('should accept search parameter', () => {
+            const result = ItemQuerySchema.safeParse({
+                search: 'test query'
             });
             expect(result.success).toBe(true);
             if (result.success) {
-                expect(result.data.limit).toBe(10);
+                expect(result.data.search).toBe('test query');
+            }
+        });
+    });
+
+    describe('ApiItemQuerySchema', () => {
+        it('should validate valid params', () => {
+            const result = ApiItemQuerySchema.safeParse({
+                status: 'locked',
+                type: 'text',
+                sort: 'created_desc',
+                limit: 10,
+                offset: 0
+            });
+            expect(result.success).toBe(true);
+        });
+
+        it('should coerce string numbers from URL params', () => {
+            const result = ApiItemQuerySchema.safeParse({
+                limit: '100',
+                offset: '20'
+            });
+            expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.data.limit).toBe(100);
+                expect(result.data.offset).toBe(20);
+            }
+        });
+
+        it('should apply defaults when params missing', () => {
+            const result = ApiItemQuerySchema.safeParse({});
+            expect(result.success).toBe(true);
+            if (result.success) {
+                expect(result.data.status).toBe('all');
+                expect(result.data.limit).toBe(50);
                 expect(result.data.offset).toBe(0);
             }
         });

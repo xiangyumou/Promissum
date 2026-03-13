@@ -17,7 +17,6 @@ import {
     getStats,
     type ApiItemResponse
 } from './services/api-service';
-import { timeService } from './services/time-service';
 import type { FilterParams } from '@/lib/types';
 import {
     POLLING_INTERVAL,
@@ -130,7 +129,7 @@ export function useItem(id: string | null) {
                 return false;
             }
 
-            const now = timeService.now();
+            const now = Date.now();
             const timeRemaining = data.decrypt_at - now;
 
             if (timeRemaining <= NEAR_UNLOCK_THRESHOLD_MS) {

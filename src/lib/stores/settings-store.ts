@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { env } from '@/lib/env';
 import { STORAGE_KEYS } from '@/lib/constants';
 
 function migrateFromLegacyStorage(): void {
@@ -36,8 +35,8 @@ export const useSettings = create<SettingsState>()(
             sidebarOpen: true,
             confirmDelete: true,
             confirmExtend: true,
-            autoRefreshInterval: env.autoRefreshInterval,
-            cacheTTLMinutes: env.cacheTTLMinutes,
+            autoRefreshInterval: 60, // seconds
+            cacheTTLMinutes: 5,
             enableUnlockSound: false,
             enableUnlockConfetti: true,
             setSidebarOpen: (open) => set({ sidebarOpen: open }),

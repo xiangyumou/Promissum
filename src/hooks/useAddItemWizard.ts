@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { timeService } from '@/lib/services/time-service';
 import { calculateDurationMinutes, calculateUnlockTimeInfo, AbsoluteTime } from '@/lib/utils/unlock-time';
 import { MS_PER_HOUR } from '@/lib/constants';
 
@@ -34,7 +33,7 @@ export function useAddItemWizard({ isOpen, defaultDuration, onClose, onSubmit }:
 
     // Absolute time state
     const getDefaultAbsoluteTime = () => {
-        const d = new Date(timeService.now() + MS_PER_HOUR);
+        const d = new Date(Date.now() + MS_PER_HOUR);
         return {
             year: d.getFullYear().toString().slice(-2),
             month: (d.getMonth() + 1).toString().padStart(2, '0'),
@@ -57,12 +56,12 @@ export function useAddItemWizard({ isOpen, defaultDuration, onClose, onSubmit }:
 
     // Calculate duration in minutes based on current mode
     const calculatedDuration = useMemo(() => {
-        return calculateDurationMinutes(timeMode, accumulatedDuration, absoluteTime, timeService.now());
+        return calculateDurationMinutes(timeMode, accumulatedDuration, absoluteTime, Date.now());
     }, [timeMode, accumulatedDuration, absoluteTime]);
 
     // Calculate and format the unlock time
     const unlockTimeInfo = useMemo(() => {
-        const info = calculateUnlockTimeInfo(calculatedDuration, timeMode, absoluteTime, timeService.now());
+        const info = calculateUnlockTimeInfo(calculatedDuration, timeMode, absoluteTime, Date.now());
 
         // Determine the specific error message based on errorReason
         let errorMessage: string | null = null;

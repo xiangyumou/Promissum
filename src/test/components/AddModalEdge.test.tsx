@@ -1,8 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import AddModal from '@/components/AddModal';
 import { renderWithProviders } from '@/test/utils';
-import { timeService } from '@/lib/services/time-service';
 import * as Dialog from '@radix-ui/react-dialog';
 
 // Mock dependencies
@@ -22,12 +21,8 @@ vi.mock('@/components/ui/Modal', () => ({
     ) : null
 }));
 
-// Mock time for consistent testing
-vi.mock('@/lib/services/time-service', () => ({
-    timeService: {
-        now: vi.fn(() => new Date('2024-06-15T12:00:00').getTime())
-    }
-}));
+// Use fake timers for consistent time-based testing
+const MOCK_TIME = new Date('2024-06-15T12:00:00').getTime();
 
 // Mock Drag & Drop
 
@@ -61,7 +56,6 @@ describe('AddModal Edge Cases', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        (timeService.now as any).mockReturnValue(new Date('2024-06-15T12:00:00').getTime());
     });
 
     describe('Wizard Flow', () => {

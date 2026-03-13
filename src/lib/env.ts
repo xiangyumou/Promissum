@@ -1,31 +1,12 @@
+/**
+ * Environment configuration
+ * Only includes settings that truly need to be configurable via environment variables.
+ * Other settings have sensible defaults hardcoded where they are used.
+ */
 const env = {
-  apiUrl: process.env.PROMISSUM_API_URL || 'http://localhost:3000/api/v1',
-
-  apiToken: process.env.PROMISSUM_API_TOKEN || '',
-
-  appUrl: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-
-  dateFormat: process.env.NEXT_PUBLIC_DATE_FORMAT || 'yyyy-MM-dd HH:mm',
-
-  autoRefreshInterval: parseInt(process.env.NEXT_PUBLIC_AUTO_REFRESH_INTERVAL || '60', 10),
-
-  cacheTTLMinutes: parseInt(process.env.NEXT_PUBLIC_CACHE_TTL || '5', 10),
+  // Database path - only necessary env var for SQLite
+  dbPath: process.env.DATABASE_URL || './promissum.db',
 } as const;
-
-export function validateEnv(): void {
-  const errors: string[] = [];
-
-  if (!env.apiToken) {
-    errors.push('PROMISSUM_API_TOKEN is not set');
-  }
-
-  if (errors.length > 0) {
-    throw new Error(
-      `Environment configuration error: ${errors.join(', ')}. ` +
-      'Please configure them in .env.local'
-    );
-  }
-}
 
 export default env;
 export { env };

@@ -1,16 +1,8 @@
 import { waitFor, screen } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import AddModal from '@/components/AddModal';
 import { renderWithProviders } from '@/test/utils';
-import { timeService } from '@/lib/services/time-service';
-
-// Mock timeService
-vi.mock('@/lib/services/time-service', () => ({
-    timeService: {
-        now: vi.fn()
-    }
-}));
 
 // Mock framer-motion to avoid animation delays
 vi.mock('framer-motion', async () => {
@@ -109,7 +101,6 @@ describe('AddModal', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        vi.mocked(timeService.now).mockReturnValue(NOW);
     });
 
     describe('Rendering', () => {

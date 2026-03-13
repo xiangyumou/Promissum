@@ -8,7 +8,6 @@ import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import { useSettings } from '@/lib/stores/settings-store';
 import { useHasMounted } from '@/hooks/useHasMounted';
-import { timeService } from '@/lib/services/time-service';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { getRelativeTimeRemaining } from '@/lib/utils/unlock-time';
 
@@ -202,7 +201,7 @@ function ItemCard({
     onClick
 }: ItemCardProps) {
     const hasMounted = useHasMounted();
-    const isUnlocked = hasMounted ? timeService.now() >= item.decrypt_at : false;
+    const isUnlocked = hasMounted ? Date.now() >= item.decrypt_at : false;
     const timeRemaining = hasMounted ? getRelativeTimeRemaining(item.decrypt_at) : '...';
     const tCommon = useTranslations('Common');
 

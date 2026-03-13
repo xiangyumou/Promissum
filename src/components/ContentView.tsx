@@ -14,7 +14,6 @@ import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
 import CountdownVisuals from './CountdownVisuals';
 
-import { timeService } from '@/lib/services/time-service';
 import { useUnlockCelebration } from '@/hooks/useUnlockCelebration';
 
 import { DeleteButton } from './actions/DeleteButton';
@@ -99,7 +98,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
         );
     }
 
-    const isUnlocked = timeService.now() >= item.decrypt_at;
+    const isUnlocked = Date.now() >= item.decrypt_at;
 
     // Derive image source if type is image and item is unlocked
     const imageSrc = item.type === 'image' && item.content

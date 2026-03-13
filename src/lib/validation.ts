@@ -21,22 +21,9 @@ export type ItemType = z.infer<typeof ItemTypeSchema>;
 // =============================================================================
 
 /**
- * Filter parameters for listing items
+ * Query schema for listing items (used by both service and API layers)
  */
-export const FilterParamsSchema = z.object({
-    status: z.enum(['all', 'locked', 'unlocked']).optional(),
-    type: z.enum(['text', 'image']).optional(),
-    sort: z.enum(['created_asc', 'created_desc', 'decrypt_asc', 'decrypt_desc']).optional(),
-    limit: z.coerce.number().positive().optional(),
-    offset: z.coerce.number().nonnegative().optional(),
-});
-
-export type FilterParamsInput = z.infer<typeof FilterParamsSchema>;
-
-/**
- * Query schema for service layer
- */
-export const QuerySchema = z.object({
+export const ItemQuerySchema = z.object({
     status: z.enum(['all', 'locked', 'unlocked']).optional().nullable().default('all'),
     type: z.enum(['text', 'image']).optional().nullable(),
     search: z.string().optional(),
@@ -45,21 +32,24 @@ export const QuerySchema = z.object({
     sort: z.enum(['created_asc', 'created_desc', 'decrypt_asc', 'decrypt_desc']).optional().default('created_desc'),
 });
 
-export type QueryInput = z.infer<typeof QuerySchema>;
+export type ItemQueryInput = z.infer<typeof ItemQuerySchema>;
 
 /**
- * API query schema (with coercion for query params)
+ * API query schema (with coercion for query params from URL)
+ * Extends ItemQuerySchema with coercion for string query params
  */
-export const ApiQuerySchema = z.object({
-    status: z.enum(['all', 'locked', 'unlocked']).optional().nullable(),
-    type: z.enum(['text', 'image']).optional().nullable(),
-    search: z.string().optional(),
+export const ApiItemQuerySchema = ItemQuerySchema.extend({
     limit: z.coerce.number().int().positive().max(1000).optional().default(50),
     offset: z.coerce.number().int().nonnegative().optional().default(0),
-    sort: z.enum(['created_asc', 'created_desc', 'decrypt_asc', 'decrypt_desc']).optional().default('created_desc'),
 });
 
-export type ApiQueryInput = z.infer<typeof ApiQuerySchema>;
+export type ApiItemQueryInput = z.infer<typeof ApiItemQuerySchema>;
+
+// Re-export for backward compatibility during transition
+export { ItemQuerySchema as QuerySchema };
+export type { ItemQueryInput as QueryInput };
+export { ApiItemQuerySchema as ApiQuerySchema };
+export type { ApiItemQueryInput as ApiQueryInput };
 
 // =============================================================================
 // Item CRUD Schemas

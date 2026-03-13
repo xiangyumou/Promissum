@@ -2,11 +2,9 @@
  * useCountdown Hook
  *
  * Provides a countdown timer that updates every interval.
- * Uses timeService for testability.
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import { timeService } from '@/lib/services/time-service';
 
 /**
  * Hook to get remaining time until a target date
@@ -24,7 +22,7 @@ export function useCountdown(
 
     // Memoize initial value calculation
     const initialValue = useMemo(
-        () => Math.max(0, targetDate - timeService.now()),
+        () => Math.max(0, targetDate - Date.now()),
         [targetDate]
     );
 
@@ -33,13 +31,13 @@ export function useCountdown(
     // Update state when targetDate changes (using state setter function form)
     useEffect(() => {
         // Use functional update to avoid direct setState call
-        setTimeLeft(Math.max(0, targetDate - timeService.now()));
+        setTimeLeft(Math.max(0, targetDate - Date.now()));
     }, [targetDate]);
 
     // Set up interval for countdown updates
     useEffect(() => {
         const timer = setInterval(() => {
-            setTimeLeft(Math.max(0, targetDate - timeService.now()));
+            setTimeLeft(Math.max(0, targetDate - Date.now()));
         }, intervalMs);
 
         return () => clearInterval(timer);

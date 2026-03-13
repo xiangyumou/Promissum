@@ -5,7 +5,7 @@
  * Extracted from AddModal.tsx to enable unit testing without UI dependencies.
  */
 
-import { timeService } from '@/lib/services/time-service';
+// Time utilities - pure functions for time calculations
 import { MS_PER_MINUTE } from '@/lib/constants';
 
 export interface AbsoluteTime {
@@ -56,13 +56,13 @@ function parseYear(yearInput: string): number {
  * @param timeMode 'duration' (relative minutes) or 'absolute' (specific date)
  * @param accumulatedDuration Current relative duration in minutes
  * @param absoluteTime The target absolute time object
- * @param currentTime Optional specific current time (defaults to timeService.now())
+ * @param currentTime Optional specific current time (defaults to Date.now())
  */
 export function calculateDurationMinutes(
     timeMode: 'duration' | 'absolute',
     accumulatedDuration: number,
     absoluteTime: AbsoluteTime,
-    currentTime: number = timeService.now()
+    currentTime: number = Date.now()
 ): number {
     if (timeMode === 'duration') {
         return accumulatedDuration;
@@ -88,7 +88,7 @@ export function calculateUnlockTimeInfo(
     calculatedDuration: number,
     timeMode: 'duration' | 'absolute',
     absoluteTime: AbsoluteTime,
-    currentTime: number = timeService.now()
+    currentTime: number = Date.now()
 ): UnlockTimeInfo {
     let unlockDate: Date;
     let diffMs: number;
@@ -152,7 +152,7 @@ export function calculateUnlockTimeInfo(
  * Get a concise relative time remaining string (e.g., "2d 4h", "5h 30m", "45m").
  * Used for compact displays like lists/cards.
  */
-export function getRelativeTimeRemaining(decryptAt: number, now: number = timeService.now()): string {
+export function getRelativeTimeRemaining(decryptAt: number, now: number = Date.now()): string {
     const diff = decryptAt - now;
 
     if (diff <= 0) return 'Unlocked';

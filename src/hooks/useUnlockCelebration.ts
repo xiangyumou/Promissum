@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useSettings } from '@/lib/stores/settings-store';
-import { timeService } from '@/lib/services/time-service';
 import { ApiItemDetail } from '@/lib/types';
 
 /**
@@ -14,7 +13,7 @@ export function useUnlockCelebration(item?: ApiItemDetail) {
     useEffect(() => {
         if (!item) return;
 
-        const isNowUnlocked = timeService.now() >= item.decrypt_at;
+        const isNowUnlocked = Date.now() >= item.decrypt_at;
 
         // Trigger unlock effects when transitioning from locked to unlocked
         if (wasLocked && isNowUnlocked) {

@@ -1,18 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '../utils';
 import ContentView from '@/components/ContentView';
 import { ApiItemDetail } from '@/lib/types';
-import { timeService } from '@/lib/services/time-service';
 import { useSettings } from '@/lib/stores/settings-store';
-
-// Mock timeService
-vi.mock('@/lib/services/time-service', () => ({
-    timeService: {
-        now: vi.fn()
-    }
-}));
 
 // Mock next-intl
 vi.mock('next-intl', async () => {
@@ -105,7 +97,6 @@ describe('ContentView', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        (timeService.now as any).mockReturnValue(Date.now());
         // Default settings
         (useSettings.getState as any).mockReturnValue({
             confirmDelete: true,
