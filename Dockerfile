@@ -31,6 +31,7 @@ WORKDIR /app
 
 # Set environment to production
 ENV NODE_ENV=production
+ENV DATABASE_URL=/data/promissum.db
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
