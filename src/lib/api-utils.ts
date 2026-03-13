@@ -9,8 +9,6 @@ export async function withApiHandler<T>(handler: ApiHandler<T>): Promise<NextRes
     try {
         return await handler();
     } catch (error) {
-        console.error('API Error:', error instanceof Error ? error.message : 'Unknown error', error);
-
         if (error instanceof ZodError) {
             return NextResponse.json(
                 { error: 'Validation Error', details: error.issues },
@@ -19,6 +17,7 @@ export async function withApiHandler<T>(handler: ApiHandler<T>): Promise<NextRes
         }
 
         if (error instanceof DrandError) {
+            console.error('API Error:', error.message, error);
             return NextResponse.json(
                 { error: 'Encryption Service Unavailable', code: error.code },
                 { status: 502 }
@@ -26,8 +25,7 @@ export async function withApiHandler<T>(handler: ApiHandler<T>): Promise<NextRes
         }
 
         const message = error instanceof Error ? error.message : 'Internal Server Error';
-        
-        // Handle common error messages with specific status codes
+
         if (message === 'Item not found') {
             return NextResponse.json({ error: message }, { status: 404 });
         }
@@ -38,11 +36,11 @@ export async function withApiHandler<T>(handler: ApiHandler<T>): Promise<NextRes
             return NextResponse.json({ error: message }, { status: 415 });
         }
 
+        console.error('API Error:', message, error);
         return NextResponse.json(
-            { 
+            {
                 error: message,
-                // Only show detailed error in dev
-                details: process.env.NODE_ENV === 'development' ? error : undefined 
+                details: process.env.NODE_ENV === 'development' ? error : undefined
             },
             { status: 500 }
         );
