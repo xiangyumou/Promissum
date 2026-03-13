@@ -8,7 +8,7 @@ import Sidebar from '@/components/Sidebar';
 import AddModal from '@/components/AddModal';
 import ContentView from '@/components/ContentView';
 import { FilterParams } from '@/lib/queries';
-import { useItems, useCreateItem, useItem, useExtendItem, useDeleteItem } from '@/lib/queries';
+import { useItems, useCreateItem, useItem, useDeleteItem } from '@/lib/queries';
 
 
 export default function Home() {
@@ -39,7 +39,6 @@ export default function Home() {
 
   const createItem = useCreateItem();
   const deleteItem = useDeleteItem();
-  const extendItem = useExtendItem();
 
   const handleAddSubmit = async (formData: FormData) => {
     toast.promise(
@@ -74,17 +73,6 @@ export default function Home() {
     );
   };
 
-  const handleExtend = (id: string, minutes: number) => {
-    toast.promise(
-      extendItem.mutateAsync({ id, minutes }),
-      {
-        loading: 'Extending lock...',
-        success: 'Lock extended successfully',
-        error: 'Failed to extend lock'
-      }
-    );
-  };
-
   const handleSelectItem = (id: string) => {
     updateSelectedId(id);
     // Close sidebar on mobile after selecting item
@@ -110,7 +98,6 @@ export default function Home() {
         item={selectedItemDetail}
         isLoading={itemLoading}
         onDelete={handleDelete}
-        onExtend={handleExtend}
         onMenuClick={() => setSidebarOpen(true)}
       />
 

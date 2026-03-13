@@ -38,8 +38,6 @@ describe('Stats Service', () => {
             lockedItems: 0,
             unlockedItems: 0,
             byType: { text: 0, image: 0 },
-            avgLockDurationMinutes: 0,
-            newestItem: undefined,
         });
     });
 

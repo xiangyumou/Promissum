@@ -9,7 +9,6 @@ export interface CreateItemData {
     originalName: string | null;
     decryptAt: Date;
     roundNumber: bigint;
-    layerCount: number;
     metadata: Record<string, unknown>;
 }
 
@@ -21,7 +20,6 @@ export async function createItemInDb(data: CreateItemData) {
         originalName: data.originalName,
         decryptAt: data.decryptAt,
         roundNumber: Number(data.roundNumber),
-        layerCount: data.layerCount,
         metadata: JSON.stringify(data.metadata),
     };
 
@@ -68,7 +66,6 @@ export async function findItemsInDb(params: FindItemsParams) {
         originalName: items.originalName,
         decryptAt: items.decryptAt,
         createdAt: items.createdAt,
-        layerCount: items.layerCount,
         metadata: items.metadata,
     }).from(items);
 
@@ -100,7 +97,6 @@ export async function findItemHeaderById(id: string) {
         originalName: items.originalName,
         decryptAt: items.decryptAt,
         createdAt: items.createdAt,
-        layerCount: items.layerCount,
         metadata: items.metadata,
     }).from(items).where(eq(items.id, id)).limit(1);
 
@@ -113,39 +109,6 @@ export async function findItemEncryptedData(id: string) {
     }).from(items).where(eq(items.id, id)).limit(1);
 
     return result[0] || null;
-}
-
-export async function findItemForExtension(id: string) {
-    const result = await db.select().from(items).where(eq(items.id, id)).limit(1);
-    return result[0] || null;
-}
-
-export interface UpdateItemExtensionParams {
-    id: string;
-    currentLayerCount: number;
-    encryptedData: string;
-    decryptAt: Date;
-    roundNumber: bigint;
-}
-
-export async function updateItemExtension(params: UpdateItemExtensionParams) {
-    const result = await db.update(items)
-        .set({
-            encryptedData: params.encryptedData,
-            decryptAt: params.decryptAt,
-            roundNumber: Number(params.roundNumber),
-            layerCount: params.currentLayerCount + 1,
-        })
-        .where(and(
-            eq(items.id, params.id),
-            eq(items.layerCount, params.currentLayerCount)
-        ));
-
-    if (result.changes === 0) {
-        throw new Error('Item was modified during operation, please retry');
-    }
-
-    return result;
 }
 
 export async function deleteItemFromDb(id: string) {

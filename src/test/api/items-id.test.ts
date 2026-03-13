@@ -26,7 +26,6 @@ describe('Items ID API Routes', () => {
                 content: 'Test content',
                 metadata: { title: 'Test Item' },
                 timeRemainingMs: 3600000,
-                layerCount: 1,
                 originalName: null,
             };
 
@@ -41,7 +40,6 @@ describe('Items ID API Routes', () => {
             expect(data.type).toBe('text');
             expect(data.content).toBe('Test content');
             expect(data.metadata).toEqual({ title: 'Test Item' });
-            expect(data.layer_count).toBe(1);
             expect(data.time_remaining_ms).toBe(3600000);
         });
 
@@ -77,7 +75,6 @@ describe('Items ID API Routes', () => {
                 content: 'base64encodedimage',
                 metadata: { title: 'Test Image' },
                 timeRemainingMs: 7200000,
-                layerCount: 2,
                 originalName: 'test.png',
             };
 

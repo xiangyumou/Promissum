@@ -113,11 +113,6 @@ vi.mock('@/i18n/routing', () => ({
     }
 }));
 
-// Mock canvas-confetti to prevent canvas errors in jsdom
-vi.mock('canvas-confetti', () => ({
-    default: vi.fn(() => Promise.resolve())
-}));
-
 // Fix File/Blob arrayBuffer in test environment
 // jsdom's File implementation doesn't properly handle arrayBuffer()
 if (typeof File !== 'undefined') {

@@ -16,7 +16,6 @@ async function getHandler(_request: NextRequest, context: unknown) {
         content: item.content,
         metadata: item.metadata,
         timeRemainingMs: item.timeRemainingMs,
-        layerCount: item.layerCount,
         originalName: item.originalName,
     });
 }

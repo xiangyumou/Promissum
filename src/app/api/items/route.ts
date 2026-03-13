@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createItem, getItems } from '@/lib/services/items/item-service';
 import { toSnakeCase } from '@/lib/utils';
-import { DEFAULT_LOCK_DURATION_MINUTES } from '@/lib/constants';
 import { ApiQuerySchema, CreateItemSchema } from '@/lib/validation';
 import { withApiHandler, successResponse, validateSearchParams } from '@/lib/api-utils';
 
@@ -31,7 +30,6 @@ async function getHandler(request: NextRequest) {
 
     return NextResponse.json({
         items: mappedItems,
-        lastDuration: DEFAULT_LOCK_DURATION_MINUTES,
         total: result.total
     });
 }

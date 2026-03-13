@@ -78,15 +78,6 @@ export const CreateItemSchema = z.object({
 export type CreateItemInput = z.infer<typeof CreateItemSchema>;
 
 /**
- * Extend item request schema
- */
-export const ExtendItemSchema = z.object({
-    minutes: z.number().int().positive('Minutes must be a positive number'),
-});
-
-export type ExtendItemInput = z.infer<typeof ExtendItemSchema>;
-
-/**
  * Item ID parameter schema
  */
 export const ItemIdSchema = z.string().min(1, 'Item ID is required');
@@ -104,7 +95,6 @@ export interface ItemResponse {
     originalName: string | null;
     decryptAt: number;
     createdAt: number;
-    layerCount: number;
     unlocked: boolean;
     metadata: Record<string, unknown> | null;
     content?: string | null;

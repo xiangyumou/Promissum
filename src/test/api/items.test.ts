@@ -49,7 +49,6 @@ describe('Items API Routes', () => {
 
             expect(response.status).toBe(200);
             expect(data.items).toHaveLength(2);
-            expect(data.lastDuration).toBe(720);
         });
 
         it('should handle status filter', async () => {

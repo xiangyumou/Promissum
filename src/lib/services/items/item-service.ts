@@ -12,7 +12,6 @@ import {
     QueryInput as GetItemsInput,
     ItemResponse,
     CreateItemSchema,
-    ExtendItemSchema,
     QuerySchema
 } from '@/lib/validation';
 import * as itemRepo from './item-repository';
@@ -26,7 +25,6 @@ export function formatItemResponse(item: {
     originalName: string | null;
     decryptAt: Date;
     createdAt: Date;
-    layerCount: number;
     metadata: string | null;
     encryptedData?: string;
 }): ItemResponse {
@@ -42,7 +40,6 @@ export function formatItemResponse(item: {
         originalName: item.originalName,
         decryptAt: decryptAtMs,
         createdAt: item.createdAt.getTime(),
-        layerCount: item.layerCount,
         unlocked,
         metadata,
         timeRemainingMs: unlocked ? undefined : decryptAtMs - now,
@@ -83,7 +80,6 @@ export async function createItem(input: CreateItemInput): Promise<ItemResponse> 
         originalName: validated.type === 'image' ? 'image.png' : null,
         decryptAt: decryptAt,
         roundNumber: BigInt(roundNumber),
-        layerCount: 1,
         metadata: validated.metadata ?? {},
     });
 
@@ -93,7 +89,6 @@ export async function createItem(input: CreateItemInput): Promise<ItemResponse> 
         originalName: item.originalName ?? null,
         decryptAt: item.decryptAt!,
         createdAt: item.createdAt!,
-        layerCount: item.layerCount!,
         metadata: item.metadata ?? null,
         encryptedData: item.encryptedData,
     });
@@ -180,53 +175,6 @@ export async function getItemById(id: string): Promise<ItemResponse> {
     return response;
 }
 
-export async function extendItem(id: string, minutes: number): Promise<{
-    success: boolean;
-    decryptAt: number;
-    layerCount: number;
-}> {
-    const { minutes: validatedMinutes } = ExtendItemSchema.parse({ minutes });
-
-    const item = await itemRepo.findItemForExtension(id);
-
-    if (!item) {
-        throw new Error('Item not found');
-    }
-
-    const now = Date.now();
-    const unlocked = item.decryptAt.getTime() <= now;
-
-    let contentToEncrypt: Buffer;
-
-    if (unlocked) {
-        try {
-            contentToEncrypt = await decrypt(item.encryptedData);
-        } catch (_error) {
-            throw new Error('Failed to decrypt content for re-encryption');
-        }
-    } else {
-        contentToEncrypt = Buffer.from(item.encryptedData, 'utf-8');
-    }
-
-    const baseTimeMs = unlocked ? now : item.decryptAt.getTime();
-    const newDecryptAt = new Date(baseTimeMs + validatedMinutes * 60 * 1000);
-
-    const { ciphertext, roundNumber } = await encrypt(contentToEncrypt, newDecryptAt);
-
-    await itemRepo.updateItemExtension({
-        id,
-        currentLayerCount: item.layerCount,
-        encryptedData: ciphertext,
-        decryptAt: newDecryptAt,
-        roundNumber: BigInt(roundNumber),
-    });
-
-    return {
-        success: true,
-        decryptAt: newDecryptAt.getTime(),
-        layerCount: item.layerCount + 1,
-    };
-}
 
 export async function deleteItem(id: string): Promise<{ success: boolean }> {
     return { success: await itemRepo.deleteItemFromDb(id) };

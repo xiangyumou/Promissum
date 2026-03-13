@@ -64,21 +64,6 @@ export async function createItem(formData: FormData): Promise<{ success: boolean
     return response.json();
 }
 
-export async function extendItem(id: string, minutes: number): Promise<ApiItemResponse> {
-    const response = await fetch(`/api/items/${id}/extend`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ minutes }),
-    });
-
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to extend lock');
-    }
-
-    return response.json();
-}
-
 export async function deleteItem(id: string): Promise<{ success: boolean }> {
     const response = await fetch(`/api/items/${id}`, {
         method: 'DELETE',

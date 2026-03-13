@@ -14,27 +14,20 @@ import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
 import CountdownVisuals from './CountdownVisuals';
 
-import { useUnlockCelebration } from '@/hooks/useUnlockCelebration';
-
 import { DeleteButton } from './actions/DeleteButton';
-import { ExtendButton } from './actions/ExtendButton';
 
 interface ContentViewProps {
     selectedId: string | null;
     item?: ApiItemDetail;
     isLoading: boolean;
     onDelete: (id: string) => void;
-    onExtend: (id: string, additionalMinutes: number) => void;
     onMenuClick?: () => void;
 }
 
-export default function ContentView({ selectedId, item, isLoading, onDelete, onExtend, onMenuClick }: ContentViewProps) {
+export default function ContentView({ selectedId, item, isLoading, onDelete, onMenuClick }: ContentViewProps) {
     const t = useTranslations('ContentView');
     const tCommon = useTranslations('Common');
     const locale = useLocale();
-
-    // Track unlock status and trigger celebration
-    useUnlockCelebration(item);
 
     // Image lightbox state
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -156,7 +149,6 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onE
                             <LanguageSwitcher />
                         </div>
 
-                        <ExtendButton onExtend={(mins: number) => onExtend(item.id, mins)} />
                         <DeleteButton id={item.id} onDelete={onDelete} />
                     </div>
                 </div>

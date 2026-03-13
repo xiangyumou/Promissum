@@ -47,7 +47,6 @@ export interface ApiItemDetail {
     decrypt_at: number;
     content: string | null;
     metadata?: ItemMetadata;
-    layer_count?: number;
     original_name?: string | null;
     created_at?: number;
 }
@@ -106,7 +105,5 @@ export interface SystemStats {
         text: number;
         image: number;
     };
-    avgLockDurationMinutes?: number;
-    newestItem?: number; // Timestamp of the newest item
 }
 

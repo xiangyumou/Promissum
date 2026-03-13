@@ -42,37 +42,10 @@ export async function getSystemStats(): Promise<SystemStats> {
         image: imageCount,
     };
 
-    // Calculate average lock duration
-    let avgLockDurationMinutes = 0;
-    if (totalItems > 0) {
-        const durationData = await db.select({
-            createdAt: items.createdAt,
-            decryptAt: items.decryptAt,
-        }).from(items).limit(1000);
-
-        if (durationData.length > 0) {
-            const totalDuration = durationData.reduce(
-                (sum, item) => sum + (item.decryptAt.getTime() - item.createdAt.getTime()),
-                0
-            );
-            avgLockDurationMinutes = Math.round(totalDuration / durationData.length / 60000);
-        }
-    }
-
-    // Get newest item timestamp
-    const maxCreatedResult = await db.select({
-        maxCreated: sql<number>`max(${items.createdAt})`,
-    }).from(items);
-    const newestItem = maxCreatedResult[0]?.maxCreated
-        ? new Date(maxCreatedResult[0].maxCreated).getTime()
-        : undefined;
-
     return {
         totalItems,
         lockedItems,
         unlockedItems,
         byType,
-        avgLockDurationMinutes,
-        newestItem,
     };
 }
