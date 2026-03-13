@@ -96,7 +96,7 @@ describe('Items ID API Routes', () => {
 
     describe('DELETE /api/items/[id]', () => {
         it('should delete item successfully', async () => {
-            vi.mocked(deleteItem).mockResolvedValue(undefined);
+            vi.mocked(deleteItem).mockResolvedValue({ success: true });
 
             const request = new NextRequest('http://localhost/api/items/test-id-1', {
                 method: 'DELETE',

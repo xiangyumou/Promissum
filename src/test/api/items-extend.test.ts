@@ -16,7 +16,8 @@ describe('Extend Item API Route', () => {
 
     it('should extend item lock time successfully', async () => {
         const mockResult = {
-            decryptAt: new Date(Date.now() + 7200000),
+            success: true,
+            decryptAt: Date.now() + 7200000,
             layerCount: 2,
         };
 
@@ -57,7 +58,6 @@ describe('Extend Item API Route', () => {
         });
 
         const response = await POST(request, { params: Promise.resolve({ id: 'test-id' }) });
-        const data = await response.json();
 
         expect(response.status).toBe(400);
     });
@@ -69,7 +69,6 @@ describe('Extend Item API Route', () => {
         });
 
         const response = await POST(request, { params: Promise.resolve({ id: 'test-id' }) });
-        const data = await response.json();
 
         expect(response.status).toBe(400);
     });
@@ -121,7 +120,8 @@ describe('Extend Item API Route', () => {
 
     it('should extend with large minutes value', async () => {
         const mockResult = {
-            decryptAt: new Date(Date.now() + 5256000000), // ~100 days
+            success: true,
+            decryptAt: Date.now() + 5256000000, // ~100 days
             layerCount: 3,
         };
 
