@@ -184,3 +184,23 @@ export function formatUnlockTime(timestamp: number, locale: string = 'en'): stri
         minute: '2-digit',
     }).format(date);
 }
+
+/**
+ * Format milliseconds to countdown display string
+ * e.g., 86400000 -> "1d 00:00:00" or 3661000 -> "01:01:01"
+ */
+export function formatTime(ms: number): string {
+    if (ms <= 0) return '00:00:00';
+
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
+
+    if (days > 0) {
+        return `${days}d ${pad(hours % 24)}:${pad(minutes % 60)}:${pad(seconds % 60)}`;
+    }
+    return `${pad(hours)}:${pad(minutes % 60)}:${pad(seconds % 60)}`;
+}

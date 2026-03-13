@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Item, FilterParams } from '@/lib/types';
+import { isItemUnlocked, getItemDisplayTitle } from '@/lib/utils/item-utils';
 import FilterBar from './FilterBar';
 import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, PanelLeftClose } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -216,7 +217,7 @@ function ItemCard({
     onClick
 }: ItemCardProps) {
     const hasMounted = useHasMounted();
-    const isUnlocked = hasMounted ? Date.now() >= item.decrypt_at : false;
+    const isUnlocked = hasMounted ? isItemUnlocked(item.decrypt_at) : false;
     const timeRemaining = hasMounted ? getRelativeTimeRemaining(item.decrypt_at) : '...';
     const tCommon = useTranslations('Common');
 
@@ -238,8 +239,7 @@ function ItemCard({
 
             <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-foreground truncate">
-                    {item.metadata?.title ||
-                        (item.type === 'text' ? tCommon('textNote') : tCommon('image'))}
+                    {getItemDisplayTitle(item, tCommon)}
                 </div>
                 <div className={cn(
                     "text-xs flex items-center gap-1.5 mt-0.5 font-medium truncate",

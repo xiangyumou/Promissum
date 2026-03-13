@@ -1,10 +1,11 @@
 'use client';
 
-import { ApiItemDetail } from '@/lib/types';
+import { Item } from '@/lib/types';
 import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations, useLocale } from 'next-intl';
 import { formatUnlockTime } from '@/lib/utils/unlock-time';
+import { isItemUnlocked, getItemDisplayTitle } from '@/lib/utils/item-utils';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
@@ -18,7 +19,7 @@ import { DeleteButton } from './actions/DeleteButton';
 
 interface ContentViewProps {
     selectedId: string | null;
-    item?: ApiItemDetail;
+    item?: Item;
     isLoading: boolean;
     onDelete: (id: string) => void;
     onMenuClick?: () => void;
@@ -91,7 +92,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
         );
     }
 
-    const isUnlocked = Date.now() >= item.decrypt_at;
+    const isUnlocked = isItemUnlocked(item.decrypt_at);
 
     // Derive image source if type is image and item is unlocked
     const imageSrc = item.type === 'image' && item.content
@@ -122,8 +123,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                         </div>
                         <div className="min-w-0 flex-1">
                             <h2 className="text-lg md:text-xl font-bold text-foreground truncate" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-                                {item.metadata?.title ||
-                                    (item.type === 'text' ? tCommon('textNote') : tCommon('image'))}
+                                {getItemDisplayTitle(item, tCommon)}
                             </h2>
                             <div className="flex flex-wrap items-center gap-2 mt-1 text-sm">
                                 {/* Status Badge */}
