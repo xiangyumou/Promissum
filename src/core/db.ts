@@ -40,6 +40,20 @@ function createDb() {
     const dbPath = process.env.DATABASE_URL || './promissum.db';
     const sqlite = new Database(dbPath);
     sqlite.pragma('journal_mode = WAL');
+
+    // Auto-create tables if they don't exist
+    sqlite.exec(`
+        CREATE TABLE IF NOT EXISTS items (
+            id TEXT PRIMARY KEY,
+            encrypted_data TEXT NOT NULL,
+            content_summary TEXT,
+            decrypt_at INTEGER NOT NULL,
+            round_number INTEGER NOT NULL,
+            created_at INTEGER NOT NULL DEFAULT (unixepoch() * 1000),
+            metadata TEXT
+        )
+    `);
+
     return drizzle(sqlite, { schema: { items: itemsTable } });
 }
 
