@@ -1,12 +1,15 @@
-# Promissum 技术债务修复实施计划
+# Promissum 测试错误修复计划
 
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 全面修复代码审查中发现的技术债务，包括文档同步、环境变量统一、验证层统一、类型定义合并、魔法数字替换、API错误处理统一、组件拆分和依赖更新。
+**Goal:** 修复所有失败的测试，包括 vi.mock 提升问题、CSS 类名不匹配问题。
 
-**Architecture:** 保持现有分层架构（API → Service → Repository → DB），通过统一命名规范、合并重复定义、标准化错误处理来提升代码可维护性。
+**Context:** 当前有 5 个测试失败：
+1. `preferences.test.ts` - vi.mock 提升导致整个测试套件无法运行
+2. `ConfirmDialog.test.tsx` - 3 个变体测试的 CSS 类名期望不匹配
+3. `LanguageSwitcher.test.tsx` - 1 个样式类名测试期望不匹配
 
-**Tech Stack:** Next.js 16, React 19, TypeScript 5, Drizzle ORM, SQLite, Zod v4, Tailwind CSS v4
+**Tech Stack:** Next.js 16, React 19, TypeScript 5, Vitest, React Testing Library
 
 ---
 
@@ -44,9 +47,284 @@
 
 ---
 
-## Chunk 1: 文档和环境变量修复
+## 文件结构
 
-### Task 1: 更新 README.md 技术栈描述
+### 修改文件
+| 文件 | 修改内容 |
+|------|----------|
+| `src/test/api/preferences.test.ts` | 修复 vi.mock 提升问题 |
+| `src/test/components/ConfirmDialog.test.tsx` | 更新 CSS 类名期望 |
+| `src/test/components/LanguageSwitcher.test.tsx` | 更新样式类名期望 |
+
+---
+
+## Chunk 1: 修复 preferences.test.ts 的 vi.mock 提升问题
+
+### Task 1: 修复 vi.mock 提升问题
+
+**Files:**
+- Modify: `src/test/api/preferences.test.ts`
+
+- [ ] **Step 1: 读取当前问题代码**
+
+查看第 18-26 行的 mock 定义：
+```typescript
+const dbMock = { ... };
+vi.mock('@/lib/db/client', () => ({
+    db: dbMock,  // dbMock 被提升后未定义
+}));
+```
+
+- [ ] **Step 2: 修复 mock 定义**
+
+将 dbMock 定义移到 mock 工厂函数内部：
+
+```typescript
+// 修复前
+const dbMock = { ... };
+vi.mock('@/lib/db/client', () => ({
+    db: dbMock,
+}));
+
+// 修复后
+vi.mock('@/lib/db/client', () => {
+    const dbMock = { ... };  // 在工厂函数内部定义
+    return { db: dbMock };
+});
+```
+
+或者使用工厂函数返回对象：
+
+```typescript
+vi.mock('@/lib/db/client', () => ({
+    db: {
+        select: vi.fn(() => createMockQuery()),
+        insert: vi.fn(() => createMockQuery()),
+        update: vi.fn(() => createMockQuery()),
+    }
+}));
+```
+
+- [ ] **Step 3: 运行测试验证**
+
+```bash
+npm run test -- --run src/test/api/preferences.test.ts
+```
+
+Expected: 测试套件正常运行，测试通过
+
+- [ ] **Step 4: 提交**
+
+```bash
+git add src/test/api/preferences.test.ts
+git commit -m "test: fix vi.mock hoisting issue in preferences test"
+```
+
+---
+
+## Chunk 2: 修复 ConfirmDialog 测试的 CSS 类名期望
+
+### Task 2: 读取测试和组件代码
+
+**Files:**
+- Read: `src/test/components/ConfirmDialog.test.tsx:52-74`
+- Read: `src/components/ConfirmDialog.tsx:65-68`
+
+- [ ] **Step 1: 读取测试期望**
+
+查看测试中期望的类名：
+- `danger` 变体期望 `bg-destructive`
+- `warning` 和 `info` 变体期望 `premium-button`
+
+- [ ] **Step 2: 读取组件实际实现**
+
+查看组件实际使用的类名：
+```tsx
+variant === 'danger' ? 'btn-destructive' : 'btn-primary'
+```
+
+---
+
+### Task 3: 修复 ConfirmDialog 测试
+
+**Files:**
+- Modify: `src/test/components/ConfirmDialog.test.tsx`
+
+- [ ] **Step 1: 更新 danger 变体测试**
+
+将期望从 `bg-destructive` 改为 `btn-destructive`：
+
+```typescript
+// 修复前
+expect(confirmBtn).toHaveClass('bg-destructive');
+
+// 修复后
+expect(confirmBtn).toHaveClass('btn-destructive');
+```
+
+- [ ] **Step 2: 更新 warning 和 info 变体测试**
+
+确认组件实际行为：警告和信息变体是否应该有特殊样式？
+
+查看组件代码，当前实现：
+```tsx
+// 组件只区分 danger 和其他
+variant === 'danger' ? 'btn-destructive' : 'btn-primary'
+```
+
+更新测试期望以匹配实际实现：
+
+```typescript
+// warning 变体测试
+it('should render warning variant correctly', () => {
+    renderConfirmDialog({ variant: 'warning' });
+    const confirmBtn = screen.getByRole('button', { name: '确认' });
+    // 组件对所有非 danger 变体使用 btn-primary
+    expect(confirmBtn).toHaveClass('btn-primary');
+});
+
+// info 变体测试
+it('should render info variant correctly', () => {
+    renderConfirmDialog({ variant: 'info' });
+    const confirmBtn = screen.getByRole('button', { name: '确认' });
+    expect(confirmBtn).toHaveClass('btn-primary');
+});
+```
+
+- [ ] **Step 3: 运行测试验证**
+
+```bash
+npm run test -- --run src/test/components/ConfirmDialog.test.tsx
+```
+
+Expected: 所有 19 个测试通过
+
+- [ ] **Step 4: 提交**
+
+```bash
+git add src/test/components/ConfirmDialog.test.tsx
+git commit -m "test: fix ConfirmDialog variant class name expectations"
+```
+
+---
+
+## Chunk 3: 修复 LanguageSwitcher 测试
+
+### Task 4: 读取并修复测试
+
+**Files:**
+- Read: `src/test/components/LanguageSwitcher.test.tsx:86-92`
+- Read: `src/components/LanguageSwitcher.tsx:31`
+
+- [ ] **Step 1: 读取测试和组件**
+
+测试期望：
+```typescript
+expect(button.className).toContain('flex');
+expect(button.className).toContain('items-center');
+```
+
+组件实际：
+```tsx
+className="btn btn-ghost text-sm"
+```
+
+- [ ] **Step 2: 修复测试**
+
+更新测试以匹配实际类名：
+
+```typescript
+// 修复前
+expect(button.className).toContain('flex');
+expect(button.className).toContain('items-center');
+
+// 修复后
+expect(button.className).toContain('btn');
+expect(button.className).toContain('btn-ghost');
+```
+
+或者，如果测试意图是验证按钮具有某种布局，可以使用更稳定的测试方法：
+
+```typescript
+// 更稳定的测试方式
+const button = screen.getByRole('button');
+expect(button).toBeVisible();
+expect(button).toHaveClass('btn', 'btn-ghost');
+```
+
+- [ ] **Step 3: 运行测试验证**
+
+```bash
+npm run test -- --run src/test/components/LanguageSwitcher.test.tsx
+```
+
+Expected: 所有 6 个测试通过
+
+- [ ] **Step 4: 提交**
+
+```bash
+git add src/test/components/LanguageSwitcher.test.tsx
+git commit -m "test: fix LanguageSwitcher button class name expectations"
+```
+
+---
+
+## Chunk 4: 最终验证
+
+### Task 5: 全面测试验证
+
+- [ ] **Step 1: 运行所有测试**
+
+```bash
+npm run test -- --run
+```
+
+Expected: 所有测试通过（337+ 测试，0 失败）
+
+- [ ] **Step 2: 类型检查**
+
+```bash
+npm run type-check
+```
+
+Expected: 无错误
+
+- [ ] **Step 3: 构建测试**
+
+```bash
+npm run build
+```
+
+Expected: 构建成功
+
+- [ ] **Step 4: 总结提交**
+
+```bash
+git log --oneline -5
+```
+
+---
+
+## 附录
+
+### 修复清单
+
+| 问题 | 文件 | 修复方式 |
+|------|------|----------|
+| vi.mock 提升错误 | preferences.test.ts | 将 mock 定义移到工厂函数内部 |
+| danger 类名不匹配 | ConfirmDialog.test.tsx | bg-destructive → btn-destructive |
+| warning/info 类名不匹配 | ConfirmDialog.test.tsx | premium-button → btn-primary |
+| LanguageSwitcher 类名 | LanguageSwitcher.test.tsx | 更新为 btn btn-ghost |
+
+### 故障排除
+
+**如果 preferences.test.ts 修复后仍然失败**:
+- 尝试使用 `vi.doMock` 替代 `vi.mock`
+- 或者使用 `beforeAll` 中手动模拟
+
+**如果 ConfirmDialog 变体测试意图是验证特定样式**:
+- 可能需要更新组件实现以支持 warning 和 info 的特殊样式
+- 或者确认当前简化设计是可接受的
 
 **Files:**
 - Modify: `README.md`

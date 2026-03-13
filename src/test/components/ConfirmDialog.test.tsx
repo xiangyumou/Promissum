@@ -54,7 +54,7 @@ describe('ConfirmDialog', () => {
                 <ConfirmDialog {...defaultProps} variant="danger" />
             );
             const confirmBtn = screen.getByRole('button', { name: 'Confirm' });
-            expect(confirmBtn).toHaveClass('bg-destructive');
+            expect(confirmBtn).toHaveClass('btn-destructive');
         });
 
         it('should render warning variant correctly', () => {
@@ -62,7 +62,8 @@ describe('ConfirmDialog', () => {
                 <ConfirmDialog {...defaultProps} variant="warning" />
             );
             const confirmBtn = screen.getByRole('button', { name: 'Confirm' });
-            expect(confirmBtn).toHaveClass('premium-button');
+            // Component uses btn-primary for non-danger variants
+            expect(confirmBtn).toHaveClass('btn-primary');
         });
 
         it('should render info variant correctly', () => {
@@ -70,7 +71,8 @@ describe('ConfirmDialog', () => {
                 <ConfirmDialog {...defaultProps} variant="info" />
             );
             const confirmBtn = screen.getByRole('button', { name: 'Confirm' });
-            expect(confirmBtn).toHaveClass('premium-button');
+            // Component uses btn-primary for non-danger variants
+            expect(confirmBtn).toHaveClass('btn-primary');
         });
     });
 

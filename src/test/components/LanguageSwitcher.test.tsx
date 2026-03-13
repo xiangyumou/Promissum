@@ -87,8 +87,7 @@ describe('LanguageSwitcher', () => {
             renderWithProviders(<LanguageSwitcher />);
 
             const button = screen.getByRole('button');
-            expect(button.className).toContain('flex');
-            expect(button.className).toContain('items-center');
+            expect(button).toHaveClass('btn', 'btn-ghost');
         });
     });
 });

@@ -2,7 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET, POST } from '@/app/api/preferences/route';
 import { NextRequest } from 'next/server';
 
-// Mock Drizzle
+// Mock Drizzle - factory must be self-contained
+vi.mock('@/lib/db/client', () => ({
+    db: {
+        select: vi.fn(),
+        insert: vi.fn(),
+        update: vi.fn(),
+    },
+}));
+
+// Import the mocked db after vi.mock
+import { db as dbMock } from '@/lib/db/client';
 
 const createMockQuery = () => {
     const chain = {
@@ -14,16 +24,6 @@ const createMockQuery = () => {
     };
     return chain;
 };
-
-const dbMock = {
-    select: vi.fn(() => createMockQuery()),
-    insert: vi.fn(() => createMockQuery()),
-    update: vi.fn(() => createMockQuery()),
-};
-
-vi.mock('@/lib/db/client', () => ({
-    db: dbMock,
-}));
 
 describe('Preferences API', () => {
     beforeEach(() => {
@@ -58,7 +58,7 @@ describe('Preferences API', () => {
             const prefQuery = createMockQuery();
             prefQuery.limit.mockResolvedValueOnce([mockPreferences]);
 
-            dbMock.select
+            (dbMock.select as ReturnType<typeof vi.fn>)
                 .mockReturnValueOnce(deviceQuery)
                 .mockReturnValueOnce(prefQuery);
 
@@ -79,11 +79,11 @@ describe('Preferences API', () => {
             const prefQuery = createMockQuery();
             prefQuery.limit.mockResolvedValueOnce([{ defaultDurationMinutes: 60 }]);
 
-            dbMock.select
+            (dbMock.select as ReturnType<typeof vi.fn>)
                 .mockReturnValueOnce(deviceQuery)
                 .mockReturnValueOnce(prefQuery);
 
-            dbMock.insert.mockReturnValue(createMockQuery());
+            (dbMock.insert as ReturnType<typeof vi.fn>).mockReturnValue(createMockQuery());
 
             const req = new NextRequest('http://localhost/api/preferences?deviceId=new-device');
             const res = await GET(req);
@@ -110,18 +110,18 @@ describe('Preferences API', () => {
             const prefQuery = createMockQuery();
             prefQuery.limit.mockReturnValueOnce([{ id: 'pref-1' }]);
 
-            dbMock.select
+            (dbMock.select as ReturnType<typeof vi.fn>)
                 .mockReturnValueOnce(deviceQuery)
                 .mockReturnValueOnce(prefQuery);
 
             // Update preferences
             const updateQuery = createMockQuery();
-            dbMock.update.mockReturnValue(updateQuery);
+            (dbMock.update as ReturnType<typeof vi.fn>).mockReturnValue(updateQuery);
 
             // Return updated preferences
             const finalPrefQuery = createMockQuery();
             finalPrefQuery.limit.mockResolvedValueOnce([{ ...payload, id: 'pref-1', themeConfig: '{}' }]);
-            dbMock.select.mockReturnValueOnce(finalPrefQuery);
+            (dbMock.select as ReturnType<typeof vi.fn>).mockReturnValueOnce(finalPrefQuery);
 
             const req = new NextRequest('http://localhost/api/preferences', {
                 method: 'POST',
