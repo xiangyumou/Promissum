@@ -48,6 +48,7 @@ async function postHandler(request: NextRequest) {
                 throw new Error('Text content too large');
             }
             dataToEncrypt = Buffer.from(text, 'utf-8');
+            rawData.content = text;
         } else {
             throw new Error('Content is required');
         }
