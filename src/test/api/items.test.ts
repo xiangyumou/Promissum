@@ -142,9 +142,7 @@ describe('Items API Routes', () => {
             expect(data.item).toBeDefined();
         });
 
-        it.skip('should create image item', async () => {
-            // Skipping: File/Blob arrayBuffer() method hangs in test environment
-            // Image creation is already tested in service layer tests
+        it('should create image item', async () => {
             const mockItem = {
                 id: 'new-id',
                 type: 'image',
@@ -157,8 +155,9 @@ describe('Items API Routes', () => {
 
             const formData = new FormData();
             formData.set('type', 'image');
-            formData.set('content', Buffer.from('image data').toString('base64'));
             formData.set('durationMinutes', '60');
+            // Image content should be base64 encoded
+            formData.set('content', Buffer.from('mock image data').toString('base64'));
 
             const request = new NextRequest('http://localhost/api/items', {
                 method: 'POST',
@@ -170,6 +169,7 @@ describe('Items API Routes', () => {
 
             expect(response.status).toBe(201);
             expect(data.success).toBe(true);
+            expect(data.item).toBeDefined();
         });
 
         it('should handle missing type', async () => {

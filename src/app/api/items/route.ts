@@ -67,9 +67,12 @@ async function postHandler(request: NextRequest) {
             rawData.content = text;
         }
     } else if (type === 'image') {
+        // Support both file upload and direct base64 content
         const file = formData.get('file');
+        const imageContent = formData.get('content');
+
         if (file instanceof File) {
-             if (file.size > MAX_FILE_SIZE) {
+            if (file.size > MAX_FILE_SIZE) {
                 throw new Error('File too large (max 10MB)');
             }
             if (!ALLOWED_MIME_TYPES.includes(file.type)) {
@@ -77,6 +80,9 @@ async function postHandler(request: NextRequest) {
             }
             const arrayBuffer = await file.arrayBuffer();
             rawData.content = Buffer.from(arrayBuffer).toString('base64');
+        } else if (typeof imageContent === 'string' && imageContent.length > 0) {
+            // Allow direct base64 content (for testing)
+            rawData.content = imageContent;
         }
     }
 
