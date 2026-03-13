@@ -1,14 +1,4 @@
-# =============================================================================
-# Production Docker Compose Configuration
-# =============================================================================
-# This file defines the production-ready deployment of Promissum
-# For local development: npm run dev
-# =============================================================================
-
 services:
-  # -------------------------------------------------------------------------
-  # Promissum Application
-  # -------------------------------------------------------------------------
   app:
     image: ghcr.io/xiangyumou/promissum:latest
     build: .
@@ -17,18 +7,11 @@ services:
       - "${APP_PORT:-3000}:3000"
     restart: unless-stopped
     environment:
-      # Application
       NODE_ENV: production
       PORT: 3000
-
-      # Database (SQLite - local file in container)
       DATABASE_URL: /data/promissum.db
-
-      # Encryption (Drand)
       MOCK_DRAND: "${MOCK_DRAND:-false}"
       DRAND_CHAIN_URL: ${DRAND_CHAIN_URL:-https://api.drand.sh/52db9ba70e0cc0f6eaf7803dd07447a1f5477735fd3f661792ba94600c84e971}
-
-      # Public variables
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
       NEXT_PUBLIC_DATE_FORMAT: ${NEXT_PUBLIC_DATE_FORMAT:-yyyy-MM-dd HH:mm}
       NEXT_PUBLIC_AUTO_REFRESH_INTERVAL: ${NEXT_PUBLIC_AUTO_REFRESH_INTERVAL:-60}
@@ -44,11 +27,7 @@ services:
       start_period: 10s
       retries: 3
 
-# -----------------------------------------------------------------------------
-# Networks
-# -----------------------------------------------------------------------------
 networks:
   promissum-network:
     driver: bridge
     name: promissum-network
-
