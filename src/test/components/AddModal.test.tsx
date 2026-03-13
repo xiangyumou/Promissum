@@ -1,5 +1,5 @@
 import { waitFor, screen } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import userEvent from '@testing-library/user-event';
 import AddModal from '@/components/AddModal';
 import { renderWithProviders } from '@/test/utils';
@@ -97,7 +97,6 @@ vi.mock('next-intl', async (importOriginal) => {
 describe('AddModal', () => {
     const mockOnClose = vi.fn();
     const mockOnSubmit = vi.fn().mockResolvedValue(undefined);
-    const NOW = new Date('2023-06-15T12:00:00').getTime();
 
     beforeEach(() => {
         vi.clearAllMocks();

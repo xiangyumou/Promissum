@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useStats, useItems, useItem, queryKeys } from '@/lib/queries';
 import { createWrapper } from '@/test/utils';
 import { useSettings } from '@/lib/stores/settings-store';

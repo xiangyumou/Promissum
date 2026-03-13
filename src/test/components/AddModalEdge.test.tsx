@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AddModal from '@/components/AddModal';
 import { renderWithProviders } from '@/test/utils';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -20,9 +20,6 @@ vi.mock('@/components/ui/Modal', () => ({
         </div>
     ) : null
 }));
-
-// Use fake timers for consistent time-based testing
-const MOCK_TIME = new Date('2024-06-15T12:00:00').getTime();
 
 // Mock Drag & Drop
 
