@@ -34,7 +34,7 @@ services:
       NEXT_PUBLIC_AUTO_REFRESH_INTERVAL: ${NEXT_PUBLIC_AUTO_REFRESH_INTERVAL:-60}
       NEXT_PUBLIC_CACHE_TTL: ${NEXT_PUBLIC_CACHE_TTL:-5}
     volumes:
-      - promissum_data:/data
+      - ./data:/data
     networks:
       - promissum-network
     healthcheck:
@@ -52,9 +52,3 @@ networks:
     driver: bridge
     name: promissum-network
 
-# -----------------------------------------------------------------------------
-# Volumes
-# -----------------------------------------------------------------------------
-volumes:
-  promissum_data:
-    name: promissum_data

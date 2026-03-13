@@ -66,8 +66,7 @@ temp/
 # Worktrees
 .worktrees/
 
-SOP
-Chaster*.db
-*.db-journal
-*.db-wal
-*.db-shm
+# Docker data directory (keep directory, ignore database files)
+# Note: data/.gitkeep is tracked to preserve the empty directory
+data/*.db
+data/*.db-*

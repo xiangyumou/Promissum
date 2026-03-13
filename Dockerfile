@@ -47,11 +47,21 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/drizzle.config.ts ./
+COPY --from=builder /app/drizzle ./drizzle
 
-# Set correct permissions
+# Copy entrypoint script
+COPY --from=builder /app/docker-entrypoint.sh ./
+RUN chmod +x ./docker-entrypoint.sh
+
+# Install gosu for user switching in entrypoint
+RUN apt-get update && apt-get install -y gosu && rm -rf /var/lib/apt/lists/*
+
+# Create data directory and set permissions
+RUN mkdir -p /data && chown -R nextjs:nodejs /data
+
+# Set correct permissions for app directory
 RUN chown -R nextjs:nodejs /app
-
-USER nextjs
 
 # Expose the application port
 EXPOSE 3000
@@ -60,5 +70,8 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# Start the application
-CMD ["npm", "run", "start"]
+# Set entrypoint
+ENTRYPOINT ["./docker-entrypoint.sh"]
+
+# Start the application (run as nextjs user via entrypoint)
+CMD ["gosu", "nextjs:nodejs", "npm", "run", "start"]
