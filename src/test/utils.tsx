@@ -2,7 +2,6 @@ import { ReactElement } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { NextIntlClientProvider } from 'next-intl';
-import { resetSettingsStore } from '@/lib/stores/settings-store';
 
 // Mock generic messages for testing
 const messages = {
@@ -171,11 +170,8 @@ export function renderWithProviders(
     ui: ReactElement,
     renderOptions: ExtendedRenderOptions = {}
 ) {
-    // Reset store before each render
-    resetSettingsStore();
-
     return {
-        user: undefined, // userEvent.setup() can be added here if needed
+        user: undefined,
         ...render(ui, { wrapper: TestWrapper, ...renderOptions }),
     };
 }
@@ -193,16 +189,6 @@ export function TestWrapper({ children }: { children: React.ReactNode }) {
 
 export function createWrapper() {
     return TestWrapper;
-}
-
-// Re-export types used by tests  
-export interface ApiItemResponse {
-    id: string;
-    type: 'text' | 'image';
-    decrypt_at: number;
-    unlocked: boolean;
-    content: string | null;
-    metadata?: { title?: string; tags?: string[] };
 }
 
 // Re-export everything

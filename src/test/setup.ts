@@ -1,14 +1,13 @@
 /**
  * Vitest Test Setup
  *
- * Global test configuration and MSW server initialization.
+ * Global test configuration.
  */
 
 import '@testing-library/jest-dom/vitest';
-import { afterAll, afterEach, beforeAll, vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import React from 'react';
-import { server } from './mocks/server';
 
 // Mock matchMedia (not implemented in JSDOM)
 Object.defineProperty(window, 'matchMedia', {
@@ -67,15 +66,9 @@ Object.defineProperty(window, 'localStorage', {
     value: localStorageMock,
 });
 
-// Start MSW server before all tests
-beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
-
-// Reset handlers after each test (important for test isolation)
+// Reset after each test
 afterEach(() => {
     cleanup();
-    server.resetHandlers();
-
-    // Clear localStorage after each test
     window.localStorage.clear();
 });
 
@@ -126,6 +119,3 @@ if (typeof File !== 'undefined') {
         });
     };
 }
-
-// Stop MSW server after all tests
-afterAll(() => server.close());

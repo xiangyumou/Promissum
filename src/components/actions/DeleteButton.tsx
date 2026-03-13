@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useSettings } from '@/lib/stores/settings-store';
 
 interface DeleteButtonProps {
     id: string;
@@ -15,14 +14,8 @@ export function DeleteButton({ id, onDelete }: DeleteButtonProps) {
     const [isConfirming, setIsConfirming] = useState(false);
     const timeoutRef = useRef<NodeJS.Timeout>(null);
     const tCommon = useTranslations('Common');
-    const { confirmDelete } = useSettings();
 
     const handleClick = () => {
-        if (!confirmDelete) {
-            onDelete(id);
-            return;
-        }
-
         if (isConfirming) {
             onDelete(id);
             setIsConfirming(false);

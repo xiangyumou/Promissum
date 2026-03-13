@@ -4,7 +4,7 @@ import { ApiItemDetail } from '@/lib/types';
 import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations, useLocale } from 'next-intl';
-import { formatUnlockTime } from '@/lib/date-utils';
+import { formatUnlockTime } from '@/lib/utils/unlock-time';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';

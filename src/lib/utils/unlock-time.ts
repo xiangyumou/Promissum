@@ -169,3 +169,18 @@ export function getRelativeTimeRemaining(decryptAt: number, now: number = Date.n
     if (hours > 0) return `${hours}h ${minutes}m`;
     return `${minutes}m`;
 }
+
+/**
+ * Format unlock time for display with locale
+ * Returns a formatted date string like "Jan 15, 2024, 14:30"
+ */
+export function formatUnlockTime(timestamp: number, locale: string = 'en'): string {
+    const date = new Date(timestamp);
+    return new Intl.DateTimeFormat(locale, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    }).format(date);
+}

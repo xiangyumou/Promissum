@@ -1,15 +1,17 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { ApiItemListView } from '@/lib/types';
 import { FilterParams } from '@/lib/queries';
 import FilterBar from './FilterBar';
 import { Plus, X, FileText, Image as ImageIcon, Lock, Unlock, PanelLeftClose } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
-import { useSettings } from '@/lib/stores/settings-store';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { getRelativeTimeRemaining } from '@/lib/utils/unlock-time';
+
+const STORAGE_KEY = 'promissum-sidebar-open';
 
 interface SidebarProps {
     items: ApiItemListView[];
@@ -36,9 +38,23 @@ export default function Sidebar({
 }: SidebarProps) {
     const t = useTranslations('Sidebar');
     const tCommon = useTranslations('Common');
-    const { sidebarOpen, setSidebarOpen } = useSettings();
     const hasMounted = useHasMounted();
     const isDesktop = useMediaQuery("(min-width: 768px)", true);
+
+    // Desktop sidebar state with localStorage persistence
+    const [desktopOpen, setDesktopOpen] = useState(true);
+
+    useEffect(() => {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved !== null) {
+            setDesktopOpen(saved === 'true');
+        }
+    }, []);
+
+    const setSidebarOpen = (open: boolean) => {
+        setDesktopOpen(open);
+        localStorage.setItem(STORAGE_KEY, String(open));
+    };
 
     return (
         <>
@@ -51,7 +67,7 @@ export default function Sidebar({
             )}
 
             {/* Desktop Toggle Button - Outside sidebar container */}
-            {hasMounted && isDesktop && !sidebarOpen && (
+            {hasMounted && isDesktop && !desktopOpen && (
                 <button
                     onClick={() => setSidebarOpen(true)}
                     className="fixed left-4 top-6 z-50 hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-background border border-border text-muted-foreground hover:text-foreground transition-colors duration-150"
@@ -67,12 +83,12 @@ export default function Sidebar({
                     "fixed md:relative h-full z-50 md:z-30 bg-[var(--surface2)] border-r border-border flex flex-col",
                     "transition-all duration-200 ease-out",
                     isDesktop
-                        ? (sidebarOpen ? "w-[280px]" : "w-0 overflow-hidden")
+                        ? (desktopOpen ? "w-[280px]" : "w-0 overflow-hidden")
                         : (isOpen ? "w-[280px] translate-x-0" : "w-[280px] -translate-x-full")
                 )}
             >
                 {/* Desktop Edge Toggle Button - Collapse only */}
-                {hasMounted && isDesktop && sidebarOpen && (
+                {hasMounted && isDesktop && desktopOpen && (
                     <button
                         onClick={() => setSidebarOpen(false)}
                         className="absolute md:flex hidden items-center justify-center right-[-12px] top-6 w-6 h-6 rounded-full bg-background border border-border text-muted-foreground hover:text-foreground transition-colors duration-150 z-50 focus:outline-none focus:ring-2 focus:ring-primary/20"
