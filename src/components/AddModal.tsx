@@ -7,16 +7,7 @@ import { cn } from '@/lib/utils';
 import Modal from './ui/Modal';
 import FileUploadZone from './FileUploadZone';
 import { calculateUnlockTimeInfo, type AbsoluteTime } from '@/core/time';
-import { MS_PER_HOUR } from '@/lib/constants';
-
-// Duration presets in minutes
-const DURATION_PRESETS = [
-    { label: '1m', minutes: 1 },
-    { label: '10m', minutes: 10 },
-    { label: '1h', minutes: 60 },
-    { label: '6h', minutes: 360 },
-    { label: '1d', minutes: 1440 },
-];
+import { MS_PER_HOUR, DURATION_PRESETS } from '@/lib/constants';
 
 interface AddModalProps {
     isOpen: boolean;

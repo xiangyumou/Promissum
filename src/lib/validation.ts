@@ -133,4 +133,48 @@ export type SystemStats = z.infer<typeof SystemStatsSchema>;
 // =============================================================================
 
 /** Content type for display */
-export type ContentType = 'text' | 'image' | 'file' | 'mixed';
+export type ContentType = 'text' | 'image' | 'video' | 'audio' | 'pdf' | 'archive' | 'file' | 'mixed';
+
+// =============================================================================
+// Content Type Utilities
+// =============================================================================
+
+/**
+ * Detect content type from bundle
+ */
+export function detectContentType(bundle: ContentBundle): ContentType {
+    const hasText = !!bundle.text?.trim();
+    const fileCount = bundle.files?.length || 0;
+
+    if (hasText && fileCount > 0) return 'mixed';
+    if (hasText) return 'text';
+    if (fileCount === 0) return 'text'; // Fixed: empty defaults to text
+    if (fileCount === 1) {
+        const file = bundle.files[0];
+        if (file.mimeType.startsWith('image/')) return 'image';
+        if (file.mimeType.startsWith('video/')) return 'video';
+        if (file.mimeType.startsWith('audio/')) return 'audio';
+        if (file.mimeType === 'application/pdf') return 'pdf';
+        if (['application/zip', 'application/x-zip-compressed', 'application/x-rar-compressed', 'application/x-7z-compressed'].includes(file.mimeType)) {
+            return 'archive';
+        }
+    }
+    return 'file';
+}
+
+/**
+ * Get icon name for content type
+ */
+export function getContentTypeIcon(type: ContentType): string {
+    const icons: Record<ContentType, string> = {
+        text: 'FileText',
+        image: 'Image',
+        video: 'Film',
+        audio: 'Music',
+        pdf: 'FileText',
+        archive: 'Archive',
+        file: 'File',
+        mixed: 'Layers',
+    };
+    return icons[type] || 'File';
+}

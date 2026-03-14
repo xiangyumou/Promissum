@@ -1,7 +1,7 @@
 'use client';
 
 import { Item, ContentBundle, detectContentType, getContentTypeIcon } from '@/lib/types';
-import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Menu, File, Layers, Download } from 'lucide-react';
+import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Menu, File, Layers, Download, Film, Music, Archive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations, useLocale } from 'next-intl';
 import { formatUnlockTime, getItemDisplayTitle } from '@/core/time';
@@ -29,6 +29,9 @@ const iconComponents: Record<string, React.ComponentType<{ size?: number; classN
     Image: ImageIcon,
     File,
     Layers,
+    Film,
+    Music,
+    Archive,
 };
 
 // Hook to track unlock status without calling Date.now() during render

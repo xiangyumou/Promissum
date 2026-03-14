@@ -6,9 +6,7 @@ import { encrypt } from '@/core/crypto';
 import { saveFile, readFile, deleteFiles } from '@/lib/file-storage';
 import { CreateItemSchema, FilterParamsSchema, ItemIdSchema, type FilterParams } from '@/lib/validation';
 import type { ContentBundle, Item, SystemStats } from '@/lib/types';
-
-const MAX_TOTAL_SIZE = 10 * 1024 * 1024; // 10MB total limit
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB per file
+import { MAX_TOTAL_SIZE_BYTES, MAX_FILE_SIZE_BYTES } from '@/lib/constants';
 
 export type ActionResult<T> =
     | { success: true; data: T }
@@ -64,7 +62,7 @@ export async function createItemAction(formData: FormData): Promise<ActionResult
         }
 
         for (const file of files) {
-            if (file.size > MAX_FILE_SIZE) {
+            if (file.size > MAX_FILE_SIZE_BYTES) {
                 return { success: false, error: `File "${file.name}" exceeds 5MB limit` };
             }
 
@@ -72,7 +70,7 @@ export async function createItemAction(formData: FormData): Promise<ActionResult
             const buffer = Buffer.from(arrayBuffer);
             totalSize += file.size;
 
-            if (totalSize > MAX_TOTAL_SIZE) {
+            if (totalSize > MAX_TOTAL_SIZE_BYTES) {
                 return { success: false, error: `Total content exceeds 10MB limit` };
             }
 

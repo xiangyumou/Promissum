@@ -25,6 +25,10 @@ export const TOAST_DURATION_MS = 3000;
 export const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
 export const COUNTDOWN_INTERVAL_MS = 1000;
 
+// File Size Limits
+export const MAX_TOTAL_SIZE_BYTES = 10 * 1024 * 1024; // 10MB total
+export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB per file
+
 // Duration Presets for AddModal
 export const DURATION_PRESETS = [
     { label: '1m', minutes: 1 },

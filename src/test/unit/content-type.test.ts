@@ -10,7 +10,7 @@ describe('detectContentType', () => {
     it('returns file for generic file without text', () => {
         const result = detectContentType({
             version: 1,
-            files: [{ id: '1', name: 'doc.txt', mimeType: 'text/plain', size: 100, data: 'abc' }]
+            files: [{ id: '1', name: 'doc.txt', mimeType: 'text/plain', size: 100, fileId: 'f1', data: 'abc' }]
         });
         expect(result).toBe('file');
     });
@@ -18,7 +18,7 @@ describe('detectContentType', () => {
     it('returns pdf for PDF file', () => {
         const result = detectContentType({
             version: 1,
-            files: [{ id: '1', name: 'doc.pdf', mimeType: 'application/pdf', size: 100, data: 'abc' }]
+            files: [{ id: '1', name: 'doc.pdf', mimeType: 'application/pdf', size: 100, fileId: 'f1', data: 'abc' }]
         });
         expect(result).toBe('pdf');
     });
@@ -26,7 +26,7 @@ describe('detectContentType', () => {
     it('returns image for single image file', () => {
         const result = detectContentType({
             version: 1,
-            files: [{ id: '1', name: 'pic.jpg', mimeType: 'image/jpeg', size: 100, data: 'abc' }]
+            files: [{ id: '1', name: 'pic.jpg', mimeType: 'image/jpeg', size: 100, fileId: 'f1', data: 'abc' }]
         });
         expect(result).toBe('image');
     });
@@ -34,7 +34,7 @@ describe('detectContentType', () => {
     it('returns video for video file', () => {
         const result = detectContentType({
             version: 1,
-            files: [{ id: '1', name: 'vid.mp4', mimeType: 'video/mp4', size: 100, data: 'abc' }]
+            files: [{ id: '1', name: 'vid.mp4', mimeType: 'video/mp4', size: 100, fileId: 'f1', data: 'abc' }]
         });
         expect(result).toBe('video');
     });
@@ -42,7 +42,7 @@ describe('detectContentType', () => {
     it('returns audio for audio file', () => {
         const result = detectContentType({
             version: 1,
-            files: [{ id: '1', name: 'sound.mp3', mimeType: 'audio/mpeg', size: 100, data: 'abc' }]
+            files: [{ id: '1', name: 'sound.mp3', mimeType: 'audio/mpeg', size: 100, fileId: 'f1', data: 'abc' }]
         });
         expect(result).toBe('audio');
     });
@@ -50,7 +50,7 @@ describe('detectContentType', () => {
     it('returns archive for zip file', () => {
         const result = detectContentType({
             version: 1,
-            files: [{ id: '1', name: 'files.zip', mimeType: 'application/zip', size: 100, data: 'abc' }]
+            files: [{ id: '1', name: 'files.zip', mimeType: 'application/zip', size: 100, fileId: 'f1', data: 'abc' }]
         });
         expect(result).toBe('archive');
     });
@@ -59,7 +59,7 @@ describe('detectContentType', () => {
         const result = detectContentType({
             version: 1,
             text: 'hello',
-            files: [{ id: '1', name: 'doc.pdf', mimeType: 'application/pdf', size: 100, data: 'abc' }]
+            files: [{ id: '1', name: 'doc.pdf', mimeType: 'application/pdf', size: 100, fileId: 'f1', data: 'abc' }]
         });
         expect(result).toBe('mixed');
     });
@@ -68,8 +68,8 @@ describe('detectContentType', () => {
         const result = detectContentType({
             version: 1,
             files: [
-                { id: '1', name: 'a.pdf', mimeType: 'application/pdf', size: 100, data: 'abc' },
-                { id: '2', name: 'b.pdf', mimeType: 'application/pdf', size: 100, data: 'def' }
+                { id: '1', name: 'a.pdf', mimeType: 'application/pdf', size: 100, fileId: 'f1', data: 'abc' },
+                { id: '2', name: 'b.pdf', mimeType: 'application/pdf', size: 100, fileId: 'f2', data: 'def' }
             ]
         });
         expect(result).toBe('file');

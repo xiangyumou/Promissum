@@ -5,6 +5,7 @@ import { useDropzone } from 'react-dropzone';
 import { Upload, X, Image, FileText, Film, Music, Archive, File as FileIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { MAX_TOTAL_SIZE_BYTES } from '@/lib/constants';
 
 interface FileUploadZoneProps {
     files: File[];
@@ -12,8 +13,8 @@ interface FileUploadZoneProps {
     disabled?: boolean;
 }
 
-// Constants
-const MAX_TOTAL_SIZE = 10 * 1024 * 1024; // 10MB total
+// 10MB total for display
+const MAX_TOTAL_SIZE_MB = '10MB';
 
 // Get icon based on file type
 function getFileIcon(mimeType: string) {
@@ -37,7 +38,7 @@ export default function FileUploadZone({ files, onFilesChange, disabled = false 
         const currentSize = files.reduce((sum, f) => sum + f.size, 0);
         const newSize = acceptedFiles.reduce((sum, f) => sum + f.size, 0);
 
-        if (currentSize + newSize > MAX_TOTAL_SIZE) {
+        if (currentSize + newSize > MAX_TOTAL_SIZE_BYTES) {
             // Would exceed limit, but we'll let the API handle the error
             // Just add files and let validation happen later
         }
@@ -66,7 +67,7 @@ export default function FileUploadZone({ files, onFilesChange, disabled = false 
 
     // Calculate total size
     const totalSize = files.reduce((sum, f) => sum + f.size, 0);
-    const isOverLimit = totalSize > MAX_TOTAL_SIZE;
+    const isOverLimit = totalSize > MAX_TOTAL_SIZE_BYTES;
 
     // Get error message if any
     const getErrorMessage = () => {
@@ -75,7 +76,7 @@ export default function FileUploadZone({ files, onFilesChange, disabled = false 
             return rejection.errors[0]?.message;
         }
         if (isOverLimit) {
-            return t('totalSizeExceeded', { size: '10MB' });
+            return t('totalSizeExceeded', { size: MAX_TOTAL_SIZE_MB });
         }
         return null;
     };
@@ -118,7 +119,7 @@ export default function FileUploadZone({ files, onFilesChange, disabled = false 
                         {t('orClickToSelect')}
                     </p>
                     <p className="text-xs text-muted-foreground/50 mt-2">
-                        {t('maxTotalSize', { size: '10MB' })}
+                        {t('maxTotalSize', { size: MAX_TOTAL_SIZE_MB })}
                     </p>
                 </div>
             </div>
