@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Item, FilterParams } from '@/lib/types';
 import { isUnlocked as checkUnlocked, getItemDisplayTitle } from '@/core/time';
 import FilterBar from './FilterBar';
@@ -42,14 +42,14 @@ export default function Sidebar({
     const isDesktop = useMediaQuery("(min-width: 768px)", true);
 
     // Desktop sidebar state with localStorage persistence
-    const [desktopOpen, setDesktopOpen] = useState(true);
-
-    useEffect(() => {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved !== null) {
-            setDesktopOpen(saved === 'true');
+    const [desktopOpen, setDesktopOpen] = useState(() => {
+        // Initialize from localStorage to avoid setState in effect
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            return saved === null || saved === 'true';
         }
-    }, []);
+        return true;
+    });
 
     const setSidebarOpen = (open: boolean) => {
         setDesktopOpen(open);

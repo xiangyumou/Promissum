@@ -8,7 +8,7 @@ import { formatUnlockTime, getItemDisplayTitle } from '@/core/time';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 import ThemeToggle from './shared/ThemeToggle';
 import LanguageSwitcher from './shared/LanguageSwitcher';
@@ -31,6 +31,21 @@ const iconComponents: Record<string, React.ComponentType<{ size?: number; classN
     Layers,
 };
 
+// Hook to track unlock status without calling Date.now() during render
+function useUnlockStatus(decryptAt: number | undefined): boolean {
+    const [isUnlocked, setIsUnlocked] = useState(false);
+
+    useEffect(() => {
+        if (decryptAt === undefined) return;
+        const checkUnlock = () => setIsUnlocked(Date.now() >= decryptAt);
+        checkUnlock();
+        const interval = setInterval(checkUnlock, 1000);
+        return () => clearInterval(interval);
+    }, [decryptAt]);
+
+    return isUnlocked;
+}
+
 export default function ContentView({ selectedId, item, isLoading, onDelete, onMenuClick }: ContentViewProps) {
     const t = useTranslations('ContentView');
     const tCommon = useTranslations('Common');
@@ -39,6 +54,9 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
     // Image lightbox state
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
+
+    // Track unlock status using custom hook (safe to call before early returns)
+    const isUnlocked = useUnlockStatus(item?.decrypt_at);
 
     // Parse content bundle
     const contentBundle = useMemo(() => {
@@ -122,8 +140,6 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
             </div>
         );
     }
-
-    const isUnlocked = Date.now() >= item.decrypt_at;
 
     return (
         <div className="h-full flex flex-col bg-background relative overflow-hidden flex-1 w-full">
@@ -209,6 +225,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                                                         setIsLightboxOpen(true);
                                                     }}
                                                 >
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                                     <img
                                                         src={src}
                                                         alt={`Image ${idx + 1}`}

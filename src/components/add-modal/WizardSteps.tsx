@@ -9,6 +9,7 @@ function ContentTypeIcon({ files, hasText, size, className }: { files: File[]; h
     if (hasText && files.length > 0) return <Layers size={size} className={className} />;
     if (hasText) return <FileText size={size} className={className} />;
     if (files.length === 0) return <File size={size} className={className} />;
+    // eslint-disable-next-line jsx-a11y/alt-text
     if (files.length === 1 && files[0].type.startsWith('image/')) return <Image size={size} className={className} />;
     return <File size={size} className={className} />;
 }

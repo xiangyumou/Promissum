@@ -4,7 +4,7 @@
  * Provides a countdown timer that updates every interval.
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 /**
  * Hook to get remaining time until a target date
@@ -20,13 +20,8 @@ export function useCountdown(
 ): number {
     const intervalMs = options?.interval ?? 1000;
 
-    // Memoize initial value calculation
-    const initialValue = useMemo(
-        () => Math.max(0, targetDate - Date.now()),
-        [targetDate]
-    );
-
-    const [timeLeft, setTimeLeft] = useState(initialValue);
+    // Use state initializer function to avoid calling Date.now() during render
+    const [timeLeft, setTimeLeft] = useState(() => Math.max(0, targetDate - Date.now()));
 
     // Update state when targetDate changes (using state setter function form)
     useEffect(() => {
