@@ -37,9 +37,16 @@ export function detectContentType(bundle: ContentBundle): ContentType {
 
     if (hasText && fileCount > 0) return 'mixed';
     if (hasText) return 'text';
-    if (fileCount === 0) return 'file';
-    if (fileCount === 1 && bundle.files[0].mimeType.startsWith('image/')) {
-        return 'image';
+    if (fileCount === 0) return 'text'; // Fixed: empty defaults to text
+    if (fileCount === 1) {
+        const file = bundle.files[0];
+        if (file.mimeType.startsWith('image/')) return 'image';
+        if (file.mimeType.startsWith('video/')) return 'video';
+        if (file.mimeType.startsWith('audio/')) return 'audio';
+        if (file.mimeType === 'application/pdf') return 'pdf';
+        if (['application/zip', 'application/x-zip-compressed', 'application/x-rar-compressed', 'application/x-7z-compressed'].includes(file.mimeType)) {
+            return 'archive';
+        }
     }
     return 'file';
 }
