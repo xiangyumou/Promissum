@@ -126,7 +126,7 @@ export function detectContentType(bundle: ContentBundle): ContentType {
 
     if (hasText && fileCount > 0) return 'mixed';
     if (hasText) return 'text';
-    if (fileCount === 0) return 'file';
+    if (fileCount === 0) return 'text'; // Fixed: empty defaults to text
     if (fileCount === 1) {
         const file = bundle.files[0];
         if (file.mimeType.startsWith('image/')) return 'image';
