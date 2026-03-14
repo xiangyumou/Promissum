@@ -12,7 +12,6 @@
 - **多设备同步**：基于 SQLite 的实时状态同步
 - **智能轮询**：根据解锁时间动态调整刷新频率
 - **仪表盘**：可视化展示加密数据统计
-- **国际化**：完整的中英文界面
 - **响应式设计**：支持桌面和移动设备
 
 ## 快速开始
@@ -88,8 +87,10 @@ pnpm run dev
 ```
 src/
 ├── app/                   # Next.js App Router
-│   ├── [locale]/         # 国际化路由
-│   ├── api/              # API Routes
+│   ├── actions/          # Server Actions
+│   ├── error.tsx         # 错误页面
+│   ├── layout.tsx        # 根布局
+│   ├── page.tsx          # 首页
 │   └── globals.css       # 全局样式
 ├── components/           # React 组件
 │   ├── ui/               # 基础 UI 组件
@@ -100,12 +101,17 @@ src/
 │   ├── ItemList.tsx      # 项目列表
 │   ├── SettingsView.tsx  # 设置页面
 │   └── Sidebar.tsx       # 侧边栏
+├── core/                 # 核心业务逻辑
+│   ├── crypto.ts         # 时间锁加密
+│   ├── db.ts             # 数据库操作
+│   └── time.ts           # 时间计算
 ├── hooks/                # 自定义 Hooks
 ├── lib/                  # 工具库
-│   ├── db/               # 数据库 (Drizzle ORM)
-│   ├── services/         # 服务层
-│   ├── stores/           # Zustand 状态管理
-│   └── utils/            # 工具函数
+│   ├── constants.ts      # 常量
+│   ├── file-storage.ts   # 文件存储
+│   ├── utils.ts          # 工具函数
+│   └── validation.ts     # Zod 验证
+├── middleware.ts         # Next.js 中间件
 └── test/                 # 测试文件
 ```
 
@@ -150,7 +156,7 @@ cp .env.example .env
 docker compose up -d
 
 # 3. 验证
-curl http://localhost:3000/api/health
+访问 http://localhost:3000
 ```
 
 **必需变量**：
@@ -212,55 +218,14 @@ server {
 }
 ```
 
-## API 参考
-
-**Base URL**: `http://localhost:3000/api`
-
-### Items
-
-| 方法 | 端点 | 说明 |
-|------|------|------|
-| GET | `/api/items?status=locked` | 获取项目列表（支持筛选） |
-| POST | `/api/items` | 创建加密项目 |
-| GET | `/api/items/:id` | 获取项目详情（自动尝试解密） |
-| DELETE | `/api/items/:id` | 删除项目 |
-| POST | `/api/items/:id/extend` | 延长锁定时间 |
-
-**创建项目示例**：
-
-```bash
-curl -X POST http://localhost:3000/api/items \
-  -H "Content-Type: application/json" \
-  -d '{
-    "type": "text",
-    "content": "Secret Message",
-    "durationMinutes": 60,
-    "originalName": "My Secret"
-  }'
-```
-
-### Preferences
-
-| 方法 | 端点 | 说明 |
-|------|------|------|
-| GET | `/api/preferences` | 获取用户偏好设置 |
-| POST | `/api/preferences` | 更新偏好设置 |
-
-### Statistics
-
-| 方法 | 端点 | 说明 |
-|------|------|------|
-| GET | `/api/stats` | 获取全局统计信息 |
-| GET | `/api/health` | 健康检查 |
-
 ## 技术栈
 
 - **框架**: Next.js 16 + React 19
 - **语言**: TypeScript 5
 - **样式**: Tailwind CSS 4
-- **状态管理**: Zustand 5 + TanStack Query 5
+- **状态管理**: Zustand 5
+- **数据获取**: Next.js Server Actions
 - **数据库**: SQLite (better-sqlite3) + Drizzle ORM
-- **国际化**: next-intl
 - **UI 组件**: Radix UI
 - **加密**: tlock-js (IBE + drand)
 - **测试**: Vitest
@@ -281,10 +246,13 @@ curl -X POST http://localhost:3000/api/items \
 
 **加密流程**：
 1. 客户端提交内容 + 解锁时间
-2. 服务器计算未来 drand 轮次号
+2. Server Action 计算未来 drand 轮次号
 3. 使用 tlock-js 加密内容
 4. 密文存入 SQLite
 5. 到达时间后，获取 drand 信标解密
+
+**架构说明**：
+项目使用 Next.js Server Actions 处理所有服务器端逻辑，无需单独的 REST API 端点。所有数据操作通过 `src/app/actions/items.ts` 中的 Server Actions 完成。
 
 ## 文档
 
