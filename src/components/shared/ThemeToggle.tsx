@@ -2,12 +2,10 @@
 
 import { useTheme } from 'next-themes';
 import { Sun, Moon, Monitor } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import { useHasMounted } from '@/hooks/useHasMounted';
 
 export default function ThemeToggle() {
     const { theme, setTheme } = useTheme();
-    const t = useTranslations('Theme');
     const mounted = useHasMounted();
 
     if (!mounted) {
@@ -19,21 +17,21 @@ export default function ThemeToggle() {
             <button
                 className={`flex-1 p-1.5 rounded-lg transition-colors flex items-center justify-center ${theme === 'light' ? 'bg-background text-foreground border border-border' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setTheme('light')}
-                title={t('light')}
+                title="Light"
             >
                 <Sun size={16} />
             </button>
             <button
                 className={`flex-1 p-1.5 rounded-lg transition-colors flex items-center justify-center ${theme === 'system' ? 'bg-background text-foreground border border-border' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setTheme('system')}
-                title={t('system')}
+                title="System"
             >
                 <Monitor size={16} />
             </button>
             <button
                 className={`flex-1 p-1.5 rounded-lg transition-colors flex items-center justify-center ${theme === 'dark' ? 'bg-background text-foreground border border-border' : 'text-muted-foreground hover:text-foreground'}`}
                 onClick={() => setTheme('dark')}
-                title={t('dark')}
+                title="Dark"
             >
                 <Moon size={16} />
             </button>

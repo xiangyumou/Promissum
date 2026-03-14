@@ -1,11 +1,8 @@
 import type { NextConfig } from "next";
-import createNextIntlPlugin from 'next-intl/plugin';
-
-const withNextIntl = createNextIntlPlugin();
 
 /**
  * Security Headers Configuration
- * 
+ *
  * Implements recommended security headers to protect against:
  * - Clickjacking (X-Frame-Options)
  * - MIME type sniffing (X-Content-Type-Options)
@@ -65,5 +62,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
-
+export default nextConfig;

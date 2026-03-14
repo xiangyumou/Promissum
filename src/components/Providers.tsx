@@ -1,9 +1,6 @@
 'use client';
 
-import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'sonner';
-import { queryClient } from '@/lib/query-client';
 import { ReactNode } from 'react';
 import { ThemeProvider, useTheme } from 'next-themes';
 
@@ -23,15 +20,9 @@ function ToasterProvider() {
 
 export function Providers({ children }: { children: ReactNode }) {
     return (
-        <QueryClientProvider client={queryClient}>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-                {children}
-                <ToasterProvider />
-            </ThemeProvider>
-            {/* DevTools only in development */}
-            {process.env.NODE_ENV === 'development' && (
-                <ReactQueryDevtools initialIsOpen={false} />
-            )}
-        </QueryClientProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            {children}
+            <ToasterProvider />
+        </ThemeProvider>
     );
 }

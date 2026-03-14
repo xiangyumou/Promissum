@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { detectContentType } from '@/lib/types';
+import { detectContentType } from '@/lib/validation';
 
 describe('detectContentType', () => {
     it('returns text for text-only content', () => {

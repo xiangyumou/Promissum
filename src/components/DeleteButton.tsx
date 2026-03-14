@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
 import { Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -12,8 +11,7 @@ interface DeleteButtonProps {
 
 export function DeleteButton({ id, onDelete }: DeleteButtonProps) {
     const [isConfirming, setIsConfirming] = useState(false);
-    const timeoutRef = useRef<NodeJS.Timeout>(null);
-    const tCommon = useTranslations('Common');
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const handleClick = () => {
         if (isConfirming) {
@@ -41,11 +39,11 @@ export function DeleteButton({ id, onDelete }: DeleteButtonProps) {
                     ? "btn-destructive"
                     : "btn-ghost text-muted-foreground hover:text-destructive hover:bg-destructive/10"
             )}
-            title={isConfirming ? tCommon('confirmDelete') : tCommon('delete')}
+            title={isConfirming ? "确认删除" : "删除"}
         >
             <Trash2 size={16} />
             {isConfirming && (
-                <span className="ml-1">{tCommon('confirm')}</span>
+                <span className="ml-1">确认</span>
             )}
         </button>
     );

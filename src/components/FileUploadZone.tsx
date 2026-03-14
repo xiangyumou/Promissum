@@ -3,7 +3,6 @@
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Upload, X, Image, FileText, Film, Music, Archive, File as FileIcon } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { MAX_TOTAL_SIZE_BYTES } from '@/lib/constants';
 
@@ -30,19 +29,7 @@ function getFileIcon(mimeType: string) {
 }
 
 export default function FileUploadZone({ files, onFilesChange, disabled = false }: FileUploadZoneProps) {
-    const t = useTranslations('FileUpload');
-    const tCommon = useTranslations('Common');
-
     const onDrop = useCallback((acceptedFiles: File[]) => {
-        // Calculate total size
-        const currentSize = files.reduce((sum, f) => sum + f.size, 0);
-        const newSize = acceptedFiles.reduce((sum, f) => sum + f.size, 0);
-
-        if (currentSize + newSize > MAX_TOTAL_SIZE_BYTES) {
-            // Would exceed limit, but we'll let the API handle the error
-            // Just add files and let validation happen later
-        }
-
         onFilesChange([...files, ...acceptedFiles]);
     }, [files, onFilesChange]);
 
@@ -76,7 +63,7 @@ export default function FileUploadZone({ files, onFilesChange, disabled = false 
             return rejection.errors[0]?.message;
         }
         if (isOverLimit) {
-            return t('totalSizeExceeded', { size: MAX_TOTAL_SIZE_MB });
+            return `总大小超过 ${MAX_TOTAL_SIZE_MB} 限制`;
         }
         return null;
     };
@@ -113,13 +100,13 @@ export default function FileUploadZone({ files, onFilesChange, disabled = false 
                         "text-sm font-medium",
                         isDragActive ? "text-primary" : "text-muted-foreground"
                     )}>
-                        {isDragActive ? t('dropHere') : t('dragDropHere')}
+                        {isDragActive ? '拖放到此处' : '拖放文件到这里'}
                     </p>
                     <p className="text-xs text-muted-foreground/70 mt-1">
-                        {t('orClickToSelect')}
+                        或点击选择文件
                     </p>
                     <p className="text-xs text-muted-foreground/50 mt-2">
-                        {t('maxTotalSize', { size: MAX_TOTAL_SIZE_MB })}
+                        最大总大小: {MAX_TOTAL_SIZE_MB}
                     </p>
                 </div>
             </div>
@@ -129,7 +116,7 @@ export default function FileUploadZone({ files, onFilesChange, disabled = false 
                 <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">
-                            {t('filesSelected', { count: files.length })}
+                            已选择 {files.length} 个文件
                         </span>
                         <button
                             type="button"
@@ -137,7 +124,7 @@ export default function FileUploadZone({ files, onFilesChange, disabled = false 
                             disabled={disabled}
                             className="text-xs text-destructive hover:text-destructive/80 transition-colors"
                         >
-                            {t('clearAll')}
+                            清除全部
                         </button>
                     </div>
 
@@ -165,7 +152,7 @@ export default function FileUploadZone({ files, onFilesChange, disabled = false 
                                             type="button"
                                             onClick={handleRemove(index)}
                                             className="p-1 rounded-full hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
-                                            aria-label={tCommon('delete')}
+                                            aria-label="删除"
                                         >
                                             <X size={14} />
                                         </button>
@@ -180,7 +167,7 @@ export default function FileUploadZone({ files, onFilesChange, disabled = false 
                         "text-xs text-right",
                         isOverLimit ? "text-destructive font-medium" : "text-muted-foreground"
                     )}>
-                        {t('totalSize', { size: (totalSize / 1024 / 1024).toFixed(2) + 'MB' })}
+                        总计: {(totalSize / 1024 / 1024).toFixed(2)}MB
                     </div>
                 </div>
             )}
@@ -196,7 +183,7 @@ export default function FileUploadZone({ files, onFilesChange, disabled = false 
             {/* Paste hint */}
             {files.length === 0 && !disabled && (
                 <p className="text-xs text-muted-foreground/60 text-center">
-                    {t('pasteHint')}
+                    也可以从剪贴板粘贴文件 (Ctrl/Cmd + V)
                 </p>
             )}
         </div>

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import { useTranslations } from 'next-intl';
 import { Lock, RefreshCw, AlertCircle, Clock, Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Modal from './ui/Modal';
@@ -17,9 +16,6 @@ interface AddModalProps {
 }
 
 export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }: AddModalProps) {
-    const t = useTranslations('AddModal');
-    const tCommon = useTranslations('Common');
-
     // Form state
     const [title, setTitle] = useState('');
     const [text, setText] = useState('');
@@ -131,19 +127,19 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title={t('title')}
+            title="创建加密条目"
             className="md:max-w-[500px]"
         >
             <form onSubmit={handleSubmit} className="p-5 space-y-4">
                 {/* Title */}
                 <div>
                     <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                        {t('itemTitle')}
+                        标题（可选）
                     </label>
                     <input
                         type="text"
                         className="input w-full"
-                        placeholder={t('titlePlaceholder')}
+                        placeholder="给你的条目起个标题..."
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         maxLength={100}
@@ -153,11 +149,11 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                 {/* Content - Text */}
                 <div>
                     <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                        {t('content')}
+                        内容
                     </label>
                     <textarea
                         className="input w-full resize-none"
-                        placeholder={t('enterContent')}
+                        placeholder="在此输入你的秘密内容..."
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                         rows={4}
@@ -167,7 +163,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                 {/* Content - Files */}
                 <div>
                     <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                        {t('attachments')}
+                        附件
                     </label>
                     {files.length === 0 ? (
                         <FileUploadZone
@@ -209,7 +205,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                     <div className="flex items-center justify-between mb-3">
                         <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                             <Clock size={16} />
-                            {t('lockDuration')}
+                            锁定时长
                         </label>
                         <div className="flex bg-card p-0.5 rounded-lg border border-border">
                             <button
@@ -222,7 +218,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                                 )}
                                 onClick={() => setTimeMode('duration')}
                             >
-                                {t('duration')}
+                                时长
                             </button>
                             <button
                                 type="button"
@@ -234,7 +230,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                                 )}
                                 onClick={() => setTimeMode('absolute')}
                             >
-                                {t('customDate')}
+                                自定义日期
                             </button>
                         </div>
                     </div>
@@ -259,7 +255,7 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                                         className="px-2.5 py-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-md text-xs font-medium transition-colors flex items-center gap-1 border border-destructive/20"
                                         onClick={handleResetDuration}
                                     >
-                                        {t('reset')}
+                                        重置
                                     </button>
                                 )}
                             </div>
@@ -272,20 +268,20 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                                     onChange={(e) => setDuration(Math.max(0, parseInt(e.target.value) || 0))}
                                     className="input w-full pl-3 pr-12 py-2 font-mono"
                                 />
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">min</span>
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">分钟</span>
                             </div>
                         </div>
                     ) : (
                         <div className="flex flex-wrap items-center justify-center gap-1.5 p-2 bg-accent rounded-lg border border-border">
-                            <TimeInput field="year" placeholder="YY" />
+                            <TimeInput field="year" placeholder="年" />
                             <span className="text-muted-foreground">/</span>
-                            <TimeInput field="month" placeholder="MM" />
+                            <TimeInput field="month" placeholder="月" />
                             <span className="text-muted-foreground">/</span>
-                            <TimeInput field="day" placeholder="DD" />
+                            <TimeInput field="day" placeholder="日" />
                             <span className="text-muted-foreground mx-1">@</span>
-                            <TimeInput field="hour" placeholder="HH" />
+                            <TimeInput field="hour" placeholder="时" />
                             <span className="text-muted-foreground">:</span>
-                            <TimeInput field="minute" placeholder="MM" />
+                            <TimeInput field="minute" placeholder="分" />
                         </div>
                     )}
 
@@ -308,19 +304,19 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                                     "text-[10px] uppercase font-semibold tracking-wider",
                                     unlockTimeInfo.isValid ? "text-primary/70" : "text-destructive/70"
                                 )}>
-                                    {unlockTimeInfo.isValid ? tCommon('unlocksAt') : t('invalidTime')}
+                                    {unlockTimeInfo.isValid ? '解锁时间' : '无效时间'}
                                 </p>
                                 <p className={cn(
                                     "text-base font-semibold font-mono",
                                     unlockTimeInfo.isValid ? "text-primary" : "text-destructive"
                                 )}>
-                                    {unlockTimeInfo.isValid ? unlockTimeInfo.formatted : t('checkInput')}
+                                    {unlockTimeInfo.isValid ? unlockTimeInfo.formatted : '请检查输入'}
                                 </p>
                             </div>
                         </div>
                         {unlockTimeInfo.isValid && (
                             <div className="text-right">
-                                <p className="text-[10px] uppercase font-semibold tracking-wider text-primary/70">{t('remaining')}</p>
+                                <p className="text-[10px] uppercase font-semibold tracking-wider text-primary/70">剩余</p>
                                 <p className="text-xs font-medium text-primary">{unlockTimeInfo.remaining}</p>
                             </div>
                         )}
@@ -337,18 +333,18 @@ export default function AddModal({ isOpen, defaultDuration, onClose, onSubmit }:
                         {isSubmitting ? (
                             <>
                                 <RefreshCw size={16} className="animate-spin" />
-                                {t('encrypting')}
+                                加密中...
                             </>
                         ) : (
                             <>
                                 <Lock size={16} />
-                                {t('encryptAndSave')}
+                                加密并保存
                             </>
                         )}
                     </button>
                     {!hasContent && (
                         <p className="text-xs text-muted-foreground text-center mt-2">
-                            {t('needContent')}
+                            需要提供内容：输入文本或至少上传一个文件
                         </p>
                     )}
                 </div>

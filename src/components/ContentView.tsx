@@ -1,9 +1,8 @@
 'use client';
 
-import { Item, ContentBundle, detectContentType, getContentTypeIcon } from '@/lib/types';
+import { Item, ContentBundle, detectContentType, getContentTypeIcon } from '@/lib/validation';
 import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Menu, File, Layers, Download, Film, Music, Archive } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useTranslations, useLocale } from 'next-intl';
 import { formatUnlockTime, getItemDisplayTitle } from '@/core/time';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
@@ -11,7 +10,6 @@ import 'yet-another-react-lightbox/styles.css';
 import { useState, useMemo, useEffect } from 'react';
 
 import ThemeToggle from './shared/ThemeToggle';
-import LanguageSwitcher from './shared/LanguageSwitcher';
 import CountdownVisuals from './shared/CountdownVisuals';
 import { DeleteButton } from './DeleteButton';
 
@@ -50,10 +48,6 @@ function useUnlockStatus(decryptAt: number | undefined): boolean {
 }
 
 export default function ContentView({ selectedId, item, isLoading, onDelete, onMenuClick }: ContentViewProps) {
-    const t = useTranslations('ContentView');
-    const tCommon = useTranslations('Common');
-    const locale = useLocale();
-
     // Image lightbox state
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -92,14 +86,13 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                 {/* Global Controls */}
                 <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
                     <ThemeToggle />
-                    <LanguageSwitcher />
                 </div>
 
                 {/* Menu Button - Mobile Only */}
                 <div className="absolute top-4 left-4 z-50 md:hidden">
                     <button
                         onClick={onMenuClick}
-                        aria-label="Open menu"
+                        aria-label="打开菜单"
                         className="p-2 bg-card border border-border rounded-lg text-foreground hover:bg-accent transition-colors"
                     >
                         <Menu size={20} />
@@ -111,10 +104,10 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                             <FileText size={40} className="text-primary" />
                         </div>
                         <h2 className="text-xl font-bold text-foreground" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-                            {tCommon('dashboard')}
+                            保险箱
                         </h2>
                         <p className="text-muted-foreground">
-                            {t('selectItem')}
+                            从侧边栏选择一个条目查看内容
                         </p>
                     </div>
                 </div>
@@ -127,7 +120,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
         return (
             <div className="flex flex-col items-center justify-center h-full w-full flex-1 space-y-4">
                 <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-muted-foreground">{t('decrypting')}</p>
+                <p className="text-muted-foreground">解密中...</p>
             </div>
         );
     }
@@ -139,7 +132,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                 <div className="p-4 bg-card rounded-full mb-3">
                     <FileText size={32} className="opacity-50" />
                 </div>
-                <p>{t('notFound')}</p>
+                <p>条目未找到</p>
             </div>
         );
     }
@@ -153,7 +146,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                         {/* Mobile Menu Button */}
                         <button
                             onClick={onMenuClick}
-                            aria-label="Open menu"
+                            aria-label="打开菜单"
                             className="p-2 -ml-2 rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors md:hidden"
                         >
                             <Menu size={20} />
@@ -168,7 +161,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                         </div>
                         <div className="min-w-0 flex-1">
                             <h2 className="text-lg md:text-xl font-bold text-foreground truncate" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-                                {getItemDisplayTitle(item, tCommon)}
+                                {getItemDisplayTitle(item)}
                             </h2>
                             <div className="flex flex-wrap items-center gap-2 mt-1 text-sm">
                                 {/* Status Badge */}
@@ -177,21 +170,20 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                                     isUnlocked ? "badge-success" : "badge-warning"
                                 )}>
                                     {isUnlocked ? <Unlock size={10} className="mr-1" /> : <Lock size={10} className="mr-1" />}
-                                    {isUnlocked ? tCommon('unlocked') : tCommon('locked')}
+                                    {isUnlocked ? '已解锁' : '锁定中'}
                                 </span>
                                 <span className="text-muted-foreground flex items-center gap-1 text-xs">
                                     <Clock size={10} />
-                                    {formatUnlockTime(item.decrypt_at, locale)}
+                                    {formatUnlockTime(item.decrypt_at)}
                                 </span>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2 ml-auto md:ml-0 shrink-0">
-                        {/* Theme & Language Controls */}
+                        {/* Theme Toggle */}
                         <div className="hidden md:flex items-center gap-1 border-r border-border pr-2 mr-2">
                             <ThemeToggle />
-                            <LanguageSwitcher />
                         </div>
 
                         <DeleteButton id={item.id} onDelete={onDelete} />
@@ -231,7 +223,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                                     <img
                                                         src={src}
-                                                        alt={`Image ${idx + 1}`}
+                                                        alt={`图片 ${idx + 1}`}
                                                         className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
                                                     />
                                                 </div>
@@ -242,7 +234,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                                     {/* File List */}
                                     <div className="card">
                                         <h3 className="text-sm font-medium text-muted-foreground mb-3">
-                                            {t('attachments')}
+                                            附件
                                         </h3>
                                         <div className="space-y-2">
                                             {contentBundle.files.map((file, idx) => {
@@ -272,7 +264,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                                                             href={`data:${file.mimeType};base64,${file.data}`}
                                                             download={file.name}
                                                             className="p-2 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
-                                                            title={t('download')}
+                                                            title="下载"
                                                         >
                                                             <Download size={18} />
                                                         </a>
@@ -313,15 +305,15 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
 
                             <div className="space-y-2">
                                 <h3 className="text-xl font-bold text-foreground" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-                                    {t('contentEncrypted')}
+                                    内容已加密
                                 </h3>
-                                <p className="text-muted-foreground">{t('timeLockActive')}</p>
+                                <p className="text-muted-foreground">此内容被封存在保险箱中</p>
                             </div>
 
                             {/* Countdown Card */}
                             <div className="p-4 bg-accent rounded-xl border border-border">
                                 <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2 font-medium">
-                                    {t('unlocksIn')}
+                                    解锁时间
                                 </div>
                                 <div className="flex justify-center">
                                     <CountdownVisuals
@@ -332,7 +324,7 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                                 </div>
                                 <div className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1.5">
                                     <Clock size={12} />
-                                    {formatUnlockTime(item.decrypt_at, locale)}
+                                    {formatUnlockTime(item.decrypt_at)}
                                 </div>
                             </div>
                         </div>

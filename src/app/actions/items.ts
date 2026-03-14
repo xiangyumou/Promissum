@@ -5,7 +5,7 @@ import { db, itemsTable, listItems, getItem as getItemDb, deleteItem as deleteIt
 import { encrypt } from '@/core/crypto';
 import { saveFile, readFile, deleteFiles } from '@/lib/file-storage';
 import { CreateItemSchema, FilterParamsSchema, ItemIdSchema, type FilterParams } from '@/lib/validation';
-import type { ContentBundle, Item, SystemStats } from '@/lib/types';
+import type { ContentBundle, Item, SystemStats } from '@/lib/validation';
 import { MAX_TOTAL_SIZE_BYTES, MAX_FILE_SIZE_BYTES } from '@/lib/constants';
 
 export type ActionResult<T> =

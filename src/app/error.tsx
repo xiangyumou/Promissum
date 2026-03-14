@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useTranslations } from 'next-intl';
 
 interface ErrorProps {
     error: Error & { digest?: string };
@@ -9,10 +8,7 @@ interface ErrorProps {
 }
 
 export default function Error({ error, reset }: ErrorProps) {
-    const t = useTranslations('Error');
-
     useEffect(() => {
-        // Log error to an error reporting service
         console.error('Application error:', error);
     }, [error]);
 
@@ -38,10 +34,10 @@ export default function Error({ error, reset }: ErrorProps) {
 
                 <div className="space-y-2">
                     <h2 className="text-2xl font-bold text-foreground">
-                        {t('title')}
+                        Something went wrong
                     </h2>
                     <p className="text-muted-foreground">
-                        {t('description')}
+                        An unexpected error occurred. Please try again.
                     </p>
                 </div>
 
@@ -55,7 +51,7 @@ export default function Error({ error, reset }: ErrorProps) {
                     onClick={reset}
                     className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-medium hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
                 >
-                    {t('retry')}
+                    Try Again
                 </button>
             </div>
         </div>

@@ -184,10 +184,9 @@ export function formatTime(ms: number): string {
 // ============================================
 
 export function getItemDisplayTitle(
-    item: { metadata?: { title?: string } | null; content_summary?: string | null },
-    t: (key: string) => string
+    item: { metadata?: { title?: string } | null; content_summary?: string | null }
 ): string {
     return item.metadata?.title ||
         item.content_summary ||
-        t('untitled');
+        'Untitled';
 }

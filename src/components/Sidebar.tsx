@@ -1,12 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Item, FilterParams } from '@/lib/types';
+import { Item, FilterParams } from '@/lib/validation';
 import { isUnlocked as checkUnlocked, getItemDisplayTitle } from '@/core/time';
 import FilterBar from './FilterBar';
 import { Plus, X, FileText, Lock, Unlock, PanelLeftClose, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useTranslations } from 'next-intl';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { getRelativeTimeRemaining } from '@/core/time';
@@ -36,14 +35,11 @@ export default function Sidebar({
     onFilterChange,
     isLoading = false
 }: SidebarProps) {
-    const t = useTranslations('Sidebar');
-    const tCommon = useTranslations('Common');
     const hasMounted = useHasMounted();
     const isDesktop = useMediaQuery("(min-width: 768px)", true);
 
     // Desktop sidebar state with localStorage persistence
     const [desktopOpen, setDesktopOpen] = useState(() => {
-        // Initialize from localStorage to avoid setState in effect
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem(STORAGE_KEY);
             return saved === null || saved === 'true';
@@ -71,7 +67,7 @@ export default function Sidebar({
                 <button
                     onClick={() => setSidebarOpen(true)}
                     className="fixed left-4 top-6 z-50 hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-background border border-border text-muted-foreground hover:text-foreground transition-colors duration-150"
-                    title={tCommon('open')}
+                    title="展开"
                 >
                     <PanelLeftClose size={14} className="rotate-180" />
                 </button>
@@ -92,7 +88,7 @@ export default function Sidebar({
                     <button
                         onClick={() => setSidebarOpen(false)}
                         className="absolute md:flex hidden items-center justify-center right-[-12px] top-6 w-6 h-6 rounded-full bg-background border border-border text-muted-foreground hover:text-foreground transition-colors duration-150 z-50 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                        title={t('collapseSidebar')}
+                        title="收起侧边栏"
                     >
                         <PanelLeftClose size={14} />
                     </button>
@@ -139,16 +135,13 @@ function SidebarContent({
     onFilterChange,
     isLoading
 }: SidebarContentProps) {
-    const t = useTranslations('Sidebar');
-    const tCommon = useTranslations('Common');
-
     return (
         <>
             {/* Mobile Close Button */}
             <button
                 className="absolute top-3 right-3 p-2 rounded-lg hover:bg-[var(--surface)] text-muted-foreground md:hidden transition-colors z-20"
                 onClick={onClose}
-                aria-label="Close menu"
+                aria-label="关闭菜单"
             >
                 <X size={20} />
             </button>
@@ -160,7 +153,7 @@ function SidebarContent({
                     onClick={onAddClick}
                 >
                     <Plus size={18} />
-                    {tCommon('newEntry')}
+                    新建条目
                 </button>
             </div>
 
@@ -188,7 +181,7 @@ function SidebarContent({
                         <div className="p-4 rounded-full bg-[var(--surface)] mb-3">
                             <Lock size={24} className="opacity-40" />
                         </div>
-                        <p className="text-sm">{t('noItems')}</p>
+                        <p className="text-sm">暂无条目</p>
                     </div>
                 ) : (
                     items.map((item) => (
@@ -219,11 +212,7 @@ function ItemCard({
     const hasMounted = useHasMounted();
     const isUnlocked = hasMounted ? checkUnlocked(item.decrypt_at) : false;
     const timeRemaining = hasMounted ? getRelativeTimeRemaining(item.decrypt_at) : '...';
-    const tCommon = useTranslations('Common');
 
-    // Determine icon based on content_summary or default to generic
-    // In locked state we can't access the actual content, so we use a generic icon
-    // When unlocked, the content type could be detected from the bundle
     const ContentIcon = item.content ? Layers : FileText;
 
     return (
@@ -244,14 +233,14 @@ function ItemCard({
 
             <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-foreground truncate">
-                    {getItemDisplayTitle(item, tCommon)}
+                    {getItemDisplayTitle(item)}
                 </div>
                 <div className={cn(
                     "text-xs flex items-center gap-1.5 mt-0.5 font-medium truncate",
                     isUnlocked ? "text-[var(--primary)]" : "text-muted-foreground"
                 )}>
                     {isUnlocked ? (
-                        <><Unlock size={10} /> {tCommon('unlocked')}</>
+                        <><Unlock size={10} /> 已解锁</>
                     ) : (
                         <><Lock size={10} /> {timeRemaining}</>
                     )}

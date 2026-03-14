@@ -1,9 +1,8 @@
 'use client';
 
-import { FilterParams } from '@/lib/types';
+import { FilterParams } from '@/lib/validation';
 import { cn } from '@/lib/utils';
 import { Lock, Unlock, X, Search } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 interface FilterBarProps {
@@ -12,7 +11,6 @@ interface FilterBarProps {
 }
 
 export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
-    const t = useTranslations('Sidebar');
     const [searchInput, setSearchInput] = useState(filters.search || '');
 
     const handleStatusChange = (status: FilterParams['status']) => {
@@ -36,7 +34,7 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
                     type="text"
                     value={searchInput}
                     onChange={handleSearchChange}
-                    placeholder={t('searchPlaceholder')}
+                    placeholder="搜索..."
                     className="input pl-9 pr-8 text-xs"
                 />
                 {searchInput && (
@@ -55,25 +53,25 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
             {/* Status Filter */}
             <div className="space-y-2">
                 <div className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wider pl-1">
-                    {t('statusLabel')}
+                    状态
                 </div>
                 <div className="flex bg-card p-1 rounded-lg border border-border">
                     <FilterButton
                         active={filters.status === 'all'}
                         onClick={() => handleStatusChange('all')}
-                        label={t('all')}
+                        label="全部"
                     />
                     <FilterButton
                         active={filters.status === 'locked'}
                         onClick={() => handleStatusChange('locked')}
                         icon={<Lock size={12} />}
-                        label={t('locked')}
+                        label="锁定中"
                     />
                     <FilterButton
                         active={filters.status === 'unlocked'}
                         onClick={() => handleStatusChange('unlocked')}
                         icon={<Unlock size={12} />}
-                        label={t('unlocked')}
+                        label="已解锁"
                     />
                 </div>
             </div>
@@ -88,7 +86,7 @@ export default function FilterBar({ filters, onFilterChange }: FilterBarProps) {
                     }}
                 >
                     <X size={12} />
-                    {t('clearFilters')}
+                    清除筛选
                 </button>
             )}
         </div>
