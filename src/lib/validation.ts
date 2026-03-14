@@ -49,7 +49,6 @@ export type ItemMetadata = z.infer<typeof ItemMetadataSchema>;
 
 export const FilterParamsSchema = z.object({
     status: z.enum(['all', 'locked', 'unlocked']).optional(),
-    search: z.string().optional(),
     sort: z.enum(['created_asc', 'created_desc', 'decrypt_asc', 'decrypt_desc']).optional(),
     limit: z.number().int().positive().max(1000).optional(),
     offset: z.number().int().nonnegative().optional(),
@@ -62,7 +61,6 @@ export type FilterParams = z.infer<typeof FilterParamsSchema>;
  */
 export const QuerySchema = z.object({
     status: z.enum(['all', 'locked', 'unlocked']).optional().nullable().default('all'),
-    search: z.string().optional(),
     limit: z.coerce.number().int().positive().max(1000).optional().default(50),
     offset: z.coerce.number().int().nonnegative().optional().default(0),
     sort: z.enum(['created_asc', 'created_desc', 'decrypt_asc', 'decrypt_desc']).optional().default('created_desc'),
