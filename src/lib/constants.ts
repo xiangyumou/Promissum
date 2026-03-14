@@ -22,7 +22,6 @@ export const MAX_API_RETRIES = 3;
 
 // UI Constants
 export const TOAST_DURATION_MS = 3000;
-export const CONFIRMATION_TIMEOUT_MS = 3000;
 export const MAX_UPLOAD_SIZE_BYTES = 5 * 1024 * 1024;
 export const COUNTDOWN_INTERVAL_MS = 1000;
 

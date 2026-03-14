@@ -2,15 +2,7 @@ import { Clock, Plus, RefreshCw, Lock, AlertCircle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { TimeMode } from '@/hooks/useAddItemWizard';
-
-// Duration presets in minutes
-const DURATION_PRESETS = [
-    { label: '1m', minutes: 1 },
-    { label: '10m', minutes: 10 },
-    { label: '1h', minutes: 60 },
-    { label: '6h', minutes: 360 },
-    { label: '1d', minutes: 1440 },
-];
+import { DURATION_PRESETS } from '@/lib/constants';
 
 interface TimeInputProps {
     value: string;
