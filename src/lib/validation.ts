@@ -32,34 +32,17 @@ export const ContentBundleSchema = z.object({
 // =============================================================================
 
 /**
- * Query schema for listing items (used by both service and API layers)
+ * Query schema for listing items (with coercion for URL query params)
  */
-export const ItemQuerySchema = z.object({
+export const QuerySchema = z.object({
     status: z.enum(['all', 'locked', 'unlocked']).optional().nullable().default('all'),
     search: z.string().optional(),
-    limit: z.number().int().positive().max(1000).optional().default(50),
-    offset: z.number().int().nonnegative().optional().default(0),
+    limit: z.coerce.number().int().positive().max(1000).optional().default(50),
+    offset: z.coerce.number().int().nonnegative().optional().default(0),
     sort: z.enum(['created_asc', 'created_desc', 'decrypt_asc', 'decrypt_desc']).optional().default('created_desc'),
 });
 
-export type ItemQueryInput = z.infer<typeof ItemQuerySchema>;
-
-/**
- * API query schema (with coercion for query params from URL)
- * Extends ItemQuerySchema with coercion for string query params
- */
-export const ApiItemQuerySchema = ItemQuerySchema.extend({
-    limit: z.coerce.number().int().positive().max(1000).optional().default(50),
-    offset: z.coerce.number().int().nonnegative().optional().default(0),
-});
-
-export type ApiItemQueryInput = z.infer<typeof ApiItemQuerySchema>;
-
-// Re-export for backward compatibility during transition
-export { ItemQuerySchema as QuerySchema };
-export type { ItemQueryInput as QueryInput };
-export { ApiItemQuerySchema as ApiQuerySchema };
-export type { ApiItemQueryInput as ApiQueryInput };
+export type QueryInput = z.infer<typeof QuerySchema>;
 
 // =============================================================================
 // Item CRUD Schemas

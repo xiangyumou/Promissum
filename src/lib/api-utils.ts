@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { ZodError, ZodSchema } from 'zod';
-import { toSnakeCase } from '@/lib/utils';
 import { DrandError } from '@/core/crypto';
 
 type ApiHandler<T = unknown> = () => Promise<NextResponse<T>>;
@@ -48,7 +47,7 @@ export async function withApiHandler<T>(handler: ApiHandler<T>): Promise<NextRes
 }
 
 export function successResponse(data: unknown, status = 200) {
-    return NextResponse.json(toSnakeCase(data), { status });
+    return NextResponse.json(data, { status });
 }
 
 export function validateSearchParams<T>(

@@ -1,22 +1,16 @@
 'use client';
 
-import { FileText, Lock, Layers, File, Image, Film, Music, Archive, FileIcon } from 'lucide-react';
+import { FileText, Lock, Layers, File, Image } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import FileUploadZone from '../FileUploadZone';
 
-// Get icon based on content type
-function getContentTypeIcon(files: File[], hasText: boolean) {
-    if (hasText && files.length > 0) return Layers;
-    if (hasText) return FileText;
-    if (files.length === 0) return File;
-    if (files.length === 1) {
-        const file = files[0];
-        if (file.type.startsWith('image/')) return Image;
-        if (file.type.startsWith('video/')) return Film;
-        if (file.type.startsWith('audio/')) return Music;
-        if (['application/zip', 'application/x-zip-compressed'].includes(file.type)) return Archive;
-    }
-    return FileIcon;
+// Icon component that renders the appropriate icon based on content type
+function ContentTypeIcon({ files, hasText, size, className }: { files: File[]; hasText: boolean; size?: number; className?: string }) {
+    if (hasText && files.length > 0) return <Layers size={size} className={className} />;
+    if (hasText) return <FileText size={size} className={className} />;
+    if (files.length === 0) return <File size={size} className={className} />;
+    if (files.length === 1 && files[0].type.startsWith('image/')) return <Image size={size} className={className} />;
+    return <File size={size} className={className} />;
 }
 
 interface Step1ContentInputProps {
@@ -110,7 +104,6 @@ export function Step3Preview({
     const tWizard = useTranslations('Wizard');
 
     const hasText = text.trim().length > 0;
-    const ContentIcon = getContentTypeIcon(files, hasText);
 
     return (
         <div className="space-y-4">
@@ -124,7 +117,7 @@ export function Step3Preview({
                 <div className="p-4 rounded-lg bg-accent border border-border">
                     <p className="text-xs text-muted-foreground mb-1">{tWizard('contentType')}</p>
                     <div className="flex items-center gap-2">
-                        <ContentIcon size={16} className="text-muted-foreground" />
+                        <ContentTypeIcon files={files} hasText={hasText} size={16} className="text-muted-foreground" />
                         <p className="font-medium">
                             {hasText && files.length > 0 && tWizard('mixedContent')}
                             {hasText && files.length === 0 && tCommon('text')}

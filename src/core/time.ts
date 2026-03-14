@@ -49,24 +49,6 @@ export function getTimeRemaining(decryptAt: number): number {
 // Duration Calculation (from unlock-time.ts)
 // ============================================
 
-function parseYear(yearInput: string): number {
-    const year = parseInt(yearInput, 10);
-
-    if (year >= 1000) {
-        return year;
-    }
-
-    const currentYear = new Date().getFullYear();
-    const currentCentury = Math.floor(currentYear / 100) * 100;
-    const fullYear = currentCentury + year;
-
-    if (fullYear < currentYear - 30) {
-        return fullYear + 100;
-    }
-
-    return fullYear;
-}
-
 export function calculateDurationMinutes(
     timeMode: 'duration' | 'absolute',
     accumulatedDuration: number,
@@ -76,7 +58,7 @@ export function calculateDurationMinutes(
     if (timeMode === 'duration') {
         return accumulatedDuration;
     } else {
-        const year = parseYear(absoluteTime.year);
+        const year = parseInt(absoluteTime.year, 10);
         const month = parseInt(absoluteTime.month) - 1;
         const day = parseInt(absoluteTime.day);
         const hour = parseInt(absoluteTime.hour);
@@ -106,7 +88,7 @@ export function calculateUnlockTimeInfo(
             errorReason = 'incomplete';
         }
 
-        const year = parseYear(absoluteTime.year);
+        const year = parseInt(absoluteTime.year, 10);
         const month = parseInt(absoluteTime.month) - 1;
         const day = parseInt(absoluteTime.day);
         const hour = parseInt(absoluteTime.hour);

@@ -1,7 +1,7 @@
 'use client';
 
 import { Item, ContentBundle, detectContentType, getContentTypeIcon } from '@/lib/types';
-import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Menu, File, Film, Music, Archive, Layers, Download } from 'lucide-react';
+import { Lock, Unlock, Clock, FileText, Image as ImageIcon, Menu, File, Layers, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations, useLocale } from 'next-intl';
 import { formatUnlockTime, getItemDisplayTitle } from '@/core/time';
@@ -27,9 +27,6 @@ interface ContentViewProps {
 const iconComponents: Record<string, React.ComponentType<{ size?: number; className?: string }>> = {
     FileText,
     Image: ImageIcon,
-    Video: Film,
-    Music,
-    Archive,
     File,
     Layers,
 };
@@ -230,8 +227,6 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                                         <div className="space-y-2">
                                             {contentBundle.files.map((file, idx) => {
                                                 const isImage = file.mimeType.startsWith('image/');
-                                                const isVideo = file.mimeType.startsWith('video/');
-                                                const isAudio = file.mimeType.startsWith('audio/');
 
                                                 return (
                                                     <div
@@ -239,10 +234,11 @@ export default function ContentView({ selectedId, item, isLoading, onDelete, onM
                                                         className="flex items-center gap-3 p-3 rounded-lg bg-accent border border-border"
                                                     >
                                                         <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center shrink-0">
-                                                            {isImage && <ImageIcon size={20} className="text-primary" />}
-                                                            {isVideo && <Film size={20} className="text-primary" />}
-                                                            {isAudio && <Music size={20} className="text-primary" />}
-                                                            {!isImage && !isVideo && !isAudio && <File size={20} className="text-primary" />}
+                                                            {isImage ? (
+                                                                <ImageIcon size={20} className="text-primary" />
+                                                            ) : (
+                                                                <File size={20} className="text-primary" />
+                                                            )}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
                                                             <p className="text-sm font-medium truncate" title={file.name}>

@@ -11,13 +11,10 @@
 
 import type { FilterParams, SystemStats, Item } from '@/lib/types';
 
-// Re-export types for backward compatibility
+// Re-export types for convenience
 export type { FilterParams, SystemStats };
 
-// Use Item type directly for consistency
-export type ApiItemResponse = Item;
-
-export async function getItems(filters?: FilterParams): Promise<ApiItemResponse[]> {
+export async function getItems(filters?: FilterParams): Promise<Item[]> {
     const params = new URLSearchParams();
 
     if (filters?.status && filters.status !== 'all') {
@@ -40,7 +37,7 @@ export async function getItems(filters?: FilterParams): Promise<ApiItemResponse[
     return data.items || [];
 }
 
-export async function getItem(id: string): Promise<ApiItemResponse> {
+export async function getItem(id: string): Promise<Item> {
     const response = await fetch(`/api/items/${id}`);
     if (!response.ok) {
         // Throw object with status for useItem error handling
@@ -51,7 +48,7 @@ export async function getItem(id: string): Promise<ApiItemResponse> {
     return response.json();
 }
 
-export async function createItem(formData: FormData): Promise<{ success: boolean; item: ApiItemResponse }> {
+export async function createItem(formData: FormData): Promise<{ success: boolean; item: Item }> {
     const response = await fetch('/api/items', {
         method: 'POST',
         body: formData,

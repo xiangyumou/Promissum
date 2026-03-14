@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { listItems, createItem } from '@/core/db';
 import { encrypt } from '@/core/crypto';
-import { ApiQuerySchema, CreateItemSchema } from '@/lib/validation';
+import { QuerySchema, CreateItemSchema } from '@/lib/validation';
 import { withApiHandler, successResponse, validateSearchParams } from '@/lib/api-utils';
 import type { ContentBundle } from '@/lib/types';
 
 const MAX_TOTAL_SIZE = 10 * 1024 * 1024; // 10MB total limit
 
 async function getHandler(request: NextRequest) {
-    const query = validateSearchParams(request.url, ApiQuerySchema);
+    const query = validateSearchParams(request.url, QuerySchema);
     const result = await listItems({
         ...query,
         status: query.status ?? undefined,

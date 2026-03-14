@@ -20,7 +20,7 @@ describe('Unlock Time Utilities', () => {
         it('calculates minutes difference in absolute mode', () => {
             const now = new Date(2023, 0, 1, 10, 0).getTime(); // Jan 1 2023 10:00
             const absoluteTime = {
-                year: '23', month: '1', day: '1', hour: '11', minute: '00'
+                year: '2023', month: '1', day: '1', hour: '11', minute: '00'
             }; // Jan 1 2023 11:00
 
             const result = calculateDurationMinutes('absolute', 0, absoluteTime, now);

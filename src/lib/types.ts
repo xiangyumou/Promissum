@@ -51,7 +51,7 @@ export interface ItemMetadata {
 /**
  * Content type detection result
  */
-export type ContentType = 'text' | 'image' | 'video' | 'audio' | 'pdf' | 'archive' | 'file' | 'mixed';
+export type ContentType = 'text' | 'image' | 'file' | 'mixed';
 
 /**
  * Unified Item type for list and detail views
@@ -65,21 +65,6 @@ export interface Item {
     metadata?: ItemMetadata;
     content_summary?: string | null; // Summary/title of content
 }
-
-/**
- * @deprecated Use Item instead
- */
-export type ApiItemListView = Item;
-
-/**
- * @deprecated Use Item instead
- */
-export type ApiItemDetail = Item;
-
-/**
- * @deprecated Use Item instead
- */
-export type ApiItemResponse = Item;
 
 /**
  * Request to create a new item
@@ -127,15 +112,8 @@ export function detectContentType(bundle: ContentBundle): ContentType {
     if (hasText && fileCount > 0) return 'mixed';
     if (hasText) return 'text';
     if (fileCount === 0) return 'file';
-    if (fileCount === 1) {
-        const file = bundle.files[0];
-        if (file.mimeType.startsWith('image/')) return 'image';
-        if (file.mimeType.startsWith('video/')) return 'video';
-        if (file.mimeType.startsWith('audio/')) return 'audio';
-        if (file.mimeType === 'application/pdf') return 'pdf';
-        if (['application/zip', 'application/x-zip-compressed', 'application/x-rar-compressed', 'application/x-7z-compressed'].includes(file.mimeType)) {
-            return 'archive';
-        }
+    if (fileCount === 1 && bundle.files[0].mimeType.startsWith('image/')) {
+        return 'image';
     }
     return 'file';
 }
@@ -147,10 +125,6 @@ export function getContentTypeIcon(type: ContentType): string {
     const icons: Record<ContentType, string> = {
         text: 'FileText',
         image: 'Image',
-        video: 'Video',
-        audio: 'Music',
-        pdf: 'FileText',
-        archive: 'Archive',
         file: 'File',
         mixed: 'Layers',
     };

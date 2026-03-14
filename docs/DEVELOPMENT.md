@@ -167,7 +167,7 @@ promissum/
 
 ```typescript
 // Good / 好的写法
-const items: ApiItemListView[] = await getItems()
+const items: Item[] = await getItems()
 
 // Avoid / 避免
 const items: any = await getItems()
@@ -182,7 +182,7 @@ const items: any = await getItems()
 
 ```typescript
 // Good / 好的写法
-const ItemList = ({ items }: { items: ApiItemListView[] }) => {
+const ItemList = ({ items }: { items: Item[] }) => {
   const handleDelete = useCallback((id: string) => {
     deleteItem(id)
   }, [])
@@ -197,7 +197,7 @@ const ItemList = ({ items }: { items: ApiItemListView[] }) => {
 - **Components**: PascalCase (`AddModal`) / **组件**：PascalCase
 - **Functions**: camelCase (`getItemById`) / **函数**：camelCase
 - **Constants**: UPPER_SNAKE_CASE (`API_BASE_URL`) / **常量**：UPPER_SNAKE_CASE
-- **Types/Interfaces**: PascalCase (`ApiItemListView`) / **类型/接口**：PascalCase
+- **Types/Interfaces**: PascalCase (`Item`) / **类型/接口**：PascalCase
 
 ### Component Structure / 组件结构
 
