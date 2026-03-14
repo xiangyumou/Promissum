@@ -1,106 +1,32 @@
 /**
  * Type definitions for Promissum application
- * Single source of truth for all shared types
- *
- * Note: Field names use snake_case to match frontend expectations.
- * The API routes convert internal camelCase responses to snake_case.
+ * Re-export from validation.ts for single source of truth
  */
 
-// ============================================
-// Content Bundle Types (New Unified Format)
-// ============================================
+export {
+    // Schemas
+    BundleFileSchema,
+    ContentBundleSchema,
+    ItemMetadataSchema,
+    FilterParamsSchema,
+    QuerySchema,
+    CreateItemSchema,
+    ItemIdSchema,
+    ItemSchema,
+    SystemStatsSchema,
+    // Types
+    type BundleFile,
+    type ContentBundle,
+    type ItemMetadata,
+    type FilterParams,
+    type QueryInput,
+    type CreateItemInput,
+    type Item,
+    type SystemStats,
+    type ContentType,
+} from './validation';
 
-/**
- * File entry in ContentBundle
- */
-export interface BundleFile {
-    id: string;            // Unique file identifier
-    name: string;          // Original filename
-    mimeType: string;      // MIME type
-    size: number;          // File size in bytes
-    data: string;          // Base64 encoded content
-}
-
-/**
- * Unified content bundle - supports text + multiple files
- */
-export interface ContentBundle {
-    version: 1;
-    text?: string;         // Optional text content
-    files: BundleFile[];   // Array of files
-}
-
-// ============================================
-// Extended Metadata Types
-// ============================================
-
-/**
- * Extended metadata for items
- * Stored in the 'metadata' field of items
- */
-export interface ItemMetadata {
-    title?: string;        // Custom title for the item
-    tags?: string[];       // Tags for categorization
-    [key: string]: unknown; // Allow additional custom fields
-}
-
-// ============================================
-// API Types (used by frontend, API routes, and services)
-// ============================================
-
-/**
- * Content type detection result
- */
-export type ContentType = 'text' | 'image' | 'file' | 'mixed';
-
-/**
- * Unified Item type for list and detail views
- */
-export interface Item {
-    id: string;
-    unlocked: boolean;
-    decrypt_at: number;
-    created_at: number;
-    content?: ContentBundle | null;  // Decrypted content bundle
-    metadata?: ItemMetadata;
-    content_summary?: string | null; // Summary/title of content
-}
-
-/**
- * Request to create a new item
- */
-export interface CreateItemRequest {
-    text?: string;         // Optional text content
-    files?: File[];        // Optional array of files
-    durationMinutes?: number;
-    decryptAt?: number;
-    metadata?: ItemMetadata;
-}
-
-/**
- * Filter parameters for listing items
- * CANONICAL DEFINITION - import from @/lib/types
- */
-export interface FilterParams {
-    status?: 'all' | 'locked' | 'unlocked';
-    search?: string;
-    sort?: 'created_asc' | 'created_desc' | 'decrypt_asc' | 'decrypt_desc';
-    limit?: number;
-    offset?: number;
-}
-
-/**
- * System statistics response
- */
-export interface SystemStats {
-    totalItems: number;
-    lockedItems: number;
-    unlockedItems: number;
-}
-
-// ============================================
-// Utility Types
-// ============================================
+import type { ContentBundle, ContentType } from './validation';
 
 /**
  * Detect content type from bundle

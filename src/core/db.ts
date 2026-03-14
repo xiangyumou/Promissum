@@ -10,7 +10,7 @@ import Database from 'better-sqlite3';
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { eq, and, desc, asc, sql } from 'drizzle-orm';
 import { decrypt } from './crypto';
-import type { FilterParams, Item, ItemMetadata, ContentBundle } from '@/lib/types';
+import type { FilterParams, Item, ItemMetadata, ContentBundle } from '@/lib/validation';
 
 // ============================================
 // Schema

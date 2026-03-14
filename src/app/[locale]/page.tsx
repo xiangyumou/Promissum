@@ -34,7 +34,8 @@ export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filters, setFilters] = useState<FilterParams>({ status: 'all', sort: 'created_desc' });
 
-  const { data: items = [], isLoading: listLoading } = useItems(filters);
+  const { data: itemsData, isLoading: listLoading } = useItems(filters);
+  const items = itemsData?.items ?? [];
   const { data: selectedItemDetail, isLoading: itemLoading } = useItem(selectedId);
 
   const createItem = useCreateItem();
@@ -45,11 +46,9 @@ export default function Home() {
       createItem.mutateAsync(formData),
       {
         loading: 'Creating item...',
-        success: (result) => {
-          if (result.success) {
-            // Select the newly created item
-            updateSelectedId(result.item.id);
-          }
+        success: (item) => {
+          // Select the newly created item
+          updateSelectedId(item.id);
           return 'Item created successfully!';
         },
         error: 'Failed to create item',

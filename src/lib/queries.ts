@@ -1,30 +1,19 @@
 /**
- * TanStack Query Hooks for Promissum API
+ * TanStack Query Hooks using Server Actions
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-    getItems,
-    getItem,
-    createItem,
-    deleteItem,
-    getStats,
-} from './api-service';
+    getItemsAction,
+    getItemAction,
+    createItemAction,
+    deleteItemAction,
+    getStatsAction,
+} from '@/app/actions/items';
 import type { FilterParams } from '@/lib/types';
-import {
-    POLLING_INTERVAL_MS,
-    MAX_API_RETRIES,
-} from '@/lib/constants';
+import { POLLING_INTERVAL_MS } from '@/lib/constants';
 
-class ApiError extends Error {
-    status: number;
-
-    constructor(message: string, status: number) {
-        super(message);
-        this.status = status;
-    }
-}
-
+// Query keys
 export const queryKeys = {
     stats: ['stats'] as const,
     items: {
@@ -34,41 +23,34 @@ export const queryKeys = {
     },
 };
 
+// Helper to unwrap action results
+async function unwrapAction<T>(promise: Promise<{ success: true; data: T } | { success: false; error: string }>): Promise<T> {
+    const result = await promise;
+    if (!result.success) {
+        throw new Error(result.error);
+    }
+    return result.data;
+}
+
 export function useStats() {
     return useQuery({
         queryKey: queryKeys.stats,
-        queryFn: () => getStats(),
+        queryFn: () => unwrapAction(getStatsAction()),
     });
 }
 
 export function useItems(filters?: FilterParams) {
     return useQuery({
         queryKey: queryKeys.items.list(filters),
-        queryFn: () => getItems(filters),
+        queryFn: () => unwrapAction(getItemsAction(filters)),
     });
 }
 
 export function useItem(id: string | null) {
     return useQuery({
         queryKey: queryKeys.items.detail(id!),
-        queryFn: async () => {
-            try {
-                return await getItem(id!);
-            } catch (error: unknown) {
-                const err = error as Error & { status?: number };
-                if (err.status) {
-                    throw new ApiError('Failed to fetch item', err.status);
-                }
-                throw error;
-            }
-        },
+        queryFn: () => unwrapAction(getItemAction(id!)),
         enabled: !!id,
-        retry: (failureCount, error) => {
-            if (error instanceof ApiError && error.status === 404) {
-                return false;
-            }
-            return failureCount < MAX_API_RETRIES;
-        },
         refetchInterval: POLLING_INTERVAL_MS,
     });
 }
@@ -77,7 +59,7 @@ export function useDeleteItem() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (id: string) => deleteItem(id),
+        mutationFn: (id: string) => unwrapAction(deleteItemAction(id)),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.items.all });
             queryClient.invalidateQueries({ queryKey: queryKeys.stats });
@@ -89,7 +71,13 @@ export function useCreateItem() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (formData: FormData) => createItem(formData),
+        mutationFn: async (formData: FormData) => {
+            const result = await createItemAction(formData);
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+            return result.data;
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.items.all });
             queryClient.invalidateQueries({ queryKey: queryKeys.stats });

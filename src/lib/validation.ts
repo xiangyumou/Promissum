@@ -18,8 +18,11 @@ export const BundleFileSchema = z.object({
     name: z.string(),
     mimeType: z.string(),
     size: z.number().int().nonnegative(),
-    data: z.string(), // base64 encoded
+    fileId: z.string(), // reference to file in storage
+    data: z.string().optional(), // base64 data (populated when decrypted)
 });
+
+export type BundleFile = z.infer<typeof BundleFileSchema>;
 
 export const ContentBundleSchema = z.object({
     version: z.literal(1),
@@ -27,9 +30,32 @@ export const ContentBundleSchema = z.object({
     files: z.array(BundleFileSchema),
 });
 
+export type ContentBundle = z.infer<typeof ContentBundleSchema>;
+
+// =============================================================================
+// Metadata Schemas
+// =============================================================================
+
+export const ItemMetadataSchema = z.object({
+    title: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+}).passthrough();
+
+export type ItemMetadata = z.infer<typeof ItemMetadataSchema>;
+
 // =============================================================================
 // Filter & Query Schemas
 // =============================================================================
+
+export const FilterParamsSchema = z.object({
+    status: z.enum(['all', 'locked', 'unlocked']).optional(),
+    search: z.string().optional(),
+    sort: z.enum(['created_asc', 'created_desc', 'decrypt_asc', 'decrypt_desc']).optional(),
+    limit: z.number().int().positive().max(1000).optional(),
+    offset: z.number().int().nonnegative().optional(),
+});
+
+export type FilterParams = z.infer<typeof FilterParamsSchema>;
 
 /**
  * Query schema for listing items (with coercion for URL query params)
@@ -75,38 +101,36 @@ export type CreateItemInput = z.infer<typeof CreateItemSchema>;
 export const ItemIdSchema = z.string().min(1, 'Item ID is required');
 
 // =============================================================================
-// Response Types
+// Item Schema
 // =============================================================================
 
-/**
- * File info for responses (without binary data)
- */
-export interface FileInfo {
-    id: string;
-    name: string;
-    mimeType: string;
-    size: number;
-}
+export const ItemSchema = z.object({
+    id: z.string(),
+    unlocked: z.boolean(),
+    decrypt_at: z.number(),
+    created_at: z.number(),
+    content: z.union([ContentBundleSchema, z.null()]).optional(),
+    metadata: ItemMetadataSchema.optional(),
+    content_summary: z.union([z.string(), z.null()]).optional(),
+});
 
-/**
- * Content bundle response (without binary data)
- */
-export interface ContentBundleResponse {
-    version: 1;
-    text?: string;
-    files: FileInfo[];
-}
+export type Item = z.infer<typeof ItemSchema>;
 
-/**
- * Item response type (used in API routes)
- */
-export interface ItemResponse {
-    id: string;
-    unlocked: boolean;
-    decryptAt: number;
-    createdAt: number;
-    metadata: Record<string, unknown> | null;
-    content?: ContentBundleResponse | null;
-    timeRemainingMs?: number;
-    contentSummary?: string | null;
-}
+// =============================================================================
+// System Stats Schema
+// =============================================================================
+
+export const SystemStatsSchema = z.object({
+    totalItems: z.number().int(),
+    lockedItems: z.number().int(),
+    unlockedItems: z.number().int(),
+});
+
+export type SystemStats = z.infer<typeof SystemStatsSchema>;
+
+// =============================================================================
+// Utility Types
+// =============================================================================
+
+/** Content type for display */
+export type ContentType = 'text' | 'image' | 'file' | 'mixed';
